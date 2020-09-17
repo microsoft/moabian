@@ -1,0 +1,12 @@
+#!/bin/bash
+# vim:ft=sh ts=4 sw=4 et
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+set -euo pipefail
+
+# change directories to the folder hosting this script
+readonly _D="$(dirname "$(readlink -f "$0")")" && cd "$_D"
+
+./_exercise.py "${@:1}"

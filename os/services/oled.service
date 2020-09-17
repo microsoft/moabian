@@ -1,0 +1,11 @@
+[Unit]
+Description=OLED Service
+DefaultDependencies=false
+
+[Service]
+ExecStart=/usr/local/bin/oled 0 1
+ExecStop=/usr/local/bin/oled 0 0
+User=root
+
+[Install]
+WantedBy=basic.target

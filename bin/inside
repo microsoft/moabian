@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+docker run \
+    --name inside \
+    --volume=/home/pi/moab/config:/app/config \
+    --privileged --rm -it \
+    moab/control bash

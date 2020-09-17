@@ -1,0 +1,15 @@
+#!/bin/bash
+# vim:filetype=sh:
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+readonly _D="$(dirname "$(readlink -f "$0")")" && cd $_D
+
+cd ..
+
+# Since running "down" if docker-compose is already down
+# returns a confusing "WARNING: Network moab_default not found",
+# just send all output (stdout and stderr) to /dev/null.
+
+docker-compose down &> /dev/null

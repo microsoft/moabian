@@ -1,0 +1,33 @@
+#!/usr/bin/python3
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+import RPi.GPIO as gpio
+import time
+from signal import signal, SIGINT
+from sys import exit
+import os
+
+reset_pin = 6  # Reset the HAT controller https://pinout.xyz/pinout/pin31_gpio6
+
+
+def setupGPIO():
+    gpio.setwarnings(False)
+    gpio.setmode(gpio.BCM)
+    gpio.setup(reset_pin, gpio.OUT)
+
+
+def main():
+    setupGPIO()
+
+    # set HIGH, then LOW to toggle firmware reset
+    gpio.output(reset_pin, gpio.HIGH)
+    time.sleep(0.1)
+    gpio.output(reset_pin, gpio.LOW)
+
+    gpio.cleanup()
+
+
+if __name__ == "__main__":
+    main()

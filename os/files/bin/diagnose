@@ -1,0 +1,63 @@
+#!/usr/bin/env bats
+
+@test "Year is at least 2020" {
+  [[ `date +"%Y"` -ge 2020 ]]
+}
+
+@test "DNS working" {
+  ping -c 1 github.com
+}
+
+@test "pymoab permissions nominal" {
+  lib="/usr/local/lib/python3.7/dist-packages/pymoab-1.0.0.dist-info"
+  if [ -e "$lib" ]; then
+    [ $(stat -c "%a" "/usr/local/lib/python3.7/dist-packages/pymoab-1.0.0.dist-info") = "2755" ]
+  fi
+}
+
+@test "libmoab permissions nominal" {
+  [ -r /usr/local/lib/libmoab.so.1.0 ]
+}
+
+@test "Docker is running" {
+  pgrep -l docker
+}
+
+@test 'Hostname is "moab"' {
+  hostname | grep moab
+}
+
+@test 'Pi UART disabled' {
+  grep -v 'console=serial0,115200 console=tty1' /boot/cmdline.txt
+}
+
+@test "Camera detected" {
+  vcgencmd get_camera | grep 'detected=1'
+}
+
+@test "splash details on login is executable" {
+  [[ -x /usr/local/bin/splash ]]
+}
+
+@test "power/fan/moab services started without GPIO error" {
+  journalctl | grep -v gpio.setup
+}
+
+@test "fan and power services are running" {
+  systemctl is-active fan.service
+  systemctl is-active power.service
+}
+
+@test "/home/pi/moab/docker-compose.yml exists" {
+  [[ -e /home/pi/moab/docker-compose.yml ]]
+}
+
+@test "docker-compose is installed and can launch" {
+  docker-compose -v 
+}
+
+@test "docker-compose has containers up" {
+  pgrep -f main.py
+  pgrep -f predict
+}
+

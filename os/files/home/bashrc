@@ -1,0 +1,61 @@
+export CLICOLOR=1
+export LANG="en_US.UTF-8"
+export GOPATH=$HOME/.go
+export PATH=$HOME/.local/bin:$PATH:/usr/local/go/bin:$GOPATH/bin:.
+
+export LESS="--quit-if-one-screen --no-init --ignore-case  --RAW-CONTROL-CHARS --quiet --dumb --LONG-PROMPT"
+export EDITOR="vim"
+export BLOCK_SIZE="'1"  # add commas to file size listings
+
+# Don't process the rest of the file for non-interactive shells
+# as indicated by a PS1 prompt
+[ -z "$PS1" ] && return
+
+# Moab specific
+alias logs="docker logs control -f"
+alias t="tmux -2 new-session -A -s moabian"
+alias dc="docker-compose"
+
+# General aliases
+lsflags="--color=auto --group-directories-first -F "
+alias ls="ls $lsflags "
+alias la="ls ${lsflags} --all"
+alias ll="ls $lsflags -l --sort=extension"
+alias lla="ls ${lsflags} -l --all"
+alias lld="ls ${lsflags} -l --sort=time --reverse"       # sort by date
+alias lls="ls ${lsflags} -l --sort=size --reverse"       # sort by date
+alias lle="ls ${lsflags} -l --sort=extension "           # sort by extension
+
+alias ,="cd .."
+alias m="less"
+alias h='history'
+alias hg="history | grep -i"
+alias @="printenv | grep -i"
+
+alias gd='git diff'
+alias cp='cp --archive'
+alias df='df --human-readable'
+alias pd='pushd'
+alias gs="git status"
+alias gd="git diff"
+alias vi="vim -o"
+alias path='echo $PATH | tr : "\n" | cat -n'
+alias rg="rg --pretty --smart-case"
+
+shopt -s checkwinsize                       # reset lines & cols after resize
+shopt -s histappend                         # append rather than overwrite history
+export HISTCONTROL=ignoreboth
+export HISTSIZE=1000                        # save last 100k commands
+export HISTFILESIZE=1000                    # save last 100k commands
+
+# auto cd to a folder by typing it's name
+shopt -s autocd
+
+# Automatically ls when doing a cd into a folder
+function cd {
+    builtin cd "$@" && ls $lsflags
+}
+
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+fi

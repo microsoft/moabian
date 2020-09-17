@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+set -euo pipefail
+
+die() { ret=$?; printf "%s\n", "$@" >&2; exit "$ret"; }
+[[ $EUID -eq 0 ]] || die "Must run $0 as root"
+
+# change directories to the folder hosting this script
+readonly _D="$(dirname "$(readlink -f "$0")")" && cd "$_D"
+
+cd ..
+
+# Start a one-off brain for testing
+docker run -p 5000:5000 --detach --rm -it moab/brain:latest 
+
+sudo python3 main.py $@
+
+# Kill the one we just started, on exit
+docker kill "$(docker ps --latest --quiet)"

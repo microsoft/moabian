@@ -1,0 +1,14 @@
+[Unit]
+Description=Moab Fan Control
+DefaultDependencies=false
+After=basic.target
+
+[Service]
+ExecStart=/usr/bin/python3 fan.py --temperature 60
+WorkingDirectory=/home/pi/moab/os/services
+User=pi
+Restart=on-failure
+RestartSec=2s
+
+[Install]
+WantedBy=multi-user.target

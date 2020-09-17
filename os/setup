@@ -1,0 +1,278 @@
+#!/bin/bash
+# vim:ft=sh ts=4 sw=4 et
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+# add change et to noet if you need tabs in the TOHERE section
+
+set -euo pipefail   # unofficial bash strict mode
+
+die()     { ret=$?; printf '%s\n' "$@" >&2; exit "$ret"; }
+require() { hash "$@" || exit 127; }
+
+## This script needs to run as root
+[[ $EUID -eq 0 ]] || die "$0 needs to run as root. Try sudo $0"
+
+## Log script output
+exec 1> >(tee "/tmp/stdout.log")
+exec 2> >(tee "/tmp/stderr.log")
+
+## Set CWD to the location where this script is running
+readonly _D="$(dirname "$(readlink -f "$0")")" && cd "$_D"
+
+## Requirements before continuing
+[[ -d files ]] || die 'Need subfolder "files"'
+
+function layer-run-first
+{
+    ## Change default timezone from GMT to PST
+    timedatectl set-timezone America/Los_Angeles && timedatectl
+
+    ## Enable ssh by default for Moab
+    touch /boot/ssh
+
+    apt-get update -y
+}
+
+
+function touch-files
+{
+    ## Keep Pi from grabbing serial port in vain (the HAT hijacks it)
+    ## keeps unnecessary logs from filling journalctl
+    sed -i 's/console=serial0,115200 console=tty1 //' /boot/cmdline.txt
+
+    touch-locale-gen
+    touch-config-txt
+    touch-keyboard
+    touch-console-setup
+}
+
+
+function layer-classic-moabian
+{
+    local packages=(
+        bats
+        git
+        ripgrep
+        tmux
+        vim
+        minicom
+        libffi-dev
+    )
+    apt-get install --no-install-recommends -y ${packages[*]}
+
+    ## BOOT FASTER
+    rm -f /etc/systemd/system/dhcpd.service.d/wait.conf
+    systemctl disable triggerhappy
+    systemctl disable bluetooth
+    systemctl disable apt-daily
+    systemctl disable apt-daily-upgrade
+    systemctl disable man-db
+
+    ## Pre-compiled moab C library install for certain os/files/bin utilities
+    install -pvm 644 files/lib/* /usr/local/lib
+    ldconfig -v -n /usr/local/lib
+    ln -fs /usr/local/lib/libmoab.so.1 /usr/local/lib/libmoab.so
+    ldconfig
+
+    ## Set a proper default bash prompt for all users
+    ## and install a Moab specific message-of-the-day "splash" screen
+    install -pvm 644 files/profile.d/* /etc/profile.d
+    rm -f /etc/motd
+    
+    ## This adds $HOME/moab/bin to the global path
+    install -pvm 644 files/etc/* /etc
+
+    ## /usr/local/bin 
+    install -pvm 755 files/bin/* /usr/local/bin
+
+    ## /home/pi
+    for f in files/home/*; do
+        dst="/home/pi/.${f##*/}"
+        cp -v -f "$f" "$dst"
+        chown pi:pi "$dst"
+    done
+
+    ## vim plugins
+    sudo -u pi -s <<-'EOF'
+		dest="$HOME/.vim/pack/moabian/start"
+		rm -rf $dest
+		mkdir -p "$dest"
+		git clone https://github.com/lifepillar/vim-solarized8 "$dest/solarized8"
+		git clone https://github.com/scotstan/vim-polyglot "$dest/polyglot"
+	EOF
+
+    ## /home/pi/moab
+    chown -R pi:pi /home/pi/moab
+}
+
+
+function blah
+{
+    sudo -u pi -s <<'EOF'
+        dest="$HOME/.vim/pack/moabian/start"
+        rm -rf $dest
+        mkdir -p "$dest"
+        git clone https://github.com/lifepillar/vim-solarized8 "$dest/solarized8"
+        git clone https://github.com/scotstan/vim-polyglot "$dest/polyglot"
+EOF
+}
+
+
+function layer-pip-docker
+{
+    # Also leverages pre-built binary wheels for Rpi4 via /etc/pip.conf
+    apt-get install -y --no-install-recommends python3-dev
+
+    # Install pip3 via bootstrap.pypa.io as it also installs setuptools
+    # Unable to install reliably with apt-get python3-pip
+    if ! command -v pip3 &> /dev/null; then
+        wget https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py
+        python3 /tmp/get-pip.py
+    fi
+
+    # Pointer for pip to download pre-compiled Raspberry Pi binary wheels
+    echo "[global]" > /etc/pip.conf
+    echo "extra-index-url=https://www.piwheels.org/simple" >> /etc/pip.conf
+
+    # Install docker
+    if ! command -v docker &> /dev/null; then
+        curl -sSL https://get.docker.com | sh
+        usermod -aG docker pi
+    fi
+
+    # Install docker-compose
+    if ! command -v docker-compose &> /dev/null; then
+        pip3 install docker-compose
+    fi
+}
+
+
+function layer-moab-services 
+{
+    require 'pip3'
+    sudo -u pi pip3 install --user RPi.GPIO
+    services/install 2&> /dev/null
+}
+
+function layer-rename {
+    sed -i -e 's/raspberrypi/moab/' /etc/hosts /etc/hostname
+    echo "raspberrypi.local renamed to moab.local"
+    warn "Please reboot your Moab now by typing: sudo reboot now"
+}
+
+function touched { grep -qF "##moabian" "$1"; }
+
+# Tabs below are STET
+function touch-locale-gen
+{
+    touched /etc/locale.gen && return
+
+    cat <<- EOF >> /etc/locale.gen
+		##moabian
+		en_US.UTF-8 UTF-8
+	EOF
+    locale-gen en_US.UTF-8
+    update-locale LANG=en_US.UTF-8
+}
+
+function touch-config-txt
+{
+    touched /boot/config.txt && return
+    cat <<- EOF >> /boot/config.txt
+		##moabian
+		boot_delay=0
+		disable_splash=1
+		dtoverlay=pi3-disable-bt
+		dtoverlay=uart0
+		dtoverlay=uart1
+		dtoverlay=uart5
+		dtparam=spi=on
+		enable_uart=1
+		hdmi_force_hotplug=1
+		gpio=20=op,dh
+		gpio=5=op,dl
+		start_x=1
+		gpu_mem=128
+	EOF
+}
+
+function touch-keyboard
+{
+    touched /etc/default/keyboard && return
+    cat <<- EOF >> /etc/default/keyboard
+		##moabian
+		XKBLAYOUT="us"
+		XKMODEL="pc104"
+	EOF
+    setupcon
+}
+
+function touch-console-setup
+{
+    touched /etc/default/console-setup && return
+    cat <<- EOF >> /etc/default/console-setup
+		##moabian
+		FONTFACE="TerminusBold"
+		FONTSIZE="14x28"
+	EOF
+}
+
+function layer-bcm2835
+{
+    ../sw/bin/bcm2835
+}
+
+function layer-mcumgr
+{
+    # Install Go language (you have your orders now, go bin go)
+    local go_url="https://golang.org/dl/go1.15.1.linux-armv6l.tar.gz"
+    if ! [ -e /usr/local/go/bin/go ]; then
+        wget --no-verbose $go_url -O /tmp/golang.tar.gz
+        tar -C /usr/local -xzf /tmp/golang.tar.gz
+    fi
+
+    # Install firmware installer program "mcumgr" from Apache
+    if ! [ -e /usr/local/bin/mcumgr ]; then
+        local mcu_url="github.com/apache/mynewt-mcumgr-cli/mcumgr"
+        /usr/local/go/bin/go get -v $mcu_url
+        cp $HOME/go/bin/mcumgr /usr/local/bin
+    fi
+}
+
+function warn { 
+    if tput colors &> /dev/null; then
+        local color=$(tput smso)$(tput setaf 1) # inverse, red
+        local reset=$(tput sgr0)
+        printf '%s\n' "${color}$1${reset}" >&2
+    else 
+        printf '%s\n' "$1"
+    fi
+}
+
+function info { 
+    if tput colors &> /dev/null; then
+        local color=$(tput smso)$(tput setaf 2) # inverse, green
+        local reset=$(tput sgr0)
+        printf '%s\n' "${color}$1${reset}"
+    else
+        printf '%s\n' "$1"
+    fi
+}
+
+function main
+{
+    info "layer-run-first" && layer-run-first
+    info "touch-files" && touch-files
+    info "classic-moabian" && layer-classic-moabian
+    info "pip-docker" && layer-pip-docker
+    info "services setup" && layer-moab-services
+    info "install bcm2835 library" && layer-bcm2835
+    info "install go and mcumgr" && layer-mcumgr
+    info "renaming to moab.local" && layer-rename
+}
+
+main
+
+exit 0

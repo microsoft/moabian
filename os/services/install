@@ -1,0 +1,23 @@
+#!/bin/bash
+# vim:filetype=sh:
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+readonly _D="$(dirname "$(readlink -f "$0")")" && cd "$_D"
+
+function setup()
+{
+    # next line failing in nominal on new systems
+    sudo systemctl disable "$1" || true
+
+    sudo ln -sf "$PWD/$1" /etc/systemd/system/"$1"
+    sudo systemctl enable "$1"
+    sudo chmod 0644 "$1"
+}
+
+setup moab.service
+setup power.service
+setup fan.service
+
+sudo systemctl daemon-reload
