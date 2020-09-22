@@ -107,9 +107,8 @@ def signal_handler(sig, frame) -> int:
 
     # Lower the plate and deactivate the servos
     # lowerPlate is 155º; testing a lower position of 160º
-    pymoab.setServoPositions(160, 160, 160)
+    pymoab.setServoPositions(155, 155, 155)
     pymoab.sync()
-    # pymoab.lowerPlate(); pymoab.sync()
     time.sleep(0.2)
 
     pymoab.disableServoPower()
