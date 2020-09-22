@@ -42,7 +42,7 @@ gpu_t="$(vcgencmd measure_temp | cut -d '=' -f 2)"
 cpu_t1k=$(cat /sys/class/thermal/thermal_zone0/temp)
 cpu_t=$(printf %.1f "$((10**3 * $cpu_t1k / 1000))e-3")
 temps="$cpu_t° C"
-moabian_version="v2.4"
+moabian_version="${MOABIAN:-0.0}"
 
 # ☉
 
