@@ -57,7 +57,7 @@
             "frequencyHz": 30,
             "debug": true,
             "debugDecorator": {
-                "name": "control.debug.MQDecorator",
+                "name": "control.debug.X11Decorator",
                 "windowName": "frame",
                 "width": 256,
                 "height": 256
@@ -83,7 +83,7 @@
             "frequencyHz": 30,
             "debug": true,
             "debugDecorator": {
-                "name": "control.debug.MQDecorator",
+                "name": "control.debug.X11Decorator",
                 "windowName": "frame",
                 "width": 256,
                 "height": 256
