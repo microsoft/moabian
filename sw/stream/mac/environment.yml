@@ -1,0 +1,10 @@
+name: moabian
+dependencies:
+- python=3.7.4
+- pip
+- pip:
+  - numpy
+  - opencv-python==4.1.2.30
+  - imagezmq
+  - imutils
+  - werkzeug

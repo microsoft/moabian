@@ -6,7 +6,7 @@
                 "class": "logging.Formatter",
                 "style": "{",
                 "datefmt": "%I:%M:%S",
-                "format": "{levelname:8s} {asctime:s} {name:<15s} {message:s}"
+                "format": "• {levelname:8s} {asctime:s} {name:<15s} {message:s}"
             }
         },
         "handlers": {
@@ -55,10 +55,12 @@
         },
         "calibration": {
             "frequencyHz": 30,
-            "debug": false,
+            "debug": true,
             "debugDecorator": {
-                "name": "control.debug.X11Decorator",
-                "windowName": "frame"
+                "name": "control.debug.MQDecorator",
+                "windowName": "frame",
+                "width": 256,
+                "height": 256
             },
             "sensor": {
                 "name": "control.sensors.OpenCVCameraSensor",
@@ -79,10 +81,12 @@
         },
         "classic": {
             "frequencyHz": 30,
-            "debug": false,
+            "debug": true,
             "debugDecorator": {
-                "name": "control.debug.X11Decorator",
-                "windowName": "frame"
+                "name": "control.debug.MQDecorator",
+                "windowName": "frame",
+                "width": 256,
+                "height": 256
             },
             "sensor": {
                 "name": "control.sensors.OpenCVCameraSensor",

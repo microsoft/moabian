@@ -85,6 +85,10 @@ class HSVDetector(IDetector):
                 self.config.maskGain,
             )
 
+            # TODO only make this call if X11 debugger
+            #if self.config.debug
+            #    cv2.imshow("hue_mask", color)
+
             # convert to b&w mask from grayscale image
             mask = cv2.inRange(
                 color, np.array((200, 200, 200)), np.array((255, 255, 255))
@@ -92,6 +96,10 @@ class HSVDetector(IDetector):
 
             # expand b&w image with a dialation filter
             mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, self.kernel)
+
+            # TODO only make this call if X11 debugger
+            if self.config.debug:
+                cv2.imshow("mask", mask)
 
             contours = cv2.findContours(
                 mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
