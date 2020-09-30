@@ -98,8 +98,8 @@ class HSVDetector(IDetector):
             mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, self.kernel)
 
             # TODO only make this call if X11 debugger
-            if self.config.debug:
-                cv2.imshow("mask", mask)
+            #if self.config.debug:
+            #    cv2.imshow("mask", mask)
 
             contours = cv2.findContours(
                 mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
