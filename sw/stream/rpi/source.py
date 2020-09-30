@@ -7,12 +7,12 @@ import traceback
 import numpy as np
 from imutils.video import VideoStream
 
-
 jpg_quality = 90
 
 try:
     sender = imagezmq.ImageSender(connect_to='tcp://192.168.1.128:5555')
-    picam = VideoStream(usePiCamera=True).start()
+    #picam = VideoStream(usePiCamera=True, resolution=(512,512)).start()
+    picam = VideoStream(resolution=(512,512)).start()
     time.sleep(0.2)  # allow camera sensor to warm up
 
     while True:  # send images as stream until Ctrl-C
@@ -23,7 +23,6 @@ try:
 except (KeyboardInterrupt, SystemExit):
     pass  # Ctrl-C was pressed to end program
 except Exception as ex:
-    print('Python error with no Exception handler:')
     print('Traceback error:', ex)
     traceback.print_exc()
 finally:
