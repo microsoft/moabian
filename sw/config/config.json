@@ -77,7 +77,27 @@
         },
         "manual": {
             "controller": "control.controllers.JoystickController",
-            "actuator": "control.actuators.ServoActuator"
+            "actuator": "control.actuators.ServoActuator",
+            "sensor": {
+                "name": "control.sensors.OpenCVCameraSensor",
+                "brightness": 60,
+                "contrast": 50,
+                "saturation": 50,
+                "gain": 0
+            },
+            "detectors": {
+                "ball": {
+                    "debug": false,
+                    "name": "control.detectors.HSVDetector"
+                }
+            },
+            "debug": true,
+            "debugDecorator": {
+                "name": "control.debug.X11Decorator",
+                "windowName": "frame",
+                "width": 256,
+                "height": 256
+            }
         },
         "classic": {
             "frequencyHz": 30,
