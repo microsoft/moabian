@@ -82,7 +82,7 @@
                 "name": "control.sensors.OpenCVCameraSensor",
                 "brightness": 60,
                 "contrast": 50,
-                "saturation": 50,
+                "saturation": 45,
                 "gain": 0
             },
             "detectors": {
@@ -112,7 +112,7 @@
                 "name": "control.sensors.OpenCVCameraSensor",
                 "brightness": 60,
                 "contrast": 50,
-                "saturation": 50,
+                "saturation": 45,
                 "gain": 0
             },
             "detectors": {
