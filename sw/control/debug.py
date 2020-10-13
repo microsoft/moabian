@@ -45,9 +45,9 @@ class MQDecorator(CallbackDecorator):
 
         w = self.config["width"]
         h = self.config["height"]
+        uri = self.config["uri"]
         log.info(f"Starting camera streaming w={w} h={h}")
 
-        uri = "tcp://192.168.1.128:5555"
         self.queue = imagezmq.ImageSender(connect_to=uri)
 
     def decorate(self, args):

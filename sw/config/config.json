@@ -93,10 +93,11 @@
             },
             "debug": true,
             "debugDecorator": {
-                "name": "control.debug.X11Decorator",
+                "name": "control.debug.MQDecorator",
                 "windowName": "frame",
                 "width": 256,
-                "height": 256
+                "height": 256,
+                "uri": "tcp://192.168.1.251:5555"
             }
         },
         "classic": {
