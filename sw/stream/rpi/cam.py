@@ -32,8 +32,9 @@ class StreamingOutput(object):
         self.condition = Condition()
 
     def write(self, buf):
+        # JPEG images start with bytes FF D8 FF E0
         if buf.startswith(b'\xff\xd8'):
-            # New frame, copy the existing buffer's content and notify all
+            # New frame, copy existing buffer's content and notify all
             # clients it's available
             self.buffer.truncate()
             with self.condition:
