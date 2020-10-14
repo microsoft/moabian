@@ -6,6 +6,6 @@ hub = imagezmq.ImageHub()
 stream_monitor = imagezmq.ImageSender(connect_to='tcp://*:5566', REQ_REP = False)
 
 while True:
-    name, image= hub.recv_image()
+    name, image= hub.recv_jpg()
     hub.send_reply(b'OK')
-    stream_monitor.send_image(name, image)
+    stream_monitor.send_jpg(name, image)

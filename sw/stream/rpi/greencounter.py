@@ -25,11 +25,11 @@ try:
         # Add an incrementing counter to the image
         cv2.putText(image, str(i), (100, 150), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 255), 4)
 
-        #ret_code, jpg_buffer = cv2.imencode(".jpg", image,
-        #        [int(cv2.IMWRITE_JPEG_QUALITY), jpg_quality])
+        ret_code, jpg_buffer = cv2.imencode(".jpg", image,
+                [int(cv2.IMWRITE_JPEG_QUALITY), jpg_quality])
 
-        #response = sender.send_jpg("moab", jpg_buffer)
-        response = sender.send_image("moab", image)
+        response = sender.send_jpg("moab", jpg_buffer)
+        #response = sender.send_image("moab", image)
 
 except (KeyboardInterrupt, SystemExit):
     pass  # Ctrl-C was pressed to end program
