@@ -1,13 +1,17 @@
+#!/usr/bin/env python3
+
 # Web streaming example
 # Source code from the official PiCamera package
 # http://picamera.readthedocs.io/en/latest/recipes2.html#web-streaming
 
+import os
 import io
+import socket
 import picamera
 import logging
 import socketserver
-from threading import Condition
 from http import server
+from threading import Condition
 
 PAGE="""\
 <html>
@@ -87,7 +91,11 @@ with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
     #camera.rotation = 90
     camera.start_recording(output, format='mjpeg')
     try:
-        address = ('', 8000)
+        port = int(os.getenv('PORT', 8000))
+        hostname = socket.gethostname()
+        print(f"Open browser to http://{hostname}:{port}")
+
+        address = ('', port)
         server = StreamingServer(address, StreamingHandler)
         server.serve_forever()
     finally:
