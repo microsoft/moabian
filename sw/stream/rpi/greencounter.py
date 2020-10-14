@@ -7,7 +7,7 @@ import traceback
 import numpy as np
 from imutils.video import VideoStream
 
-dest_uri="tcp://192.168.1.128:5555"
+dest_uri="tcp://localhost:5555"
 jpg_quality = 50
 i = 0
 
@@ -23,13 +23,13 @@ try:
         cv2.rectangle(image, (50, 50), (300, 300), green, 5)
 
         # Add an incrementing counter to the image
-        cv2.putText(image, str(i), (100, 150), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 255), 4)
+        cv2.putText(image, str(i), (100, 150), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 255), 4)
 
-        ret_code, jpg_buffer = cv2.imencode(".jpg", image,
-                [int(cv2.IMWRITE_JPEG_QUALITY), jpg_quality])
+        #ret_code, jpg_buffer = cv2.imencode(".jpg", image,
+        #        [int(cv2.IMWRITE_JPEG_QUALITY), jpg_quality])
 
-        response = sender.send_jpg("source", jpg_buffer)
+        #response = sender.send_jpg("moab", jpg_buffer)
+        response = sender.send_image("moab", image)
 
 except (KeyboardInterrupt, SystemExit):
     pass  # Ctrl-C was pressed to end program
