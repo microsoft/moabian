@@ -1,8 +1,10 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+import os
 import math
 import cython
+import socket
 from enum import IntEnum
 from typing import Tuple
 
@@ -32,6 +34,9 @@ cdef extern from "moab.h":
     void moab_enableFan(bool enabled);
     void moab_enableHat(bool enabled);
     float moab_pollTemp();
+
+    void send_ip_address(uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4);
+    void send_sw_version(uint8_t sw_major, uint8_t sw_minor, uint8_t sw_bug);
 
 class Result(IntEnum):
     OK = 0
@@ -83,15 +88,15 @@ def activatePlate():
 
 def hoverPlate():
     """
-    Set the plate to its hover position. 
-    This was experimentally found to be 150 (down but still leaving some 
+    Set the plate to its hover position.
+    This was experimentally found to be 150 (down but still leaving some
     space at the bottom).
     """
     moab_setServoPositions(150, 150, 150)
 
 def lowerPlate():
     """
-    Set the plate to its lower position (usually powered-off state). 
+    Set the plate to its lower position (usually powered-off state).
     This was experimentally found to be 155 (lowest possible position).
     """
     moab_setServoPositions(155, 155, 155)
@@ -154,6 +159,26 @@ def pollTemp() -> float:
 def pollPowerBtn() -> bool:
     return True if moab_pollPowerBtn() else False
 
+def getHostIP():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(('1.1.1.1', 1))
+    local_ip = s.getsockname()[0]  # Returns a string like `1.2.3.4`
+    local_ip = [int(b) for b in local_ip.split(".")]
+    return local_ip
+
+def printIP():
+    ip1, ip2, ip3, ip4 = getHostIP()
+    send_ip_address(ip1, ip2, ip3, ip4)
+
+def printSWVersion():
+    # TODO: make getting the env variable robust
+    version = os.environ.get("MOABIAN")  # Returns a string like `1.2.3`
+    if version:
+        version = [int(b) for b in version.split(".")]
+        sw_major, sw_minor, sw_bug = version
+        send_sw_version(sw_major, sw_minor, sw_bug)
+    else:
+        send_sw_version(0, 0, 0)  # If retrieving the env variable fails
 
 cdef float _bandpass_lookup[256]
 cdef float _last_sigma = 0.0
@@ -182,7 +207,7 @@ def _update_bandpass_lookup(unsigned char center, float sigma, float gain):
             h = h - 1.0
         if (h < 0.0):
             h = h + 1.0
-            
+
         # gaussian bandpass filter
         f = math.exp(-( (h - mu)**2 / ( 2.0 * sigma**2 ) ) )
 
@@ -207,7 +232,7 @@ def hue_mask(unsigned char [:, :, :] image, unsigned char center, float sigma, f
     # grab the image dimensions
     height = image.shape[0]
     width = image.shape[1]
-    
+
     # generate a lookup table for center, sigma & gain
     if (center != _last_center or sigma != _last_sigma or gain != _last_gain):
         _update_bandpass_lookup(center, sigma, gain)
