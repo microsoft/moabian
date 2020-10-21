@@ -202,6 +202,9 @@
                 "sensorSize": 256
             },
             "actuator": "control.actuators.ServoActuator"
+        },
+        "info": {
+            "controller": "control.controllers.InfoController"
         }
     }
 }

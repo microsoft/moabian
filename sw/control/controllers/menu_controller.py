@@ -33,7 +33,8 @@ class MenuController(IController):
                 MenuItem("UP_DOWN", "BRAIN", "brain", "DOT"),
                 MenuItem("UP_DOWN", "CUSTOM1", "custom1", "DOT"),
                 MenuItem("UP_DOWN", "CUSTOM2", "custom2", "DOT"),
-                MenuItem("UP", "CAL", "calibration", "BLANK"),
+                MenuItem("UP_DOWN", "CAL", "calibration", "BLANK"),
+                MenuItem("UP", "INFO", "info", "BLANK"),
             ]
         )
 
@@ -68,3 +69,4 @@ class MenuController(IController):
         sender.previous_menu = self.menu_idx
 
         sender.stop()
+
