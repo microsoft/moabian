@@ -6,3 +6,6 @@ dacite==1.5.0
 RPi.GPIO==0.7.0
 wheel==0.35.1
 setuptools==50.1.0
+Cython==0.29.21
+imagezmq==1.1.1
+
