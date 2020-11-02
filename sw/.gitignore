@@ -1,0 +1,12 @@
+.git
+.cache
+.*.md
+.DS_Store
+docs
+tools
+**/__pycache__
+*.pyc
+*.pyd
+.Python
+**/node_modules
+Dockerfile

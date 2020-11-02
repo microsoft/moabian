@@ -27,3 +27,5 @@ services:
     stop_grace_period: 1s
     volumes: [ "${PWD}/config:/app/config" ]
     command: python3 main.py -t 5
+    environment:
+        MOABIAN: $MOABIAN

@@ -22,9 +22,9 @@ uninstall:
 
 .PHONY: build
 build: clean
-	python setup.py build_ext --inplace
+	python3 setup.py build_ext --inplace
 
 .PHONY: cython-build
 cython-build: clean clean-cpp
-	python setup.py build_ext --inplace --use-cython
+	python3 setup.py build_ext --inplace --use-cython
 

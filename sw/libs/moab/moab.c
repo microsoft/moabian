@@ -20,6 +20,8 @@ static int8_t _plate_x_deg = 0;
 static int8_t _plate_y_deg = 0;
 
 static send_packet_standard _spi_out = {0};
+static send_packet_ip _spi_out_ip = {0};
+static send_packet_version _spi_out_version = {0};
 static receive_packet_type _spi_in = {0};
 
 #define X_TILT_SERVO1 -0.5
@@ -39,8 +41,10 @@ int moab_init()
 
     // clear IO structures
     memset(&_spi_out, 0, sizeof(_spi_out));
+    memset(&_spi_out_ip, 0, sizeof(_spi_out_ip));
+    memset(&_spi_out_version, 0, sizeof(_spi_out_version));
     memset(&_spi_in, 0, sizeof(_spi_in));
-    
+
     // init state: servos disabled
     _spi_out.display.icon = MOAB_ICON_BLANK;
     _spi_out.display.text = MOAB_TXT_INIT;
@@ -145,7 +149,7 @@ void moab_enableHat(bool enabled)
 float moab_pollTemp()
 {
     float millideg;
-	FILE *thermal;
+    FILE *thermal;
 
     thermal = fopen("/sys/class/thermal/thermal_zone0/temp","r");
     if( thermal > 0)
@@ -159,6 +163,28 @@ float moab_pollTemp()
     return NAN;
 }
 
+void send_ip_address(uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4)
+{  
+    _spi_out_ip.control.ip_message = 0x01;
+    _spi_out_ip.IP_1 = ip1;
+    _spi_out_ip.IP_2 = ip2;
+    _spi_out_ip.IP_3 = ip3;
+    _spi_out_ip.IP_4 = ip4;
+    delay(250); // TODO: figure out what the minimum delay should be
+    transceive_packet(_spi_out_ip.combined_packet, _spi_in.combined_packet, SEND_PACKET_BYTES);
+}
+
+void send_sw_version(uint8_t sw_major, uint8_t sw_minor, uint8_t sw_bug)
+{
+    _spi_out_version.control.version_message = 0x01;
+    _spi_out_version.sw_major = sw_major;
+    _spi_out_version.sw_minor = sw_minor;
+    _spi_out_version.sw_bug  = sw_bug;
+    delay(250); // TODO: figure out what the minimum delay should be
+    transceive_packet(_spi_out_version.combined_packet, _spi_in.combined_packet, SEND_PACKET_BYTES);
+}
+
 #ifdef __cplusplus
 }
 #endif
+

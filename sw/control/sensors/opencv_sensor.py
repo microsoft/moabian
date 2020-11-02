@@ -46,12 +46,13 @@ class OpenCVCameraSensor(ISensor):
         self.source: Optional[cv2.VideoCapture] = None
         self.last_frame: Optional[np.ndarray] = None
 
-        # move init_debug into X11 debug handler version only
-        # self._init_debug(device)
+        # TODO: move init_debug into X11 debug handler version only
+        self._init_debug(device)
 
     def start(self):
         self.source = cv2.VideoCapture(self.config.deviceId)
         if self.source:
+            print(self.config)
             self.source.set(cv2.CAP_PROP_FRAME_WIDTH, self.config.width)
             self.source.set(cv2.CAP_PROP_FRAME_HEIGHT, self.config.height)
             self.source.set(cv2.CAP_PROP_FPS, self.fps)

@@ -27,10 +27,10 @@ sudo ./packages
 info "Installing SPI/GPIO library" 
 sudo ./bcm2835
 
-info "Installing libmoab and pymoab wrapper" 
-sudo ./pymoab
-
 info "Installing Python3 packages" 
 pip3 install -r ../requirements.txt
+
+info "Installing libmoab and pymoab wrapper" 
+sudo ./pymoab
 
 info 'Finished. Run: "sudo moab/sw/bin/start" next'
