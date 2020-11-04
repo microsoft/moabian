@@ -10,4 +10,4 @@ docker run \
     --name scriptrunner \
     --mount type=bind,source="$PWD",target=/app/scripts,readonly \
     --privileged --rm -it \
-    moab/control python3 /app/scripts/"$pyfile" "$rest"
+    moab/control python3 /app/scripts/"$pyfile" $rest
