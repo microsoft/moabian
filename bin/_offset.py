@@ -165,13 +165,24 @@ def save_configuration(args):
 
 
 def tween(s1, s2, s3):
-    startup()
+    init()
+    sync()
+    sleep(0.1)
 
-    setServoOffsets(s1, s2, s3)
-    setPlateAngles(0, 0)
+    setTextIcon(Text.INIT, Icon.DOT)
+
+    #setServoOffsets(s1, s2, s3)
+    #setPlateAngles(0, 0)
     sync()
     sleep(0.1)
     setTextIcon(Text.CAL_COMPLETE, Icon.DOT)
+
+    print("Tweening")
+    for n in range(155, 130, -1):
+        print(n)
+        setServoPositions(n,n,n)
+        sync()
+        sleep(0.005)
 
     print("Press the menu button or CTRL-C to quit...")
     sleep(0.1)
