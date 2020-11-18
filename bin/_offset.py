@@ -78,18 +78,25 @@ def parse_arguments():
         prog="offset",
         description="Manage servo offsets",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=textwrap.dedent('''\
+        epilog=textwrap.dedent(
+            """\
         Usage:
             offset                  # show current servo offsets
             offset -h               # print usage
             offset -s 5 0 -2        # test a new offset +5, 0, -2
             offset -s 5 0 -2 -w     # save these offsets
-        ''')
+        """
+        ),
     )
 
-    p.add_argument("-s", "--servos", required=False, nargs=3,
-                   type=int,
-                   metavar=("servo1", "servo2", "servo3"))
+    p.add_argument(
+        "-s",
+        "--servos",
+        required=False,
+        nargs=3,
+        type=int,
+        metavar=("servo1", "servo2", "servo3"),
+    )
 
     p.add_argument(
         "-w",
@@ -199,6 +206,5 @@ if __name__ == "__main__":
         set_servo_offsets(*args.servos)
     else:
         print_offsets(args.file)
-
 
     exit(0)
