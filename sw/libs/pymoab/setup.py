@@ -25,7 +25,7 @@ except ImportError:
 
 setup(
     name="pymoab",
-    version="1.0.0",
+    version="2.5.0",
     description="Python bindings for libmoab",
     ext_modules=extensions,
     package_data={"pymoab": ["pymoab.pyi"]},

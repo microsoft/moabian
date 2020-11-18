@@ -28,8 +28,18 @@ static receive_packet_type _spi_in = {0};
 #define Y_TILT_SERVO2 0.866 
 #define Y_TILT_SERVO3 -0.866 
 
-#define PLATE_X_OFFSET(x) (x + (_servo1_offset + (int8_t)(X_TILT_SERVO1 * _servo2_offset) + (int8_t)(X_TILT_SERVO1 * _servo3_offset)))
-#define PLATE_Y_OFFSET(y) (y + ((int)(Y_TILT_SERVO2 * _servo2_offset) + (int)(Y_TILT_SERVO3 * _servo3_offset)))
+int8_t x_offset(int8_t x)
+{
+    return x + _servo1_offset
+	     + (int8_t)(X_TILT_SERVO1 * _servo2_offset) 
+	     + (int8_t)(X_TILT_SERVO1 * _servo3_offset);
+}
+
+int8_t y_offset(int8_t y)
+{
+    return y + (int) (Y_TILT_SERVO2 * _servo2_offset)
+	     + (int) (Y_TILT_SERVO3 * _servo3_offset);
+}
 
 int moab_init()
 {
@@ -52,8 +62,8 @@ int moab_init()
     // set plate angles based on current offsets
     _plate_x_deg = 0;
     _plate_y_deg = 0;
-    _spi_out.plate_angle_x = PLATE_X_OFFSET(_plate_x_deg);
-    _spi_out.plate_angle_y = PLATE_Y_OFFSET(_plate_y_deg);
+    _spi_out.plate_angle_x = x_offset(_plate_x_deg);
+    _spi_out.plate_angle_y = y_offset(_plate_y_deg);
 
     delay(250);
     return MOAB_RESULT_OK;
@@ -91,8 +101,8 @@ void moab_setPlateAngles(int8_t plate_x_deg, int8_t plate_y_deg)
 
     _plate_x_deg = plate_x_deg;
     _plate_y_deg = plate_y_deg;
-    _spi_out.plate_angle_x = PLATE_X_OFFSET(_plate_x_deg);
-    _spi_out.plate_angle_y = PLATE_Y_OFFSET(_plate_y_deg);
+    _spi_out.plate_angle_x = x_offset(_plate_x_deg);
+    _spi_out.plate_angle_y = y_offset(_plate_y_deg);
 
     // _spi_out.servoX_pos will now be ignored.
 }
