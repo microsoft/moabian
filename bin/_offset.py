@@ -6,15 +6,17 @@
 import os
 import sys
 import json
+import argparse
+import textwrap
 
 from pymoab import *
 from time import sleep
 from signal import signal, SIGINT
 from sys import exit, argv
-import argparse
 
 
 def shutdown():
+    sleep(0.01)
     lowerPlate()
     sync()
     sleep(0.5)
@@ -73,28 +75,28 @@ def clamp(num, min_value, max_value):
 
 def parse_arguments():
     p = argparse.ArgumentParser(
-        prog="offset", description="Determine servo power offsets"
+        prog="offset",
+        description="Manage servo offsets",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent('''\
+        Usage:
+            offset                  # show current servo offsets
+            offset -h               # print usage
+            offset -s 5 0 -2        # test a new offset +5, 0, -2
+            offset -s 5 0 -2 -w     # save these offsets
+        ''')
     )
 
-    p.add_argument(dest="servo1", type=int, help="Integer offset [-5 ... 5]")
-    p.add_argument(dest="servo2", type=int, help="Integer offset [-5 ... 5]")
-    p.add_argument(dest="servo3", type=int, help="Integer offset [-5 ... 5]")
-
-    p.add_argument("-i", "--ignore", required=False, action="store_true")
-    p.add_argument(
-        "-p",
-        "--print",
-        required=False,
-        action="store_true",
-        help="Show the current offset values and quit",
-    )
+    p.add_argument("-s", "--servos", required=False, nargs=3,
+                   type=int,
+                   metavar=("servo1", "servo2", "servo3"))
 
     p.add_argument(
-        "-s",
-        "--save",
+        "-w",
+        "--write",
         required=False,
         action="store_true",
-        help="save settings to config.json",
+        help="write new offsets to config.json",
     )
 
     p.add_argument(
@@ -106,7 +108,7 @@ def parse_arguments():
     )
 
     args = p.parse_args()
-    return args
+    return args, p
 
 
 def get_env(key, default):
@@ -146,14 +148,14 @@ def search_for_config(path=None):
     raise ValueError(f"{path} does not exist")
 
 
-def print_offsets(args):
-    path = search_for_config(args.file)
+def print_offsets(filename):
+    path = search_for_config(filename)
 
     if os.path.isfile(path) is False:
         raise ValueError(f"{path} is not a file")
 
     try:
-        print(f"path:{path}")
+        print(f"{path}:")
         with open(path, "r") as f:
             data = json.load(f)
             json.dump(data, sys.stdout, indent=2)
@@ -162,18 +164,17 @@ def print_offsets(args):
         print(e)
 
 
-def save_offsets(args):
-    path = search_for_config(args.file)
+def write_offsets(filename, servos):
+    path = search_for_config(filename)
 
     if os.path.isfile(path) is False:
         raise ValueError(f"{path} is not a file")
 
     # These are the offsets to override
-    offsets = {"servoOffsets": [args.servo1, args.servo2, args.servo3]}
+    offsets = {"servoOffsets": servos}
 
     # First read existing contents...
     try:
-        print(f"path:{path}")
         with open(path, "r") as f:
             data = json.load(f)
 
@@ -187,15 +188,17 @@ def save_offsets(args):
 
 
 if __name__ == "__main__":
-    args = parse_arguments()
+    args, parser = parse_arguments()
 
     signal(SIGINT, sigint)
 
-    if args.save:
-        save_offsets(args)
-    elif args.print:
-        print_offsets(args)
+    if args.write:
+        write_offsets(args.file, args.servos)
+        print_offsets(args.file)
+    elif args.servos:
+        set_servo_offsets(*args.servos)
     else:
-        set_servo_offsets(args.servo1, args.servo2, args.servo3)
+        print_offsets(args.file)
+
 
     exit(0)
