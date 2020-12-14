@@ -4,6 +4,10 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+##
+## Moabian v2.5 OS Setup
+##
+
 # add change et to noet if you need tabs in the TOHERE section
 
 set -euo pipefail   # unofficial bash strict mode
@@ -105,6 +109,9 @@ function layer-classic-moabian
 
     ## /home/pi/moab
     chown -R pi:pi /home/pi/moab
+
+    ## Remove files possibly left over from v2.1
+    rm -f /usr/local/bin/{testmoab,ufetch,motd}
 }
 
 
