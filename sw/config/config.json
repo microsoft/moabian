@@ -6,7 +6,7 @@
                 "class": "logging.Formatter",
                 "style": "{",
                 "datefmt": "%I:%M:%S",
-                "format": "{levelname:8s} {asctime:s} {name:<15s} {message:s}"
+                "format": "• {levelname:8s} {asctime:s} {name:<15s} {message:s}"
             }
         },
         "handlers": {
