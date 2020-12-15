@@ -64,3 +64,6 @@ EXPORT void moab_enableFan(bool enabled);
 EXPORT void moab_enableHat(bool enabled);
 EXPORT float moab_pollTemp();
 EXPORT int moab_pollPowerBtn();
+
+EXPORT void send_ip_address(uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4);
+EXPORT void send_sw_version(uint8_t sw_major, uint8_t sw_minor, uint8_t sw_bug);
