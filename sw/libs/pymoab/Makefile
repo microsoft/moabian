@@ -11,6 +11,7 @@ cython: clean
 clean:
 	rm -f -r build/
 	rm -f src/python/cython_utils.so
+	rm -f *.so
 
 moab.c: moab.pyx
 	python3 setup.py build

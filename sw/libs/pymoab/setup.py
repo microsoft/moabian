@@ -48,6 +48,6 @@ setup(
     version=version,
     description="Python bindings for libmoab",
     ext_modules=extensions,
+    package_data={"pymoab": ["pymoab.pyi"]},
 )
-    #package_data={"pymoab": ["pymoab.pyi"]},
 

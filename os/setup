@@ -7,6 +7,10 @@
 ##
 ## Moabian v2.5 OS Setup
 ##
+## Pre-steps: 
+## 1) compile oled and copy binary to ~/moab/os/files/bin
+## 2) compile libmoab
+
 
 # add change et to noet if you need tabs in the TOHERE section
 
