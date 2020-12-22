@@ -141,6 +141,8 @@ function layer-pip-docker
     if ! command -v pip3 &> /dev/null; then
         wget https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py
         python3 /tmp/get-pip.py
+    else
+        python3 -m pip install --upgrade pip
     fi
 
     # Pointer for pip to download pre-compiled Raspberry Pi binary wheels
@@ -162,8 +164,7 @@ function layer-pip-docker
 
 function layer-moab-services 
 {
-    require 'pip3'
-    sudo -u pi pip3 install --user RPi.GPIO
+    sudo -u pi python3 -m pip install --user RPi.GPIO
     services/install 2&> /dev/null
 }
 
@@ -282,6 +283,7 @@ function main
     info "install bcm2835 library" && layer-bcm2835
     info "install go and mcumgr" && layer-mcumgr
     info "renaming to moab.local" && layer-rename
+    into "cleaning up" && sudo apt autoremove --yes
 }
 
 main
