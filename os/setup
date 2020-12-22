@@ -81,7 +81,7 @@ function layer-classic-moabian
     ## Pre-compiled moab C library install for certain os/files/bin utilities
     install -pvm 644 files/lib/* /usr/local/lib
     ldconfig -v -n /usr/local/lib
-    ln -fs /usr/local/lib/libmoab.so.1 /usr/local/lib/libmoab.so
+    ln -fs /usr/local/lib/libmoab.so.2 /usr/local/lib/libmoab.so
     ldconfig
 
     ## Set a proper default bash prompt for all users
@@ -283,7 +283,7 @@ function main
     info "install bcm2835 library" && layer-bcm2835
     info "install go and mcumgr" && layer-mcumgr
     info "renaming to moab.local" && layer-rename
-    into "cleaning up" && sudo apt autoremove --yes
+    info "cleaning up" && sudo apt autoremove --yes
 }
 
 main
