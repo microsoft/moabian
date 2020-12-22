@@ -14,7 +14,7 @@ PREFIX=/usr/local/lib
 
 lib: lib$(NAME).so
 
-rxstall: lib$(NAME).so.$(VERSION)
+install: lib$(NAME).so.$(VERSION)
 	cp moab.h /usr/local/include
 	cp $^ $(PREFIX)
 	ldconfig -v -n $(PREFIX)

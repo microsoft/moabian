@@ -39,9 +39,9 @@ if use_cython:
     from Cython.Build import cythonize
     extensions = cythonize(extensions, compiler_directives={"language_level": 3})
 
-version=os.environ.get("MOABIAN", "1.0.0")
+version="2.5.0"
 
-print(f"Installing {version}")
+print(f"Installing {version}", flush=True)
 
 setup(
     name="pymoab",
