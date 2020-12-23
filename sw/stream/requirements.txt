@@ -1,2 +1,3 @@
 Flask==1.1.2
-inotify=0.2.10
+inotify==0.2.10
+gunicorn==20.0.4

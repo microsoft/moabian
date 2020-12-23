@@ -1,14 +1,17 @@
 import os
+import pathlib
 import inotify.adapters
 import inotify.constants
 from base_camera import BaseCamera
 
-class Camera(BaseCamera):
+class CameraFile(BaseCamera):
 
     @staticmethod
     def frames():
         filename = os.getenv('MOABFRAME', '/tmp/camera/frame.jpg')
         dirname = os.path.dirname(filename)
+
+        pathlib.Path(dirname).mkdir(parents=True, exist_ok=True)
 
         i = inotify.adapters.Inotify()
 
