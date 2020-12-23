@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 import os
 import socket
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, url_for, redirect
 
-from camera_file import Camera
+from camera_file import CameraFile
+from camera_opencv import CameraOpenCV
 
-app = Flask(__name__, template_folder='.')
-
+app = Flask(__name__, 
+        static_url_path='',
+        static_folder='static',
+        template_folder='templates')
 
 @app.route('/')
-def index():
-    return render_template('index.html', title='Moab Camera')
-
+def default():
+    return redirect(url_for('static', filename='index.html'))
 
 def gen(camera):
     while True:
@@ -20,32 +22,16 @@ def gen(camera):
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
-@app.route('/video')
-def video():
-    return Response(gen(Camera()),
+@app.route('/video_mjpeg')
+def video_mjpeg():
+    return Response(gen(CameraFile()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/opencv_mjpeg')
+def opencv_mjpeg():
+    return Response(gen(CameraOpenCV()),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', threaded=True)
-
-
-
-
-
-
-@Request.application
-def application(request):
-    print("got request")
-    d = Headers()
-    d.add('Connection', 'close')
-    d.add('Age', 0)
-    d.add('Cache-Control', 'no-cache,no-store,must-revalidate,pre-check=0,post-check=0,max-age=0')
-    d.add('Pragma', 'no-cache')
-    d.add('Server', 'Moab v2.5')
-    #d.add('Content-Type', 'multipart/x-mixed-replace; boundary=frame')
-    #return Response(sendImagesToWeb(), headers=d)
-    return Response(sendImagesToWeb(), headers=d, mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def getHostIP():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -58,9 +44,8 @@ if __name__ == '__main__':
     hostname = socket.gethostname()
 
     ip = getHostIP()
-    print(f"Open browser to http://{ip}:{port}")
-    run_simple(ip, port, application)
+    print(f" • Moab main.py stream  http://{ip}:{port}/index.html")
+    print(f" • Native OpenCV stream http://{ip}:{port}/opencv.html")
+    app.run(host=ip, port=port, threaded=True)
 
-# source.py (MQDecorator in Control) -->
-# sink.py ==> web container: listening to everyone (
-# web container publishes the data on index.html (via mpeg) over port 8000
+

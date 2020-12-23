@@ -1,0 +1,48 @@
+<!-- https://dev.to/hankchizljaw/a-modern-css-reset-6p3 -->
+
+* { box-sizing: border-box; }
+
+body, h1, h2, p { margin: 0; }
+body {
+    min-height: 100vh;
+    line-height: 1.5;
+}
+
+img { 
+    max-width: 100%; 
+    display: block;
+}
+
+html {
+    font-family: Avenir, Helvetica;
+    font-size: 100%;
+}
+
+.video-feed {
+    width: fit-content;
+    height: fit-content;
+    position: relative;
+}
+
+.line-vertical {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 3px;
+    height: 100%;
+    margin: auto;
+    background-color: red;
+    opacity: 0.5;
+}
+
+.line-horizontal {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 3px;
+    background-color: red;
+    margin: auto;
+    opacity: 0.5;
+}
+

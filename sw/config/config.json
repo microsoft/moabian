@@ -58,6 +58,7 @@
             "debug": true,
             "debugDecorator": {
                 "name": "control.debug.FileDecorator",
+                "quality": "90",
                 "filename": "/tmp/camera/frame.jpg"
             },
             "sensor": {
@@ -94,6 +95,7 @@
             "debug": true,
             "debugDecorator": {
                 "name": "control.debug.FileDecorator",
+                "quality": "90",
                 "filename": "/tmp/camera/frame.jpg"
             }
         },

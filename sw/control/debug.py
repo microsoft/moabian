@@ -45,13 +45,14 @@ class FileDecorator(CallbackDecorator):
         super().__init__(config)
 
         self.filename = self.config["filename"]
+        self.quality = int(self.config["quality"])
         self.disable = False
 
         # Create path to filename in case it doesn't exist
         dirname = os.path.dirname(self.filename)
         pathlib.Path(dirname).mkdir(parents=True, exist_ok=True)
 
-        log.info(f"Saving camera frame to {self.filename}")
+        log.info(f"Saving camera stream to {self.filename}")
 
     def decorate(self, args):
         super().decorate(args)
@@ -60,8 +61,11 @@ class FileDecorator(CallbackDecorator):
             return
 
         try:
-            image = args[SENSOR_IMG_ARG]
-            cv2.imwrite(self.filename, image, [cv2.IMWRITE_JPEG_QUALITY, 70])
+            cv2.imwrite(
+                self.filename,
+                args[SENSOR_IMG_ARG],
+                [cv2.IMWRITE_JPEG_QUALITY, self.quality],
+            )
 
         except Exception as ex:
             self.disable = True
