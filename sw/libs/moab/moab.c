@@ -65,7 +65,6 @@ int moab_init()
     _spi_out.plate_angle_x = x_offset(_plate_x_deg);
     _spi_out.plate_angle_y = y_offset(_plate_y_deg);
 
-    delay(250);
     return MOAB_RESULT_OK;
 }
 

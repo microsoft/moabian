@@ -15,8 +15,8 @@ die()     { ret=$?; printf "%s\n" "$@" >&2; exit "$ret"; }
 # change directories to the folder hosting this script
 readonly _D="$(dirname "$(readlink -f "$0")")" && cd "$_D"
 
-make -C ../libs/moab clean
 make -C ../libs/moab install
+make -C ../libs/moab clean
 
+make -C ../libs/pymoab all
 make -C ../libs/pymoab clean
-make -C ../libs/pymoab install

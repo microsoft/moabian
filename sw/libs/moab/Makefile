@@ -3,8 +3,8 @@
 
 CFLAGS := -O3 -g -Wall -Werror
 CC := gcc
-MAJOR := 1
-MINOR := 0
+MAJOR := 2
+MINOR := 5
 NAME := moab
 VERSION := $(MAJOR).$(MINOR)
 LDLIBS=-L/usr/local/lib

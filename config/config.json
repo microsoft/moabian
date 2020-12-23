@@ -6,7 +6,7 @@
                 "class": "logging.Formatter",
                 "style": "{",
                 "datefmt": "%I:%M:%S",
-                "format": "○ {levelname:8s} {asctime:s} {name:<15s} {message:s}"
+                "format": "• {levelname:8s} {asctime:s} {name:<15s} {message:s}"
             }
         },
         "handlers": {
@@ -55,10 +55,10 @@
         },
         "calibration": {
             "frequencyHz": 30,
-            "debug": false,
+            "debug": true,
             "debugDecorator": {
-                "name": "control.debug.X11Decorator",
-                "windowName": "frame"
+                "name": "control.debug.FileDecorator",
+                "filename": "/tmp/camera/frame.jpg"
             },
             "sensor": {
                 "name": "control.sensors.OpenCVCameraSensor",
@@ -75,7 +75,27 @@
         },
         "manual": {
             "controller": "control.controllers.JoystickController",
-            "actuator": "control.actuators.ServoActuator"
+            "actuator": "control.actuators.ServoActuator",
+            "sensor": {
+                "name": "control.sensors.OpenCVCameraSensor",
+                "brightness": 60,
+                "contrast": 50,
+                "saturation": 45,
+                "gain": 0,
+                "width": 256,
+                "height": 256
+            },
+            "detectors": {
+                "ball": {
+                    "debug": false,
+                    "name": "control.detectors.HSVDetector"
+                }
+            },
+            "debug": true,
+            "debugDecorator": {
+                "name": "control.debug.FileDecorator",
+                "filename": "/tmp/camera/frame.jpg"
+            }
         },
         "classic": {
             "frequencyHz": 30,
@@ -177,6 +197,9 @@
                 "sensorSize": 256
             },
             "actuator": "control.actuators.ServoActuator"
+        },
+        "info": {
+            "controller": "control.controllers.InfoController"
         }
     }
 }

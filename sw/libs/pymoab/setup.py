@@ -39,15 +39,15 @@ if use_cython:
     from Cython.Build import cythonize
     extensions = cythonize(extensions, compiler_directives={"language_level": 3})
 
-version=os.environ.get("MOABIAN", "1.0.0")
+version="2.5.0"
 
-print(f"Installing {version}")
+print(f"Installing {version}", flush=True)
 
 setup(
     name="pymoab",
     version=version,
     description="Python bindings for libmoab",
     ext_modules=extensions,
+    package_data={"pymoab": ["pymoab.pyi"]},
 )
-    #package_data={"pymoab": ["pymoab.pyi"]},
 

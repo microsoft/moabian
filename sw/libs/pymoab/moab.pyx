@@ -170,6 +170,12 @@ def printIP():
     ip1, ip2, ip3, ip4 = getHostIP()
     send_ip_address(ip1, ip2, ip3, ip4)
 
+def showIP(ip1, ip2, ip3, ip4):
+    send_ip_address(ip1, ip2, ip3, ip4)
+
+def showVersion(major, minor, bug):
+    send_sw_version(major, minor, bug)
+
 def printSWVersion():
     version = os.environ.get("MOABIAN", "1.0.0")
     version = [int(b) for b in version.split(".")]
