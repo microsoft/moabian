@@ -1,22 +1,19 @@
 #!/usr/bin/env python
 import os
 import socket
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, url_for, redirect
 
 from camera_file import CameraFile
 from camera_opencv import CameraOpenCV
 
-app = Flask(__name__, template_folder='.')
-
+app = Flask(__name__, 
+        static_url_path='',
+        static_folder='static',
+        template_folder='templates')
 
 @app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/opencv')
-def raw():
-    return render_template('opencv.html')
-
+def default():
+    return redirect(url_for('static', filename='index.html'))
 
 def gen(camera):
     while True:
@@ -47,6 +44,8 @@ if __name__ == '__main__':
     hostname = socket.gethostname()
 
     ip = getHostIP()
-    print(f"Moab main.py stream  http://{ip}:{port}/")
-    print(f"Native OpenCV stream http://{ip}:{port}/opencv")
+    print(f" • Moab main.py stream  http://{ip}:{port}/index.html")
+    print(f" • Native OpenCV stream http://{ip}:{port}/opencv.html")
     app.run(host=ip, port=port, threaded=True)
+
+
