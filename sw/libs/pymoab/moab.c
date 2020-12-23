@@ -1887,6 +1887,7 @@ static const char __pyx_k_mu[] = "mu";
 static const char __pyx_k_os[] = "os";
 static const char __pyx_k_CAL[] = "CAL";
 static const char __pyx_k_DOT[] = "DOT";
+static const char __pyx_k_bug[] = "bug";
 static const char __pyx_k_doc[] = "__doc__";
 static const char __pyx_k_exp[] = "exp";
 static const char __pyx_k_get[] = "get";
@@ -1930,6 +1931,8 @@ static const char __pyx_k_class[] = "__class__";
 static const char __pyx_k_error[] = "error";
 static const char __pyx_k_flags[] = "flags";
 static const char __pyx_k_image[] = "image";
+static const char __pyx_k_major[] = "major";
+static const char __pyx_k_minor[] = "minor";
 static const char __pyx_k_range[] = "range";
 static const char __pyx_k_shape[] = "shape";
 static const char __pyx_k_sigma[] = "sigma";
@@ -1948,6 +1951,7 @@ static const char __pyx_k_name_2[] = "__name__";
 static const char __pyx_k_pickle[] = "pickle";
 static const char __pyx_k_pymoab[] = "pymoab";
 static const char __pyx_k_reduce[] = "__reduce__";
+static const char __pyx_k_showIP[] = "showIP";
 static const char __pyx_k_socket[] = "socket";
 static const char __pyx_k_struct[] = "struct";
 static const char __pyx_k_sw_bug[] = "sw_bug";
@@ -2016,6 +2020,7 @@ static const char __pyx_k_PickleError[] = "PickleError";
 static const char __pyx_k_getsockname[] = "getsockname";
 static const char __pyx_k_plate_x_deg[] = "plate_x_deg";
 static const char __pyx_k_plate_y_deg[] = "plate_y_deg";
+static const char __pyx_k_showVersion[] = "showVersion";
 static const char __pyx_k_CAL_CANCELED[] = "CAL_CANCELED";
 static const char __pyx_k_CAL_COMPLETE[] = "CAL_COMPLETE";
 static const char __pyx_k_UPDATE_BRAIN[] = "UPDATE_BRAIN";
@@ -2136,6 +2141,7 @@ static PyObject *__pyx_n_s_activatePlate;
 static PyObject *__pyx_n_s_allocate_buffer;
 static PyObject *__pyx_n_s_b;
 static PyObject *__pyx_n_s_base;
+static PyObject *__pyx_n_s_bug;
 static PyObject *__pyx_n_s_c;
 static PyObject *__pyx_n_u_c;
 static PyObject *__pyx_n_s_center;
@@ -2191,11 +2197,13 @@ static PyObject *__pyx_kp_s_itemsize_0_for_cython_array;
 static PyObject *__pyx_n_s_local_ip;
 static PyObject *__pyx_n_s_lowerPlate;
 static PyObject *__pyx_n_s_main;
+static PyObject *__pyx_n_s_major;
 static PyObject *__pyx_n_s_mask;
 static PyObject *__pyx_n_s_mask_gain;
 static PyObject *__pyx_n_s_math;
 static PyObject *__pyx_n_s_memview;
 static PyObject *__pyx_n_s_metaclass;
+static PyObject *__pyx_n_s_minor;
 static PyObject *__pyx_kp_s_moab_pyx;
 static PyObject *__pyx_n_s_mode;
 static PyObject *__pyx_n_s_module;
@@ -2246,6 +2254,8 @@ static PyObject *__pyx_n_s_setText;
 static PyObject *__pyx_n_s_setstate;
 static PyObject *__pyx_n_s_setstate_cython;
 static PyObject *__pyx_n_s_shape;
+static PyObject *__pyx_n_s_showIP;
+static PyObject *__pyx_n_s_showVersion;
 static PyObject *__pyx_n_s_sigma;
 static PyObject *__pyx_n_s_size;
 static PyObject *__pyx_n_s_socket;
@@ -2296,9 +2306,11 @@ static PyObject *__pyx_pf_6pymoab_34pollTemp(CYTHON_UNUSED PyObject *__pyx_self)
 static PyObject *__pyx_pf_6pymoab_36pollPowerBtn(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
 static PyObject *__pyx_pf_6pymoab_38getHostIP(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
 static PyObject *__pyx_pf_6pymoab_40printIP(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_6pymoab_42printSWVersion(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObject *__pyx_self, unsigned char __pyx_v_center, float __pyx_v_sigma, float __pyx_v_gain); /* proto */
-static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_image, unsigned char __pyx_v_center, float __pyx_v_sigma, float __pyx_v_gain, float __pyx_v_mask_gain); /* proto */
+static PyObject *__pyx_pf_6pymoab_42showIP(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_ip1, PyObject *__pyx_v_ip2, PyObject *__pyx_v_ip3, PyObject *__pyx_v_ip4); /* proto */
+static PyObject *__pyx_pf_6pymoab_44showVersion(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_major, PyObject *__pyx_v_minor, PyObject *__pyx_v_bug); /* proto */
+static PyObject *__pyx_pf_6pymoab_46printSWVersion(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_6pymoab_48_update_bandpass_lookup(CYTHON_UNUSED PyObject *__pyx_self, unsigned char __pyx_v_center, float __pyx_v_sigma, float __pyx_v_gain); /* proto */
+static PyObject *__pyx_pf_6pymoab_50hue_mask(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_image, unsigned char __pyx_v_center, float __pyx_v_sigma, float __pyx_v_gain, float __pyx_v_mask_gain); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array_2__getbuffer__(struct __pyx_array_obj *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_array___pyx_pf_15View_dot_MemoryView_5array_4__dealloc__(struct __pyx_array_obj *__pyx_v_self); /* proto */
@@ -2401,11 +2413,13 @@ static PyObject *__pyx_tuple__52;
 static PyObject *__pyx_tuple__54;
 static PyObject *__pyx_tuple__56;
 static PyObject *__pyx_tuple__58;
-static PyObject *__pyx_tuple__59;
 static PyObject *__pyx_tuple__60;
-static PyObject *__pyx_tuple__61;
 static PyObject *__pyx_tuple__62;
 static PyObject *__pyx_tuple__63;
+static PyObject *__pyx_tuple__64;
+static PyObject *__pyx_tuple__65;
+static PyObject *__pyx_tuple__66;
+static PyObject *__pyx_tuple__67;
 static PyObject *__pyx_codeobj__22;
 static PyObject *__pyx_codeobj__23;
 static PyObject *__pyx_codeobj__24;
@@ -2430,7 +2444,9 @@ static PyObject *__pyx_codeobj__51;
 static PyObject *__pyx_codeobj__53;
 static PyObject *__pyx_codeobj__55;
 static PyObject *__pyx_codeobj__57;
-static PyObject *__pyx_codeobj__64;
+static PyObject *__pyx_codeobj__59;
+static PyObject *__pyx_codeobj__61;
+static PyObject *__pyx_codeobj__68;
 /* Late includes */
 
 /* "moab.pyx":76
@@ -4254,7 +4270,7 @@ static PyObject *__pyx_pf_6pymoab_40printIP(CYTHON_UNUSED PyObject *__pyx_self) 
  *     ip1, ip2, ip3, ip4 = getHostIP()
  *     send_ip_address(ip1, ip2, ip3, ip4)             # <<<<<<<<<<<<<<
  * 
- * def printSWVersion():
+ * def showIP(ip1, ip2, ip3, ip4):
  */
   __pyx_t_8 = __Pyx_PyInt_As_unsigned_char(__pyx_v_ip1); if (unlikely((__pyx_t_8 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 171, __pyx_L1_error)
   __pyx_t_9 = __Pyx_PyInt_As_unsigned_char(__pyx_v_ip2); if (unlikely((__pyx_t_9 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 171, __pyx_L1_error)
@@ -4295,26 +4311,293 @@ static PyObject *__pyx_pf_6pymoab_40printIP(CYTHON_UNUSED PyObject *__pyx_self) 
 /* "moab.pyx":173
  *     send_ip_address(ip1, ip2, ip3, ip4)
  * 
- * def printSWVersion():             # <<<<<<<<<<<<<<
- *     version = os.environ.get("MOABIAN", "1.0.0")
- *     version = [int(b) for b in version.split(".")]
+ * def showIP(ip1, ip2, ip3, ip4):             # <<<<<<<<<<<<<<
+ *     send_ip_address(ip1, ip2, ip3, ip4)
+ * 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_6pymoab_43printSWVersion(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyMethodDef __pyx_mdef_6pymoab_43printSWVersion = {"printSWVersion", (PyCFunction)__pyx_pw_6pymoab_43printSWVersion, METH_NOARGS, 0};
-static PyObject *__pyx_pw_6pymoab_43printSWVersion(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_6pymoab_43showIP(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6pymoab_43showIP = {"showIP", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_6pymoab_43showIP, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6pymoab_43showIP(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  PyObject *__pyx_v_ip1 = 0;
+  PyObject *__pyx_v_ip2 = 0;
+  PyObject *__pyx_v_ip3 = 0;
+  PyObject *__pyx_v_ip4 = 0;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("printSWVersion (wrapper)", 0);
-  __pyx_r = __pyx_pf_6pymoab_42printSWVersion(__pyx_self);
+  __Pyx_RefNannySetupContext("showIP (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_ip1,&__pyx_n_s_ip2,&__pyx_n_s_ip3,&__pyx_n_s_ip4,0};
+    PyObject* values[4] = {0,0,0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+        CYTHON_FALLTHROUGH;
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        CYTHON_FALLTHROUGH;
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        CYTHON_FALLTHROUGH;
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_ip1)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        CYTHON_FALLTHROUGH;
+        case  1:
+        if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_ip2)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("showIP", 1, 4, 4, 1); __PYX_ERR(0, 173, __pyx_L3_error)
+        }
+        CYTHON_FALLTHROUGH;
+        case  2:
+        if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_ip3)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("showIP", 1, 4, 4, 2); __PYX_ERR(0, 173, __pyx_L3_error)
+        }
+        CYTHON_FALLTHROUGH;
+        case  3:
+        if (likely((values[3] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_ip4)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("showIP", 1, 4, 4, 3); __PYX_ERR(0, 173, __pyx_L3_error)
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "showIP") < 0)) __PYX_ERR(0, 173, __pyx_L3_error)
+      }
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+      values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+      values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+    }
+    __pyx_v_ip1 = values[0];
+    __pyx_v_ip2 = values[1];
+    __pyx_v_ip3 = values[2];
+    __pyx_v_ip4 = values[3];
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("showIP", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 173, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("pymoab.showIP", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_6pymoab_42showIP(__pyx_self, __pyx_v_ip1, __pyx_v_ip2, __pyx_v_ip3, __pyx_v_ip4);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pymoab_42printSWVersion(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_6pymoab_42showIP(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_ip1, PyObject *__pyx_v_ip2, PyObject *__pyx_v_ip3, PyObject *__pyx_v_ip4) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  __pyx_t_6pymoab_uint8_t __pyx_t_1;
+  __pyx_t_6pymoab_uint8_t __pyx_t_2;
+  __pyx_t_6pymoab_uint8_t __pyx_t_3;
+  __pyx_t_6pymoab_uint8_t __pyx_t_4;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("showIP", 0);
+
+  /* "moab.pyx":174
+ * 
+ * def showIP(ip1, ip2, ip3, ip4):
+ *     send_ip_address(ip1, ip2, ip3, ip4)             # <<<<<<<<<<<<<<
+ * 
+ * def showVersion(major, minor, bug):
+ */
+  __pyx_t_1 = __Pyx_PyInt_As_unsigned_char(__pyx_v_ip1); if (unlikely((__pyx_t_1 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 174, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_As_unsigned_char(__pyx_v_ip2); if (unlikely((__pyx_t_2 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 174, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_As_unsigned_char(__pyx_v_ip3); if (unlikely((__pyx_t_3 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 174, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_As_unsigned_char(__pyx_v_ip4); if (unlikely((__pyx_t_4 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 174, __pyx_L1_error)
+  send_ip_address(__pyx_t_1, __pyx_t_2, __pyx_t_3, __pyx_t_4);
+
+  /* "moab.pyx":173
+ *     send_ip_address(ip1, ip2, ip3, ip4)
+ * 
+ * def showIP(ip1, ip2, ip3, ip4):             # <<<<<<<<<<<<<<
+ *     send_ip_address(ip1, ip2, ip3, ip4)
+ * 
+ */
+
+  /* function exit code */
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_AddTraceback("pymoab.showIP", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "moab.pyx":176
+ *     send_ip_address(ip1, ip2, ip3, ip4)
+ * 
+ * def showVersion(major, minor, bug):             # <<<<<<<<<<<<<<
+ *     send_sw_version(major, minor, bug)
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_6pymoab_45showVersion(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6pymoab_45showVersion = {"showVersion", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_6pymoab_45showVersion, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6pymoab_45showVersion(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  PyObject *__pyx_v_major = 0;
+  PyObject *__pyx_v_minor = 0;
+  PyObject *__pyx_v_bug = 0;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("showVersion (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_major,&__pyx_n_s_minor,&__pyx_n_s_bug,0};
+    PyObject* values[3] = {0,0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        CYTHON_FALLTHROUGH;
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        CYTHON_FALLTHROUGH;
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_major)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        CYTHON_FALLTHROUGH;
+        case  1:
+        if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_minor)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("showVersion", 1, 3, 3, 1); __PYX_ERR(0, 176, __pyx_L3_error)
+        }
+        CYTHON_FALLTHROUGH;
+        case  2:
+        if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_bug)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("showVersion", 1, 3, 3, 2); __PYX_ERR(0, 176, __pyx_L3_error)
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "showVersion") < 0)) __PYX_ERR(0, 176, __pyx_L3_error)
+      }
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+      values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+    }
+    __pyx_v_major = values[0];
+    __pyx_v_minor = values[1];
+    __pyx_v_bug = values[2];
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("showVersion", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 176, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("pymoab.showVersion", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_6pymoab_44showVersion(__pyx_self, __pyx_v_major, __pyx_v_minor, __pyx_v_bug);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_6pymoab_44showVersion(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_major, PyObject *__pyx_v_minor, PyObject *__pyx_v_bug) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  __pyx_t_6pymoab_uint8_t __pyx_t_1;
+  __pyx_t_6pymoab_uint8_t __pyx_t_2;
+  __pyx_t_6pymoab_uint8_t __pyx_t_3;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("showVersion", 0);
+
+  /* "moab.pyx":177
+ * 
+ * def showVersion(major, minor, bug):
+ *     send_sw_version(major, minor, bug)             # <<<<<<<<<<<<<<
+ * 
+ * def printSWVersion():
+ */
+  __pyx_t_1 = __Pyx_PyInt_As_unsigned_char(__pyx_v_major); if (unlikely((__pyx_t_1 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 177, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_As_unsigned_char(__pyx_v_minor); if (unlikely((__pyx_t_2 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 177, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_As_unsigned_char(__pyx_v_bug); if (unlikely((__pyx_t_3 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 177, __pyx_L1_error)
+  send_sw_version(__pyx_t_1, __pyx_t_2, __pyx_t_3);
+
+  /* "moab.pyx":176
+ *     send_ip_address(ip1, ip2, ip3, ip4)
+ * 
+ * def showVersion(major, minor, bug):             # <<<<<<<<<<<<<<
+ *     send_sw_version(major, minor, bug)
+ * 
+ */
+
+  /* function exit code */
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_AddTraceback("pymoab.showVersion", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "moab.pyx":179
+ *     send_sw_version(major, minor, bug)
+ * 
+ * def printSWVersion():             # <<<<<<<<<<<<<<
+ *     version = os.environ.get("MOABIAN", "1.0.0")
+ *     version = [int(b) for b in version.split(".")]
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_6pymoab_47printSWVersion(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyMethodDef __pyx_mdef_6pymoab_47printSWVersion = {"printSWVersion", (PyCFunction)__pyx_pw_6pymoab_47printSWVersion, METH_NOARGS, 0};
+static PyObject *__pyx_pw_6pymoab_47printSWVersion(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("printSWVersion (wrapper)", 0);
+  __pyx_r = __pyx_pf_6pymoab_46printSWVersion(__pyx_self);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_6pymoab_46printSWVersion(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_v_version = NULL;
   PyObject *__pyx_v_sw_major = NULL;
   PyObject *__pyx_v_sw_minor = NULL;
@@ -4336,28 +4619,28 @@ static PyObject *__pyx_pf_6pymoab_42printSWVersion(CYTHON_UNUSED PyObject *__pyx
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("printSWVersion", 0);
 
-  /* "moab.pyx":174
+  /* "moab.pyx":180
  * 
  * def printSWVersion():
  *     version = os.environ.get("MOABIAN", "1.0.0")             # <<<<<<<<<<<<<<
  *     version = [int(b) for b in version.split(".")]
  *     sw_major, sw_minor, sw_bug = version
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_os); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 174, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_os); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 180, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_environ); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 174, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_environ); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 180, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_get); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 174, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_get); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 180, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 174, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 180, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_version = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "moab.pyx":175
+  /* "moab.pyx":181
  * def printSWVersion():
  *     version = os.environ.get("MOABIAN", "1.0.0")
  *     version = [int(b) for b in version.split(".")]             # <<<<<<<<<<<<<<
@@ -4365,9 +4648,9 @@ static PyObject *__pyx_pf_6pymoab_42printSWVersion(CYTHON_UNUSED PyObject *__pyx
  *     send_sw_version(sw_major, sw_minor, sw_bug)
  */
   { /* enter inner scope */
-    __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 175, __pyx_L5_error)
+    __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 181, __pyx_L5_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_version, __pyx_n_s_split); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 175, __pyx_L5_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_version, __pyx_n_s_split); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 181, __pyx_L5_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_t_4 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
@@ -4381,16 +4664,16 @@ static PyObject *__pyx_pf_6pymoab_42printSWVersion(CYTHON_UNUSED PyObject *__pyx
     }
     __pyx_t_1 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_4, __pyx_kp_u__2) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_kp_u__2);
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 175, __pyx_L5_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 181, __pyx_L5_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     if (likely(PyList_CheckExact(__pyx_t_1)) || PyTuple_CheckExact(__pyx_t_1)) {
       __pyx_t_3 = __pyx_t_1; __Pyx_INCREF(__pyx_t_3); __pyx_t_5 = 0;
       __pyx_t_6 = NULL;
     } else {
-      __pyx_t_5 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 175, __pyx_L5_error)
+      __pyx_t_5 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 181, __pyx_L5_error)
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_6 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 175, __pyx_L5_error)
+      __pyx_t_6 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 181, __pyx_L5_error)
     }
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     for (;;) {
@@ -4398,17 +4681,17 @@ static PyObject *__pyx_pf_6pymoab_42printSWVersion(CYTHON_UNUSED PyObject *__pyx
         if (likely(PyList_CheckExact(__pyx_t_3))) {
           if (__pyx_t_5 >= PyList_GET_SIZE(__pyx_t_3)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_1 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_5); __Pyx_INCREF(__pyx_t_1); __pyx_t_5++; if (unlikely(0 < 0)) __PYX_ERR(0, 175, __pyx_L5_error)
+          __pyx_t_1 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_5); __Pyx_INCREF(__pyx_t_1); __pyx_t_5++; if (unlikely(0 < 0)) __PYX_ERR(0, 181, __pyx_L5_error)
           #else
-          __pyx_t_1 = PySequence_ITEM(__pyx_t_3, __pyx_t_5); __pyx_t_5++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 175, __pyx_L5_error)
+          __pyx_t_1 = PySequence_ITEM(__pyx_t_3, __pyx_t_5); __pyx_t_5++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 181, __pyx_L5_error)
           __Pyx_GOTREF(__pyx_t_1);
           #endif
         } else {
           if (__pyx_t_5 >= PyTuple_GET_SIZE(__pyx_t_3)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_5); __Pyx_INCREF(__pyx_t_1); __pyx_t_5++; if (unlikely(0 < 0)) __PYX_ERR(0, 175, __pyx_L5_error)
+          __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_5); __Pyx_INCREF(__pyx_t_1); __pyx_t_5++; if (unlikely(0 < 0)) __PYX_ERR(0, 181, __pyx_L5_error)
           #else
-          __pyx_t_1 = PySequence_ITEM(__pyx_t_3, __pyx_t_5); __pyx_t_5++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 175, __pyx_L5_error)
+          __pyx_t_1 = PySequence_ITEM(__pyx_t_3, __pyx_t_5); __pyx_t_5++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 181, __pyx_L5_error)
           __Pyx_GOTREF(__pyx_t_1);
           #endif
         }
@@ -4418,7 +4701,7 @@ static PyObject *__pyx_pf_6pymoab_42printSWVersion(CYTHON_UNUSED PyObject *__pyx
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 175, __pyx_L5_error)
+            else __PYX_ERR(0, 181, __pyx_L5_error)
           }
           break;
         }
@@ -4426,9 +4709,9 @@ static PyObject *__pyx_pf_6pymoab_42printSWVersion(CYTHON_UNUSED PyObject *__pyx
       }
       __Pyx_XDECREF_SET(__pyx_8genexpr1__pyx_v_b, __pyx_t_1);
       __pyx_t_1 = 0;
-      __pyx_t_1 = __Pyx_PyNumber_Int(__pyx_8genexpr1__pyx_v_b); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 175, __pyx_L5_error)
+      __pyx_t_1 = __Pyx_PyNumber_Int(__pyx_8genexpr1__pyx_v_b); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 181, __pyx_L5_error)
       __Pyx_GOTREF(__pyx_t_1);
-      if (unlikely(__Pyx_ListComp_Append(__pyx_t_2, (PyObject*)__pyx_t_1))) __PYX_ERR(0, 175, __pyx_L5_error)
+      if (unlikely(__Pyx_ListComp_Append(__pyx_t_2, (PyObject*)__pyx_t_1))) __PYX_ERR(0, 181, __pyx_L5_error)
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     }
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -4442,7 +4725,7 @@ static PyObject *__pyx_pf_6pymoab_42printSWVersion(CYTHON_UNUSED PyObject *__pyx
   __Pyx_DECREF_SET(__pyx_v_version, __pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "moab.pyx":176
+  /* "moab.pyx":182
  *     version = os.environ.get("MOABIAN", "1.0.0")
  *     version = [int(b) for b in version.split(".")]
  *     sw_major, sw_minor, sw_bug = version             # <<<<<<<<<<<<<<
@@ -4455,7 +4738,7 @@ static PyObject *__pyx_pf_6pymoab_42printSWVersion(CYTHON_UNUSED PyObject *__pyx
     if (unlikely(size != 3)) {
       if (size > 3) __Pyx_RaiseTooManyValuesError(3);
       else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-      __PYX_ERR(0, 176, __pyx_L1_error)
+      __PYX_ERR(0, 182, __pyx_L1_error)
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
     __pyx_t_2 = PyList_GET_ITEM(sequence, 0); 
@@ -4465,11 +4748,11 @@ static PyObject *__pyx_pf_6pymoab_42printSWVersion(CYTHON_UNUSED PyObject *__pyx
     __Pyx_INCREF(__pyx_t_3);
     __Pyx_INCREF(__pyx_t_1);
     #else
-    __pyx_t_2 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 176, __pyx_L1_error)
+    __pyx_t_2 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 182, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_3 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 176, __pyx_L1_error)
+    __pyx_t_3 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 182, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_1 = PySequence_ITEM(sequence, 2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 176, __pyx_L1_error)
+    __pyx_t_1 = PySequence_ITEM(sequence, 2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 182, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     #endif
   }
@@ -4480,20 +4763,20 @@ static PyObject *__pyx_pf_6pymoab_42printSWVersion(CYTHON_UNUSED PyObject *__pyx
   __pyx_v_sw_bug = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "moab.pyx":177
+  /* "moab.pyx":183
  *     version = [int(b) for b in version.split(".")]
  *     sw_major, sw_minor, sw_bug = version
  *     send_sw_version(sw_major, sw_minor, sw_bug)             # <<<<<<<<<<<<<<
  * 
  * cdef float _bandpass_lookup[256]
  */
-  __pyx_t_7 = __Pyx_PyInt_As_unsigned_char(__pyx_v_sw_major); if (unlikely((__pyx_t_7 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 177, __pyx_L1_error)
-  __pyx_t_8 = __Pyx_PyInt_As_unsigned_char(__pyx_v_sw_minor); if (unlikely((__pyx_t_8 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 177, __pyx_L1_error)
-  __pyx_t_9 = __Pyx_PyInt_As_unsigned_char(__pyx_v_sw_bug); if (unlikely((__pyx_t_9 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 177, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyInt_As_unsigned_char(__pyx_v_sw_major); if (unlikely((__pyx_t_7 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 183, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyInt_As_unsigned_char(__pyx_v_sw_minor); if (unlikely((__pyx_t_8 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 183, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyInt_As_unsigned_char(__pyx_v_sw_bug); if (unlikely((__pyx_t_9 == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 183, __pyx_L1_error)
   send_sw_version(__pyx_t_7, __pyx_t_8, __pyx_t_9);
 
-  /* "moab.pyx":173
- *     send_ip_address(ip1, ip2, ip3, ip4)
+  /* "moab.pyx":179
+ *     send_sw_version(major, minor, bug)
  * 
  * def printSWVersion():             # <<<<<<<<<<<<<<
  *     version = os.environ.get("MOABIAN", "1.0.0")
@@ -4521,7 +4804,7 @@ static PyObject *__pyx_pf_6pymoab_42printSWVersion(CYTHON_UNUSED PyObject *__pyx
   return __pyx_r;
 }
 
-/* "moab.pyx":186
+/* "moab.pyx":192
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def _update_bandpass_lookup(unsigned char center, float sigma, float gain):             # <<<<<<<<<<<<<<
@@ -4530,9 +4813,9 @@ static PyObject *__pyx_pf_6pymoab_42printSWVersion(CYTHON_UNUSED PyObject *__pyx
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_6pymoab_45_update_bandpass_lookup(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_6pymoab_45_update_bandpass_lookup = {"_update_bandpass_lookup", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_6pymoab_45_update_bandpass_lookup, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_6pymoab_45_update_bandpass_lookup(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6pymoab_49_update_bandpass_lookup(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6pymoab_49_update_bandpass_lookup = {"_update_bandpass_lookup", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_6pymoab_49_update_bandpass_lookup, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6pymoab_49_update_bandpass_lookup(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   unsigned char __pyx_v_center;
   float __pyx_v_sigma;
   float __pyx_v_gain;
@@ -4567,17 +4850,17 @@ static PyObject *__pyx_pw_6pymoab_45_update_bandpass_lookup(PyObject *__pyx_self
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_sigma)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("_update_bandpass_lookup", 1, 3, 3, 1); __PYX_ERR(0, 186, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("_update_bandpass_lookup", 1, 3, 3, 1); __PYX_ERR(0, 192, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_gain)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("_update_bandpass_lookup", 1, 3, 3, 2); __PYX_ERR(0, 186, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("_update_bandpass_lookup", 1, 3, 3, 2); __PYX_ERR(0, 192, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "_update_bandpass_lookup") < 0)) __PYX_ERR(0, 186, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "_update_bandpass_lookup") < 0)) __PYX_ERR(0, 192, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
       goto __pyx_L5_argtuple_error;
@@ -4586,26 +4869,26 @@ static PyObject *__pyx_pw_6pymoab_45_update_bandpass_lookup(PyObject *__pyx_self
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
     }
-    __pyx_v_center = __Pyx_PyInt_As_unsigned_char(values[0]); if (unlikely((__pyx_v_center == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 186, __pyx_L3_error)
-    __pyx_v_sigma = __pyx_PyFloat_AsFloat(values[1]); if (unlikely((__pyx_v_sigma == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 186, __pyx_L3_error)
-    __pyx_v_gain = __pyx_PyFloat_AsFloat(values[2]); if (unlikely((__pyx_v_gain == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 186, __pyx_L3_error)
+    __pyx_v_center = __Pyx_PyInt_As_unsigned_char(values[0]); if (unlikely((__pyx_v_center == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 192, __pyx_L3_error)
+    __pyx_v_sigma = __pyx_PyFloat_AsFloat(values[1]); if (unlikely((__pyx_v_sigma == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 192, __pyx_L3_error)
+    __pyx_v_gain = __pyx_PyFloat_AsFloat(values[2]); if (unlikely((__pyx_v_gain == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 192, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("_update_bandpass_lookup", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 186, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("_update_bandpass_lookup", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 192, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pymoab._update_bandpass_lookup", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_6pymoab_44_update_bandpass_lookup(__pyx_self, __pyx_v_center, __pyx_v_sigma, __pyx_v_gain);
+  __pyx_r = __pyx_pf_6pymoab_48_update_bandpass_lookup(__pyx_self, __pyx_v_center, __pyx_v_sigma, __pyx_v_gain);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObject *__pyx_self, unsigned char __pyx_v_center, float __pyx_v_sigma, float __pyx_v_gain) {
+static PyObject *__pyx_pf_6pymoab_48_update_bandpass_lookup(CYTHON_UNUSED PyObject *__pyx_self, unsigned char __pyx_v_center, float __pyx_v_sigma, float __pyx_v_gain) {
   double __pyx_v_mu;
   PyObject *__pyx_v_n = NULL;
   PyObject *__pyx_v_h = NULL;
@@ -4626,7 +4909,7 @@ static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObje
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_update_bandpass_lookup", 0);
 
-  /* "moab.pyx":192
+  /* "moab.pyx":198
  *     global _last_sigma
  * 
  *     _last_center = center             # <<<<<<<<<<<<<<
@@ -4635,7 +4918,7 @@ static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObje
  */
   __pyx_v_6pymoab__last_center = __pyx_v_center;
 
-  /* "moab.pyx":193
+  /* "moab.pyx":199
  * 
  *     _last_center = center
  *     _last_sigma = sigma             # <<<<<<<<<<<<<<
@@ -4644,7 +4927,7 @@ static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObje
  */
   __pyx_v_6pymoab__last_sigma = __pyx_v_sigma;
 
-  /* "moab.pyx":194
+  /* "moab.pyx":200
  *     _last_center = center
  *     _last_sigma = sigma
  *     _last_gain = gain             # <<<<<<<<<<<<<<
@@ -4653,7 +4936,7 @@ static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObje
  */
   __pyx_v_6pymoab__last_gain = __pyx_v_gain;
 
-  /* "moab.pyx":196
+  /* "moab.pyx":202
  *     _last_gain = gain
  * 
  *     mu = 0.5             # <<<<<<<<<<<<<<
@@ -4662,7 +4945,7 @@ static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObje
  */
   __pyx_v_mu = 0.5;
 
-  /* "moab.pyx":197
+  /* "moab.pyx":203
  * 
  *     mu = 0.5
  *     for n in range(256):             # <<<<<<<<<<<<<<
@@ -4670,63 +4953,63 @@ static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObje
  * 
  */
   for (__pyx_t_1 = 0; __pyx_t_1 < 0x100; __pyx_t_1+=1) {
-    __pyx_t_2 = __Pyx_PyInt_From_long(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 197, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyInt_From_long(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 203, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_XDECREF_SET(__pyx_v_n, __pyx_t_2);
     __pyx_t_2 = 0;
 
-    /* "moab.pyx":198
+    /* "moab.pyx":204
  *     mu = 0.5
  *     for n in range(256):
  *         h = n / 255.0             # <<<<<<<<<<<<<<
  * 
  *         # rotate the hue phase so that `center` is at 0.5
  */
-    __pyx_t_2 = __Pyx_PyFloat_TrueDivideObjC(__pyx_v_n, __pyx_float_255_0, 255.0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 198, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyFloat_TrueDivideObjC(__pyx_v_n, __pyx_float_255_0, 255.0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 204, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_XDECREF_SET(__pyx_v_h, __pyx_t_2);
     __pyx_t_2 = 0;
 
-    /* "moab.pyx":201
+    /* "moab.pyx":207
  * 
  *         # rotate the hue phase so that `center` is at 0.5
  *         h = h + (0.5 - (center / 255.0))             # <<<<<<<<<<<<<<
  *         if (h > 1.0):
  *             h = h - 1.0
  */
-    __pyx_t_2 = PyFloat_FromDouble((0.5 - (((double)__pyx_v_center) / 255.0))); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 201, __pyx_L1_error)
+    __pyx_t_2 = PyFloat_FromDouble((0.5 - (((double)__pyx_v_center) / 255.0))); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 207, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_3 = PyNumber_Add(__pyx_v_h, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 201, __pyx_L1_error)
+    __pyx_t_3 = PyNumber_Add(__pyx_v_h, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 207, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF_SET(__pyx_v_h, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "moab.pyx":202
+    /* "moab.pyx":208
  *         # rotate the hue phase so that `center` is at 0.5
  *         h = h + (0.5 - (center / 255.0))
  *         if (h > 1.0):             # <<<<<<<<<<<<<<
  *             h = h - 1.0
  *         if (h < 0.0):
  */
-    __pyx_t_3 = PyObject_RichCompare(__pyx_v_h, __pyx_float_1_0, Py_GT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 202, __pyx_L1_error)
-    __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 202, __pyx_L1_error)
+    __pyx_t_3 = PyObject_RichCompare(__pyx_v_h, __pyx_float_1_0, Py_GT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 208, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 208, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     if (__pyx_t_4) {
 
-      /* "moab.pyx":203
+      /* "moab.pyx":209
  *         h = h + (0.5 - (center / 255.0))
  *         if (h > 1.0):
  *             h = h - 1.0             # <<<<<<<<<<<<<<
  *         if (h < 0.0):
  *             h = h + 1.0
  */
-      __pyx_t_3 = __Pyx_PyFloat_SubtractObjC(__pyx_v_h, __pyx_float_1_0, 1.0, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 203, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyFloat_SubtractObjC(__pyx_v_h, __pyx_float_1_0, 1.0, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 209, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF_SET(__pyx_v_h, __pyx_t_3);
       __pyx_t_3 = 0;
 
-      /* "moab.pyx":202
+      /* "moab.pyx":208
  *         # rotate the hue phase so that `center` is at 0.5
  *         h = h + (0.5 - (center / 255.0))
  *         if (h > 1.0):             # <<<<<<<<<<<<<<
@@ -4735,31 +5018,31 @@ static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObje
  */
     }
 
-    /* "moab.pyx":204
+    /* "moab.pyx":210
  *         if (h > 1.0):
  *             h = h - 1.0
  *         if (h < 0.0):             # <<<<<<<<<<<<<<
  *             h = h + 1.0
  * 
  */
-    __pyx_t_3 = PyObject_RichCompare(__pyx_v_h, __pyx_float_0_0, Py_LT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 204, __pyx_L1_error)
-    __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 204, __pyx_L1_error)
+    __pyx_t_3 = PyObject_RichCompare(__pyx_v_h, __pyx_float_0_0, Py_LT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 210, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 210, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     if (__pyx_t_4) {
 
-      /* "moab.pyx":205
+      /* "moab.pyx":211
  *             h = h - 1.0
  *         if (h < 0.0):
  *             h = h + 1.0             # <<<<<<<<<<<<<<
  * 
  *         # gaussian bandpass filter
  */
-      __pyx_t_3 = __Pyx_PyFloat_AddObjC(__pyx_v_h, __pyx_float_1_0, 1.0, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 205, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyFloat_AddObjC(__pyx_v_h, __pyx_float_1_0, 1.0, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 211, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF_SET(__pyx_v_h, __pyx_t_3);
       __pyx_t_3 = 0;
 
-      /* "moab.pyx":204
+      /* "moab.pyx":210
  *         if (h > 1.0):
  *             h = h - 1.0
  *         if (h < 0.0):             # <<<<<<<<<<<<<<
@@ -4768,33 +5051,33 @@ static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObje
  */
     }
 
-    /* "moab.pyx":208
+    /* "moab.pyx":214
  * 
  *         # gaussian bandpass filter
  *         f = math.exp(-( (h - mu)**2 / ( 2.0 * sigma**2 ) ) )             # <<<<<<<<<<<<<<
  * 
  *         # pre-gain around center
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_math); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 208, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_math); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 214, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_exp); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 208, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_exp); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 214, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = PyFloat_FromDouble(__pyx_v_mu); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 208, __pyx_L1_error)
+    __pyx_t_2 = PyFloat_FromDouble(__pyx_v_mu); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 214, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_6 = PyNumber_Subtract(__pyx_v_h, __pyx_t_2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 208, __pyx_L1_error)
+    __pyx_t_6 = PyNumber_Subtract(__pyx_v_h, __pyx_t_2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 214, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = PyNumber_Power(__pyx_t_6, __pyx_int_2, Py_None); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 208, __pyx_L1_error)
+    __pyx_t_2 = PyNumber_Power(__pyx_t_6, __pyx_int_2, Py_None); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 214, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_6 = PyFloat_FromDouble((2.0 * powf(__pyx_v_sigma, 2.0))); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 208, __pyx_L1_error)
+    __pyx_t_6 = PyFloat_FromDouble((2.0 * powf(__pyx_v_sigma, 2.0))); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 214, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_7 = __Pyx_PyNumber_Divide(__pyx_t_2, __pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 208, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyNumber_Divide(__pyx_t_2, __pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 214, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_6 = PyNumber_Negative(__pyx_t_7); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 208, __pyx_L1_error)
+    __pyx_t_6 = PyNumber_Negative(__pyx_t_7); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 214, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __pyx_t_7 = NULL;
@@ -4810,40 +5093,40 @@ static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObje
     __pyx_t_3 = (__pyx_t_7) ? __Pyx_PyObject_Call2Args(__pyx_t_5, __pyx_t_7, __pyx_t_6) : __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_6);
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 208, __pyx_L1_error)
+    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 214, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_XDECREF_SET(__pyx_v_f, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "moab.pyx":211
+    /* "moab.pyx":217
  * 
  *         # pre-gain around center
  *         f = f * gain             # <<<<<<<<<<<<<<
  *         if f > 1.0:
  *             f = 1.0
  */
-    __pyx_t_3 = PyFloat_FromDouble(__pyx_v_gain); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 211, __pyx_L1_error)
+    __pyx_t_3 = PyFloat_FromDouble(__pyx_v_gain); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 217, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_5 = PyNumber_Multiply(__pyx_v_f, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 211, __pyx_L1_error)
+    __pyx_t_5 = PyNumber_Multiply(__pyx_v_f, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 217, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF_SET(__pyx_v_f, __pyx_t_5);
     __pyx_t_5 = 0;
 
-    /* "moab.pyx":212
+    /* "moab.pyx":218
  *         # pre-gain around center
  *         f = f * gain
  *         if f > 1.0:             # <<<<<<<<<<<<<<
  *             f = 1.0
  * 
  */
-    __pyx_t_5 = PyObject_RichCompare(__pyx_v_f, __pyx_float_1_0, Py_GT); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 212, __pyx_L1_error)
-    __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 212, __pyx_L1_error)
+    __pyx_t_5 = PyObject_RichCompare(__pyx_v_f, __pyx_float_1_0, Py_GT); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 218, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 218, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     if (__pyx_t_4) {
 
-      /* "moab.pyx":213
+      /* "moab.pyx":219
  *         f = f * gain
  *         if f > 1.0:
  *             f = 1.0             # <<<<<<<<<<<<<<
@@ -4853,7 +5136,7 @@ static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObje
       __Pyx_INCREF(__pyx_float_1_0);
       __Pyx_DECREF_SET(__pyx_v_f, __pyx_float_1_0);
 
-      /* "moab.pyx":212
+      /* "moab.pyx":218
  *         # pre-gain around center
  *         f = f * gain
  *         if f > 1.0:             # <<<<<<<<<<<<<<
@@ -4862,19 +5145,19 @@ static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObje
  */
     }
 
-    /* "moab.pyx":215
+    /* "moab.pyx":221
  *             f = 1.0
  * 
  *         _bandpass_lookup[n] = f             # <<<<<<<<<<<<<<
  * 
  * 
  */
-    __pyx_t_8 = __pyx_PyFloat_AsFloat(__pyx_v_f); if (unlikely((__pyx_t_8 == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 215, __pyx_L1_error)
-    __pyx_t_9 = __Pyx_PyIndex_AsSsize_t(__pyx_v_n); if (unlikely((__pyx_t_9 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 215, __pyx_L1_error)
+    __pyx_t_8 = __pyx_PyFloat_AsFloat(__pyx_v_f); if (unlikely((__pyx_t_8 == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 221, __pyx_L1_error)
+    __pyx_t_9 = __Pyx_PyIndex_AsSsize_t(__pyx_v_n); if (unlikely((__pyx_t_9 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 221, __pyx_L1_error)
     (__pyx_v_6pymoab__bandpass_lookup[__pyx_t_9]) = __pyx_t_8;
   }
 
-  /* "moab.pyx":186
+  /* "moab.pyx":192
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def _update_bandpass_lookup(unsigned char center, float sigma, float gain):             # <<<<<<<<<<<<<<
@@ -4902,7 +5185,7 @@ static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObje
   return __pyx_r;
 }
 
-/* "moab.pyx":220
+/* "moab.pyx":226
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def hue_mask(unsigned char [:, :, :] image, unsigned char center, float sigma, float gain, float mask_gain):             # <<<<<<<<<<<<<<
@@ -4911,9 +5194,9 @@ static PyObject *__pyx_pf_6pymoab_44_update_bandpass_lookup(CYTHON_UNUSED PyObje
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_6pymoab_47hue_mask(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_6pymoab_47hue_mask = {"hue_mask", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_6pymoab_47hue_mask, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_6pymoab_47hue_mask(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6pymoab_51hue_mask(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6pymoab_51hue_mask = {"hue_mask", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_6pymoab_51hue_mask, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6pymoab_51hue_mask(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_image = { 0, 0, { 0 }, { 0 }, { 0 } };
   unsigned char __pyx_v_center;
   float __pyx_v_sigma;
@@ -4954,29 +5237,29 @@ static PyObject *__pyx_pw_6pymoab_47hue_mask(PyObject *__pyx_self, PyObject *__p
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_center)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("hue_mask", 1, 5, 5, 1); __PYX_ERR(0, 220, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("hue_mask", 1, 5, 5, 1); __PYX_ERR(0, 226, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_sigma)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("hue_mask", 1, 5, 5, 2); __PYX_ERR(0, 220, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("hue_mask", 1, 5, 5, 2); __PYX_ERR(0, 226, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_gain)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("hue_mask", 1, 5, 5, 3); __PYX_ERR(0, 220, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("hue_mask", 1, 5, 5, 3); __PYX_ERR(0, 226, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  4:
         if (likely((values[4] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_mask_gain)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("hue_mask", 1, 5, 5, 4); __PYX_ERR(0, 220, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("hue_mask", 1, 5, 5, 4); __PYX_ERR(0, 226, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "hue_mask") < 0)) __PYX_ERR(0, 220, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "hue_mask") < 0)) __PYX_ERR(0, 226, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 5) {
       goto __pyx_L5_argtuple_error;
@@ -4987,28 +5270,28 @@ static PyObject *__pyx_pw_6pymoab_47hue_mask(PyObject *__pyx_self, PyObject *__p
       values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
       values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
     }
-    __pyx_v_image = __Pyx_PyObject_to_MemoryviewSlice_dsdsds_unsigned_char(values[0], PyBUF_WRITABLE); if (unlikely(!__pyx_v_image.memview)) __PYX_ERR(0, 220, __pyx_L3_error)
-    __pyx_v_center = __Pyx_PyInt_As_unsigned_char(values[1]); if (unlikely((__pyx_v_center == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 220, __pyx_L3_error)
-    __pyx_v_sigma = __pyx_PyFloat_AsFloat(values[2]); if (unlikely((__pyx_v_sigma == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 220, __pyx_L3_error)
-    __pyx_v_gain = __pyx_PyFloat_AsFloat(values[3]); if (unlikely((__pyx_v_gain == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 220, __pyx_L3_error)
-    __pyx_v_mask_gain = __pyx_PyFloat_AsFloat(values[4]); if (unlikely((__pyx_v_mask_gain == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 220, __pyx_L3_error)
+    __pyx_v_image = __Pyx_PyObject_to_MemoryviewSlice_dsdsds_unsigned_char(values[0], PyBUF_WRITABLE); if (unlikely(!__pyx_v_image.memview)) __PYX_ERR(0, 226, __pyx_L3_error)
+    __pyx_v_center = __Pyx_PyInt_As_unsigned_char(values[1]); if (unlikely((__pyx_v_center == (unsigned char)-1) && PyErr_Occurred())) __PYX_ERR(0, 226, __pyx_L3_error)
+    __pyx_v_sigma = __pyx_PyFloat_AsFloat(values[2]); if (unlikely((__pyx_v_sigma == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 226, __pyx_L3_error)
+    __pyx_v_gain = __pyx_PyFloat_AsFloat(values[3]); if (unlikely((__pyx_v_gain == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 226, __pyx_L3_error)
+    __pyx_v_mask_gain = __pyx_PyFloat_AsFloat(values[4]); if (unlikely((__pyx_v_mask_gain == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 226, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("hue_mask", 1, 5, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 220, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("hue_mask", 1, 5, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 226, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pymoab.hue_mask", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_6pymoab_46hue_mask(__pyx_self, __pyx_v_image, __pyx_v_center, __pyx_v_sigma, __pyx_v_gain, __pyx_v_mask_gain);
+  __pyx_r = __pyx_pf_6pymoab_50hue_mask(__pyx_self, __pyx_v_image, __pyx_v_center, __pyx_v_sigma, __pyx_v_gain, __pyx_v_mask_gain);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_image, unsigned char __pyx_v_center, float __pyx_v_sigma, float __pyx_v_gain, float __pyx_v_mask_gain) {
+static PyObject *__pyx_pf_6pymoab_50hue_mask(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_image, unsigned char __pyx_v_center, float __pyx_v_sigma, float __pyx_v_gain, float __pyx_v_mask_gain) {
   int __pyx_v_x;
   int __pyx_v_y;
   int __pyx_v_width;
@@ -5044,7 +5327,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("hue_mask", 0);
 
-  /* "moab.pyx":229
+  /* "moab.pyx":235
  * 
  *     # grab the image dimensions
  *     height = image.shape[0]             # <<<<<<<<<<<<<<
@@ -5053,7 +5336,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
  */
   __pyx_v_height = (__pyx_v_image.shape[0]);
 
-  /* "moab.pyx":230
+  /* "moab.pyx":236
  *     # grab the image dimensions
  *     height = image.shape[0]
  *     width = image.shape[1]             # <<<<<<<<<<<<<<
@@ -5062,7 +5345,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
  */
   __pyx_v_width = (__pyx_v_image.shape[1]);
 
-  /* "moab.pyx":233
+  /* "moab.pyx":239
  * 
  *     # generate a lookup table for center, sigma & gain
  *     if (center != _last_center or sigma != _last_sigma or gain != _last_gain):             # <<<<<<<<<<<<<<
@@ -5086,20 +5369,20 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "moab.pyx":234
+    /* "moab.pyx":240
  *     # generate a lookup table for center, sigma & gain
  *     if (center != _last_center or sigma != _last_sigma or gain != _last_gain):
  *         _update_bandpass_lookup(center, sigma, gain)             # <<<<<<<<<<<<<<
  * 
  *     for y in range(0, height):
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_update_bandpass_lookup); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 234, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_update_bandpass_lookup); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 240, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = __Pyx_PyInt_From_unsigned_char(__pyx_v_center); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 234, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyInt_From_unsigned_char(__pyx_v_center); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 240, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_6 = PyFloat_FromDouble(__pyx_v_sigma); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 234, __pyx_L1_error)
+    __pyx_t_6 = PyFloat_FromDouble(__pyx_v_sigma); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 240, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_7 = PyFloat_FromDouble(__pyx_v_gain); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 234, __pyx_L1_error)
+    __pyx_t_7 = PyFloat_FromDouble(__pyx_v_gain); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 240, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __pyx_t_8 = NULL;
     __pyx_t_9 = 0;
@@ -5116,7 +5399,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_4)) {
       PyObject *__pyx_temp[4] = {__pyx_t_8, __pyx_t_5, __pyx_t_6, __pyx_t_7};
-      __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_9, 3+__pyx_t_9); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 234, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_9, 3+__pyx_t_9); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 240, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -5127,7 +5410,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
       PyObject *__pyx_temp[4] = {__pyx_t_8, __pyx_t_5, __pyx_t_6, __pyx_t_7};
-      __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_9, 3+__pyx_t_9); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 234, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_9, 3+__pyx_t_9); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 240, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -5136,7 +5419,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
     } else
     #endif
     {
-      __pyx_t_10 = PyTuple_New(3+__pyx_t_9); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 234, __pyx_L1_error)
+      __pyx_t_10 = PyTuple_New(3+__pyx_t_9); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 240, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
       if (__pyx_t_8) {
         __Pyx_GIVEREF(__pyx_t_8); PyTuple_SET_ITEM(__pyx_t_10, 0, __pyx_t_8); __pyx_t_8 = NULL;
@@ -5150,14 +5433,14 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
       __pyx_t_5 = 0;
       __pyx_t_6 = 0;
       __pyx_t_7 = 0;
-      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_10, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 234, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_10, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 240, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
     }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "moab.pyx":233
+    /* "moab.pyx":239
  * 
  *     # generate a lookup table for center, sigma & gain
  *     if (center != _last_center or sigma != _last_sigma or gain != _last_gain):             # <<<<<<<<<<<<<<
@@ -5166,7 +5449,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
  */
   }
 
-  /* "moab.pyx":236
+  /* "moab.pyx":242
  *         _update_bandpass_lookup(center, sigma, gain)
  * 
  *     for y in range(0, height):             # <<<<<<<<<<<<<<
@@ -5178,7 +5461,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
   for (__pyx_t_12 = 0; __pyx_t_12 < __pyx_t_11; __pyx_t_12+=1) {
     __pyx_v_y = __pyx_t_12;
 
-    /* "moab.pyx":237
+    /* "moab.pyx":243
  * 
  *     for y in range(0, height):
  *         for x in range(0, width):             # <<<<<<<<<<<<<<
@@ -5190,7 +5473,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
     for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_14; __pyx_t_15+=1) {
       __pyx_v_x = __pyx_t_15;
 
-      /* "moab.pyx":239
+      /* "moab.pyx":245
  *         for x in range(0, width):
  *             # pull each component out as a float [0..1]
  *             ih = image[y, x, 0]             # <<<<<<<<<<<<<<
@@ -5202,7 +5485,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
       __pyx_t_18 = 0;
       __pyx_v_ih = (*((unsigned char *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_image.data + __pyx_t_16 * __pyx_v_image.strides[0]) ) + __pyx_t_17 * __pyx_v_image.strides[1]) ) + __pyx_t_18 * __pyx_v_image.strides[2]) )));
 
-      /* "moab.pyx":240
+      /* "moab.pyx":246
  *             # pull each component out as a float [0..1]
  *             ih = image[y, x, 0]
  *             s = image[y, x, 1] / 255.0             # <<<<<<<<<<<<<<
@@ -5214,7 +5497,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
       __pyx_t_16 = 1;
       __pyx_v_s = (((double)(*((unsigned char *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_image.data + __pyx_t_18 * __pyx_v_image.strides[0]) ) + __pyx_t_17 * __pyx_v_image.strides[1]) ) + __pyx_t_16 * __pyx_v_image.strides[2]) )))) / 255.0);
 
-      /* "moab.pyx":241
+      /* "moab.pyx":247
  *             ih = image[y, x, 0]
  *             s = image[y, x, 1] / 255.0
  *             v = image[y, x, 2] / 255.0             # <<<<<<<<<<<<<<
@@ -5226,7 +5509,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
       __pyx_t_18 = 2;
       __pyx_v_v = (((double)(*((unsigned char *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_image.data + __pyx_t_16 * __pyx_v_image.strides[0]) ) + __pyx_t_17 * __pyx_v_image.strides[1]) ) + __pyx_t_18 * __pyx_v_image.strides[2]) )))) / 255.0);
 
-      /* "moab.pyx":245
+      /* "moab.pyx":251
  *             # map from [0..255] -> [0..1] through lookup table
  *             # this applies the bandpass filter on hue
  *             h = _bandpass_lookup[ih]             # <<<<<<<<<<<<<<
@@ -5235,7 +5518,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
  */
       __pyx_v_h = (__pyx_v_6pymoab__bandpass_lookup[__pyx_v_ih]);
 
-      /* "moab.pyx":248
+      /* "moab.pyx":254
  * 
  *             # mask the hue with sat, val and apply another gain filter
  *             f = (h * s * v) * mask_gain             # <<<<<<<<<<<<<<
@@ -5244,7 +5527,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
  */
       __pyx_v_f = (((__pyx_v_h * __pyx_v_s) * __pyx_v_v) * __pyx_v_mask_gain);
 
-      /* "moab.pyx":249
+      /* "moab.pyx":255
  *             # mask the hue with sat, val and apply another gain filter
  *             f = (h * s * v) * mask_gain
  *             if f > 1.0:             # <<<<<<<<<<<<<<
@@ -5254,7 +5537,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
       __pyx_t_1 = ((__pyx_v_f > 1.0) != 0);
       if (__pyx_t_1) {
 
-        /* "moab.pyx":250
+        /* "moab.pyx":256
  *             f = (h * s * v) * mask_gain
  *             if f > 1.0:
  *                 f = 1.0             # <<<<<<<<<<<<<<
@@ -5263,7 +5546,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
  */
         __pyx_v_f = 1.0;
 
-        /* "moab.pyx":249
+        /* "moab.pyx":255
  *             # mask the hue with sat, val and apply another gain filter
  *             f = (h * s * v) * mask_gain
  *             if f > 1.0:             # <<<<<<<<<<<<<<
@@ -5272,7 +5555,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
  */
       }
 
-      /* "moab.pyx":253
+      /* "moab.pyx":259
  * 
  *             # covert back to char space
  *             mask = <unsigned char>(f * 255)             # <<<<<<<<<<<<<<
@@ -5281,7 +5564,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
  */
       __pyx_v_mask = ((unsigned char)(__pyx_v_f * 255.0));
 
-      /* "moab.pyx":254
+      /* "moab.pyx":260
  *             # covert back to char space
  *             mask = <unsigned char>(f * 255)
  *             image[y, x, 0] = mask             # <<<<<<<<<<<<<<
@@ -5293,7 +5576,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
       __pyx_t_16 = 0;
       *((unsigned char *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_image.data + __pyx_t_18 * __pyx_v_image.strides[0]) ) + __pyx_t_17 * __pyx_v_image.strides[1]) ) + __pyx_t_16 * __pyx_v_image.strides[2]) )) = __pyx_v_mask;
 
-      /* "moab.pyx":255
+      /* "moab.pyx":261
  *             mask = <unsigned char>(f * 255)
  *             image[y, x, 0] = mask
  *             image[y, x, 1] = mask             # <<<<<<<<<<<<<<
@@ -5305,7 +5588,7 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
       __pyx_t_18 = 1;
       *((unsigned char *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_image.data + __pyx_t_16 * __pyx_v_image.strides[0]) ) + __pyx_t_17 * __pyx_v_image.strides[1]) ) + __pyx_t_18 * __pyx_v_image.strides[2]) )) = __pyx_v_mask;
 
-      /* "moab.pyx":256
+      /* "moab.pyx":262
  *             image[y, x, 0] = mask
  *             image[y, x, 1] = mask
  *             image[y, x, 2] = mask             # <<<<<<<<<<<<<<
@@ -5319,19 +5602,19 @@ static PyObject *__pyx_pf_6pymoab_46hue_mask(CYTHON_UNUSED PyObject *__pyx_self,
     }
   }
 
-  /* "moab.pyx":259
+  /* "moab.pyx":265
  * 
  *     # return the thresholded image
  *     return image             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_3 = __pyx_memoryview_fromslice(__pyx_v_image, 3, (PyObject *(*)(char *)) __pyx_memview_get_unsigned_char, (int (*)(char *, PyObject *)) __pyx_memview_set_unsigned_char, 0);; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 259, __pyx_L1_error)
+  __pyx_t_3 = __pyx_memoryview_fromslice(__pyx_v_image, 3, (PyObject *(*)(char *)) __pyx_memview_get_unsigned_char, (int (*)(char *, PyObject *)) __pyx_memview_set_unsigned_char, 0);; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 265, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_r = __pyx_t_3;
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "moab.pyx":220
+  /* "moab.pyx":226
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def hue_mask(unsigned char [:, :, :] image, unsigned char center, float sigma, float gain, float mask_gain):             # <<<<<<<<<<<<<<
@@ -19202,6 +19485,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_allocate_buffer, __pyx_k_allocate_buffer, sizeof(__pyx_k_allocate_buffer), 0, 0, 1, 1},
   {&__pyx_n_s_b, __pyx_k_b, sizeof(__pyx_k_b), 0, 0, 1, 1},
   {&__pyx_n_s_base, __pyx_k_base, sizeof(__pyx_k_base), 0, 0, 1, 1},
+  {&__pyx_n_s_bug, __pyx_k_bug, sizeof(__pyx_k_bug), 0, 0, 1, 1},
   {&__pyx_n_s_c, __pyx_k_c, sizeof(__pyx_k_c), 0, 0, 1, 1},
   {&__pyx_n_u_c, __pyx_k_c, sizeof(__pyx_k_c), 0, 1, 0, 1},
   {&__pyx_n_s_center, __pyx_k_center, sizeof(__pyx_k_center), 0, 0, 1, 1},
@@ -19257,11 +19541,13 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_local_ip, __pyx_k_local_ip, sizeof(__pyx_k_local_ip), 0, 0, 1, 1},
   {&__pyx_n_s_lowerPlate, __pyx_k_lowerPlate, sizeof(__pyx_k_lowerPlate), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
+  {&__pyx_n_s_major, __pyx_k_major, sizeof(__pyx_k_major), 0, 0, 1, 1},
   {&__pyx_n_s_mask, __pyx_k_mask, sizeof(__pyx_k_mask), 0, 0, 1, 1},
   {&__pyx_n_s_mask_gain, __pyx_k_mask_gain, sizeof(__pyx_k_mask_gain), 0, 0, 1, 1},
   {&__pyx_n_s_math, __pyx_k_math, sizeof(__pyx_k_math), 0, 0, 1, 1},
   {&__pyx_n_s_memview, __pyx_k_memview, sizeof(__pyx_k_memview), 0, 0, 1, 1},
   {&__pyx_n_s_metaclass, __pyx_k_metaclass, sizeof(__pyx_k_metaclass), 0, 0, 1, 1},
+  {&__pyx_n_s_minor, __pyx_k_minor, sizeof(__pyx_k_minor), 0, 0, 1, 1},
   {&__pyx_kp_s_moab_pyx, __pyx_k_moab_pyx, sizeof(__pyx_k_moab_pyx), 0, 0, 1, 0},
   {&__pyx_n_s_mode, __pyx_k_mode, sizeof(__pyx_k_mode), 0, 0, 1, 1},
   {&__pyx_n_s_module, __pyx_k_module, sizeof(__pyx_k_module), 0, 0, 1, 1},
@@ -19312,6 +19598,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_setstate, __pyx_k_setstate, sizeof(__pyx_k_setstate), 0, 0, 1, 1},
   {&__pyx_n_s_setstate_cython, __pyx_k_setstate_cython, sizeof(__pyx_k_setstate_cython), 0, 0, 1, 1},
   {&__pyx_n_s_shape, __pyx_k_shape, sizeof(__pyx_k_shape), 0, 0, 1, 1},
+  {&__pyx_n_s_showIP, __pyx_k_showIP, sizeof(__pyx_k_showIP), 0, 0, 1, 1},
+  {&__pyx_n_s_showVersion, __pyx_k_showVersion, sizeof(__pyx_k_showVersion), 0, 0, 1, 1},
   {&__pyx_n_s_sigma, __pyx_k_sigma, sizeof(__pyx_k_sigma), 0, 0, 1, 1},
   {&__pyx_n_s_size, __pyx_k_size, sizeof(__pyx_k_size), 0, 0, 1, 1},
   {&__pyx_n_s_socket, __pyx_k_socket, sizeof(__pyx_k_socket), 0, 0, 1, 1},
@@ -19344,7 +19632,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 197, __pyx_L1_error)
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 203, __pyx_L1_error)
   __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(1, 133, __pyx_L1_error)
   __pyx_builtin_MemoryError = __Pyx_GetBuiltinName(__pyx_n_s_MemoryError); if (!__pyx_builtin_MemoryError) __PYX_ERR(1, 148, __pyx_L1_error)
   __pyx_builtin_enumerate = __Pyx_GetBuiltinName(__pyx_n_s_enumerate); if (!__pyx_builtin_enumerate) __PYX_ERR(1, 151, __pyx_L1_error)
@@ -19372,14 +19660,14 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
 
-  /* "moab.pyx":174
+  /* "moab.pyx":180
  * 
  * def printSWVersion():
  *     version = os.environ.get("MOABIAN", "1.0.0")             # <<<<<<<<<<<<<<
  *     version = [int(b) for b in version.split(".")]
  *     sw_major, sw_minor, sw_bug = version
  */
-  __pyx_tuple__3 = PyTuple_Pack(2, __pyx_n_u_MOABIAN, __pyx_kp_u_1_0_0); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 174, __pyx_L1_error)
+  __pyx_tuple__3 = PyTuple_Pack(2, __pyx_n_u_MOABIAN, __pyx_kp_u_1_0_0); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 180, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__3);
   __Pyx_GIVEREF(__pyx_tuple__3);
 
@@ -19794,38 +20082,62 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   /* "moab.pyx":173
  *     send_ip_address(ip1, ip2, ip3, ip4)
  * 
+ * def showIP(ip1, ip2, ip3, ip4):             # <<<<<<<<<<<<<<
+ *     send_ip_address(ip1, ip2, ip3, ip4)
+ * 
+ */
+  __pyx_tuple__52 = PyTuple_Pack(4, __pyx_n_s_ip1, __pyx_n_s_ip2, __pyx_n_s_ip3, __pyx_n_s_ip4); if (unlikely(!__pyx_tuple__52)) __PYX_ERR(0, 173, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__52);
+  __Pyx_GIVEREF(__pyx_tuple__52);
+  __pyx_codeobj__53 = (PyObject*)__Pyx_PyCode_New(4, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__52, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_moab_pyx, __pyx_n_s_showIP, 173, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__53)) __PYX_ERR(0, 173, __pyx_L1_error)
+
+  /* "moab.pyx":176
+ *     send_ip_address(ip1, ip2, ip3, ip4)
+ * 
+ * def showVersion(major, minor, bug):             # <<<<<<<<<<<<<<
+ *     send_sw_version(major, minor, bug)
+ * 
+ */
+  __pyx_tuple__54 = PyTuple_Pack(3, __pyx_n_s_major, __pyx_n_s_minor, __pyx_n_s_bug); if (unlikely(!__pyx_tuple__54)) __PYX_ERR(0, 176, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__54);
+  __Pyx_GIVEREF(__pyx_tuple__54);
+  __pyx_codeobj__55 = (PyObject*)__Pyx_PyCode_New(3, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__54, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_moab_pyx, __pyx_n_s_showVersion, 176, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__55)) __PYX_ERR(0, 176, __pyx_L1_error)
+
+  /* "moab.pyx":179
+ *     send_sw_version(major, minor, bug)
+ * 
  * def printSWVersion():             # <<<<<<<<<<<<<<
  *     version = os.environ.get("MOABIAN", "1.0.0")
  *     version = [int(b) for b in version.split(".")]
  */
-  __pyx_tuple__52 = PyTuple_Pack(5, __pyx_n_s_version, __pyx_n_s_sw_major, __pyx_n_s_sw_minor, __pyx_n_s_sw_bug, __pyx_n_s_b); if (unlikely(!__pyx_tuple__52)) __PYX_ERR(0, 173, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__52);
-  __Pyx_GIVEREF(__pyx_tuple__52);
-  __pyx_codeobj__53 = (PyObject*)__Pyx_PyCode_New(0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__52, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_moab_pyx, __pyx_n_s_printSWVersion, 173, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__53)) __PYX_ERR(0, 173, __pyx_L1_error)
+  __pyx_tuple__56 = PyTuple_Pack(5, __pyx_n_s_version, __pyx_n_s_sw_major, __pyx_n_s_sw_minor, __pyx_n_s_sw_bug, __pyx_n_s_b); if (unlikely(!__pyx_tuple__56)) __PYX_ERR(0, 179, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__56);
+  __Pyx_GIVEREF(__pyx_tuple__56);
+  __pyx_codeobj__57 = (PyObject*)__Pyx_PyCode_New(0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__56, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_moab_pyx, __pyx_n_s_printSWVersion, 179, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__57)) __PYX_ERR(0, 179, __pyx_L1_error)
 
-  /* "moab.pyx":186
+  /* "moab.pyx":192
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def _update_bandpass_lookup(unsigned char center, float sigma, float gain):             # <<<<<<<<<<<<<<
  *     global _bandpass_lookup
  *     global _last_center
  */
-  __pyx_tuple__54 = PyTuple_Pack(7, __pyx_n_s_center, __pyx_n_s_sigma, __pyx_n_s_gain, __pyx_n_s_mu, __pyx_n_s_n, __pyx_n_s_h, __pyx_n_s_f); if (unlikely(!__pyx_tuple__54)) __PYX_ERR(0, 186, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__54);
-  __Pyx_GIVEREF(__pyx_tuple__54);
-  __pyx_codeobj__55 = (PyObject*)__Pyx_PyCode_New(3, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__54, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_moab_pyx, __pyx_n_s_update_bandpass_lookup, 186, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__55)) __PYX_ERR(0, 186, __pyx_L1_error)
+  __pyx_tuple__58 = PyTuple_Pack(7, __pyx_n_s_center, __pyx_n_s_sigma, __pyx_n_s_gain, __pyx_n_s_mu, __pyx_n_s_n, __pyx_n_s_h, __pyx_n_s_f); if (unlikely(!__pyx_tuple__58)) __PYX_ERR(0, 192, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__58);
+  __Pyx_GIVEREF(__pyx_tuple__58);
+  __pyx_codeobj__59 = (PyObject*)__Pyx_PyCode_New(3, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__58, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_moab_pyx, __pyx_n_s_update_bandpass_lookup, 192, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__59)) __PYX_ERR(0, 192, __pyx_L1_error)
 
-  /* "moab.pyx":220
+  /* "moab.pyx":226
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def hue_mask(unsigned char [:, :, :] image, unsigned char center, float sigma, float gain, float mask_gain):             # <<<<<<<<<<<<<<
  *     global _bandpass_lookup
  * 
  */
-  __pyx_tuple__56 = PyTuple_Pack(17, __pyx_n_s_image, __pyx_n_s_center, __pyx_n_s_sigma, __pyx_n_s_gain, __pyx_n_s_mask_gain, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_n, __pyx_n_s_width, __pyx_n_s_height, __pyx_n_s_h, __pyx_n_s_s, __pyx_n_s_v, __pyx_n_s_mu, __pyx_n_s_f, __pyx_n_s_mask, __pyx_n_s_ih); if (unlikely(!__pyx_tuple__56)) __PYX_ERR(0, 220, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__56);
-  __Pyx_GIVEREF(__pyx_tuple__56);
-  __pyx_codeobj__57 = (PyObject*)__Pyx_PyCode_New(5, 0, 17, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__56, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_moab_pyx, __pyx_n_s_hue_mask, 220, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__57)) __PYX_ERR(0, 220, __pyx_L1_error)
+  __pyx_tuple__60 = PyTuple_Pack(17, __pyx_n_s_image, __pyx_n_s_center, __pyx_n_s_sigma, __pyx_n_s_gain, __pyx_n_s_mask_gain, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_n, __pyx_n_s_width, __pyx_n_s_height, __pyx_n_s_h, __pyx_n_s_s, __pyx_n_s_v, __pyx_n_s_mu, __pyx_n_s_f, __pyx_n_s_mask, __pyx_n_s_ih); if (unlikely(!__pyx_tuple__60)) __PYX_ERR(0, 226, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__60);
+  __Pyx_GIVEREF(__pyx_tuple__60);
+  __pyx_codeobj__61 = (PyObject*)__Pyx_PyCode_New(5, 0, 17, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__60, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_moab_pyx, __pyx_n_s_hue_mask, 226, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__61)) __PYX_ERR(0, 226, __pyx_L1_error)
 
   /* "View.MemoryView":286
  *         return self.name
@@ -19834,9 +20146,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  * cdef strided = Enum("<strided and direct>") # default
  * cdef indirect = Enum("<strided and indirect>")
  */
-  __pyx_tuple__58 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct_or_indirect); if (unlikely(!__pyx_tuple__58)) __PYX_ERR(1, 286, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__58);
-  __Pyx_GIVEREF(__pyx_tuple__58);
+  __pyx_tuple__62 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct_or_indirect); if (unlikely(!__pyx_tuple__62)) __PYX_ERR(1, 286, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__62);
+  __Pyx_GIVEREF(__pyx_tuple__62);
 
   /* "View.MemoryView":287
  * 
@@ -19845,9 +20157,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  * cdef indirect = Enum("<strided and indirect>")
  * 
  */
-  __pyx_tuple__59 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct); if (unlikely(!__pyx_tuple__59)) __PYX_ERR(1, 287, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__59);
-  __Pyx_GIVEREF(__pyx_tuple__59);
+  __pyx_tuple__63 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct); if (unlikely(!__pyx_tuple__63)) __PYX_ERR(1, 287, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__63);
+  __Pyx_GIVEREF(__pyx_tuple__63);
 
   /* "View.MemoryView":288
  * cdef generic = Enum("<strided and direct or indirect>")
@@ -19856,9 +20168,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_tuple__60 = PyTuple_Pack(1, __pyx_kp_s_strided_and_indirect); if (unlikely(!__pyx_tuple__60)) __PYX_ERR(1, 288, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__60);
-  __Pyx_GIVEREF(__pyx_tuple__60);
+  __pyx_tuple__64 = PyTuple_Pack(1, __pyx_kp_s_strided_and_indirect); if (unlikely(!__pyx_tuple__64)) __PYX_ERR(1, 288, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__64);
+  __Pyx_GIVEREF(__pyx_tuple__64);
 
   /* "View.MemoryView":291
  * 
@@ -19867,9 +20179,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  * cdef indirect_contiguous = Enum("<contiguous and indirect>")
  * 
  */
-  __pyx_tuple__61 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_direct); if (unlikely(!__pyx_tuple__61)) __PYX_ERR(1, 291, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__61);
-  __Pyx_GIVEREF(__pyx_tuple__61);
+  __pyx_tuple__65 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_direct); if (unlikely(!__pyx_tuple__65)) __PYX_ERR(1, 291, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__65);
+  __Pyx_GIVEREF(__pyx_tuple__65);
 
   /* "View.MemoryView":292
  * 
@@ -19878,19 +20190,19 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_tuple__62 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_indirect); if (unlikely(!__pyx_tuple__62)) __PYX_ERR(1, 292, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__62);
-  __Pyx_GIVEREF(__pyx_tuple__62);
+  __pyx_tuple__66 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_indirect); if (unlikely(!__pyx_tuple__66)) __PYX_ERR(1, 292, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__66);
+  __Pyx_GIVEREF(__pyx_tuple__66);
 
   /* "(tree fragment)":1
  * def __pyx_unpickle_Enum(__pyx_type, long __pyx_checksum, __pyx_state):             # <<<<<<<<<<<<<<
  *     cdef object __pyx_PickleError
  *     cdef object __pyx_result
  */
-  __pyx_tuple__63 = PyTuple_Pack(5, __pyx_n_s_pyx_type, __pyx_n_s_pyx_checksum, __pyx_n_s_pyx_state, __pyx_n_s_pyx_PickleError, __pyx_n_s_pyx_result); if (unlikely(!__pyx_tuple__63)) __PYX_ERR(1, 1, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__63);
-  __Pyx_GIVEREF(__pyx_tuple__63);
-  __pyx_codeobj__64 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__63, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_stringsource, __pyx_n_s_pyx_unpickle_Enum, 1, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__64)) __PYX_ERR(1, 1, __pyx_L1_error)
+  __pyx_tuple__67 = PyTuple_Pack(5, __pyx_n_s_pyx_type, __pyx_n_s_pyx_checksum, __pyx_n_s_pyx_state, __pyx_n_s_pyx_PickleError, __pyx_n_s_pyx_result); if (unlikely(!__pyx_tuple__67)) __PYX_ERR(1, 1, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__67);
+  __Pyx_GIVEREF(__pyx_tuple__67);
+  __pyx_codeobj__68 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__67, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_stringsource, __pyx_n_s_pyx_unpickle_Enum, 1, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__68)) __PYX_ERR(1, 1, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -20956,16 +21268,40 @@ if (!__Pyx_RefNanny) {
   /* "moab.pyx":173
  *     send_ip_address(ip1, ip2, ip3, ip4)
  * 
+ * def showIP(ip1, ip2, ip3, ip4):             # <<<<<<<<<<<<<<
+ *     send_ip_address(ip1, ip2, ip3, ip4)
+ * 
+ */
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_6pymoab_43showIP, NULL, __pyx_n_s_pymoab); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 173, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_showIP, __pyx_t_2) < 0) __PYX_ERR(0, 173, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+  /* "moab.pyx":176
+ *     send_ip_address(ip1, ip2, ip3, ip4)
+ * 
+ * def showVersion(major, minor, bug):             # <<<<<<<<<<<<<<
+ *     send_sw_version(major, minor, bug)
+ * 
+ */
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_6pymoab_45showVersion, NULL, __pyx_n_s_pymoab); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 176, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_showVersion, __pyx_t_2) < 0) __PYX_ERR(0, 176, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+  /* "moab.pyx":179
+ *     send_sw_version(major, minor, bug)
+ * 
  * def printSWVersion():             # <<<<<<<<<<<<<<
  *     version = os.environ.get("MOABIAN", "1.0.0")
  *     version = [int(b) for b in version.split(".")]
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_6pymoab_43printSWVersion, NULL, __pyx_n_s_pymoab); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 173, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_6pymoab_47printSWVersion, NULL, __pyx_n_s_pymoab); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 179, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_printSWVersion, __pyx_t_2) < 0) __PYX_ERR(0, 173, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_printSWVersion, __pyx_t_2) < 0) __PYX_ERR(0, 179, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "moab.pyx":180
+  /* "moab.pyx":186
  * 
  * cdef float _bandpass_lookup[256]
  * cdef float _last_sigma = 0.0             # <<<<<<<<<<<<<<
@@ -20974,7 +21310,7 @@ if (!__Pyx_RefNanny) {
  */
   __pyx_v_6pymoab__last_sigma = 0.0;
 
-  /* "moab.pyx":181
+  /* "moab.pyx":187
  * cdef float _bandpass_lookup[256]
  * cdef float _last_sigma = 0.0
  * cdef float _last_gain = 0.0             # <<<<<<<<<<<<<<
@@ -20983,7 +21319,7 @@ if (!__Pyx_RefNanny) {
  */
   __pyx_v_6pymoab__last_gain = 0.0;
 
-  /* "moab.pyx":182
+  /* "moab.pyx":188
  * cdef float _last_sigma = 0.0
  * cdef float _last_gain = 0.0
  * cdef unsigned char _last_center = 0             # <<<<<<<<<<<<<<
@@ -20992,28 +21328,28 @@ if (!__Pyx_RefNanny) {
  */
   __pyx_v_6pymoab__last_center = 0;
 
-  /* "moab.pyx":186
+  /* "moab.pyx":192
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def _update_bandpass_lookup(unsigned char center, float sigma, float gain):             # <<<<<<<<<<<<<<
  *     global _bandpass_lookup
  *     global _last_center
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_6pymoab_45_update_bandpass_lookup, NULL, __pyx_n_s_pymoab); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 186, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_6pymoab_49_update_bandpass_lookup, NULL, __pyx_n_s_pymoab); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 192, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_update_bandpass_lookup, __pyx_t_2) < 0) __PYX_ERR(0, 186, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_update_bandpass_lookup, __pyx_t_2) < 0) __PYX_ERR(0, 192, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "moab.pyx":220
+  /* "moab.pyx":226
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def hue_mask(unsigned char [:, :, :] image, unsigned char center, float sigma, float gain, float mask_gain):             # <<<<<<<<<<<<<<
  *     global _bandpass_lookup
  * 
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_6pymoab_47hue_mask, NULL, __pyx_n_s_pymoab); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 220, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_6pymoab_51hue_mask, NULL, __pyx_n_s_pymoab); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 226, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_hue_mask, __pyx_t_2) < 0) __PYX_ERR(0, 220, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_hue_mask, __pyx_t_2) < 0) __PYX_ERR(0, 226, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "moab.pyx":1
@@ -21046,7 +21382,7 @@ if (!__Pyx_RefNanny) {
  * cdef strided = Enum("<strided and direct>") # default
  * cdef indirect = Enum("<strided and indirect>")
  */
-  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__58, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(1, 286, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__62, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(1, 286, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_XGOTREF(generic);
   __Pyx_DECREF_SET(generic, __pyx_t_2);
@@ -21060,7 +21396,7 @@ if (!__Pyx_RefNanny) {
  * cdef indirect = Enum("<strided and indirect>")
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__59, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(1, 287, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__63, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(1, 287, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_XGOTREF(strided);
   __Pyx_DECREF_SET(strided, __pyx_t_2);
@@ -21074,7 +21410,7 @@ if (!__Pyx_RefNanny) {
  * 
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__60, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(1, 288, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__64, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(1, 288, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_XGOTREF(indirect);
   __Pyx_DECREF_SET(indirect, __pyx_t_2);
@@ -21088,7 +21424,7 @@ if (!__Pyx_RefNanny) {
  * cdef indirect_contiguous = Enum("<contiguous and indirect>")
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__61, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(1, 291, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__65, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(1, 291, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_XGOTREF(contiguous);
   __Pyx_DECREF_SET(contiguous, __pyx_t_2);
@@ -21102,7 +21438,7 @@ if (!__Pyx_RefNanny) {
  * 
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__62, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(1, 292, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__66, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(1, 292, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_XGOTREF(indirect_contiguous);
   __Pyx_DECREF_SET(indirect_contiguous, __pyx_t_2);
