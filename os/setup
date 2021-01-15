@@ -78,12 +78,6 @@ function layer-classic-moabian
     systemctl disable apt-daily-upgrade
     systemctl disable man-db
 
-    ## Pre-compiled moab C library install for certain os/files/bin utilities
-    install -pvm 644 files/lib/* /usr/local/lib
-    ldconfig -v -n /usr/local/lib
-    ln -fs /usr/local/lib/libmoab.so.2 /usr/local/lib/libmoab.so
-    ldconfig
-
     ## Set a proper default bash prompt for all users
     ## and install a Moab specific message-of-the-day "splash" screen
     install -pvm 644 files/profile.d/* /etc/profile.d
@@ -114,20 +108,10 @@ function layer-classic-moabian
     ## /home/pi/moab
     chown -R pi:pi /home/pi/moab
 
-    ## Remove files possibly left over from v2.1
+    ## Remove files left over from v2.1
     rm -f /usr/local/bin/{testmoab,ufetch,motd}
-}
-
-
-function blah
-{
-    sudo -u pi -s <<'EOF'
-        dest="$HOME/.vim/pack/moabian/start"
-        rm -rf $dest
-        mkdir -p "$dest"
-        git clone https://github.com/lifepillar/vim-solarized8 "$dest/solarized8"
-        git clone https://github.com/scotstan/vim-polyglot "$dest/polyglot"
-EOF
+    ## Remove files from v2.4
+    rm -f /usr/local/lib/libmoab*
 }
 
 

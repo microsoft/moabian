@@ -18,14 +18,3 @@ services:
     container_name: custom2
     stop_grace_period: 0s
     ports: [ 5002:5000 ]
-  moab-control:
-    image: moab/control:latest
-    container_name: control
-    privileged: true
-    network_mode: host
-    working_dir: /app
-    stop_grace_period: 1s
-    volumes: [ "${PWD}/config:/app/config" ]
-    command: python3 main.py -t 5
-    environment:
-      MOABIAN: $MOABIAN
