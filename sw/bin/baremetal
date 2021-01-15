@@ -21,17 +21,39 @@ function info {
     fi
 }
 
-info "Installing apt-get packages" 
-sudo ./packages
+info "Installing apt-get packages (root)" 
 
-info "Installing SPI/GPIO library" 
-sudo ./bcm2835
+# numpy https://www.piwheels.org/project/numpy/
+numpy=(
+    libatlas3-base
+    libgfortran5
+)
+echo "• installing: numpy"
+apt-get install -qq --no-install-recommends ${numpy[*]}
 
-info "Installing Python3 packages" 
-pip3 install -r ../requirements.txt
-sudo pip3 install -r ../requirements.txt
+# OpenCV https://www.piwheels.org/project/opencv-contrib-python-headless/
+# https://www.pyimagesearch.com/2019/09/16/install-opencv-4-on-raspberry-pi-4-and-raspbian-buster/
+opencv=(
+    libatk1.0-0
+    libavcodec58
+    libavformat58
+    libavutil56
+    libcairo2
+    libcairo-gobject2
+    libhdf5-dev
+    libgdk-pixbuf2.0-0
+    libgtk-3-0
+    libilmbase23
+    libjasper1
+    libopenexr23
+    libpango-1.0-0
+    libpangocairo-1.0-0
+    libswscale5
+    # libtiff5
+    # libwebp6
+)
+echo "• installing: opencv"
+apt-get install -qq --no-install-recommends ${opencv[*]}
 
-info "Installing libmoab and pymoab wrapper" 
-sudo ./pymoab
-
-info 'Finished. Run: "sudo moab/sw/bin/start" next'
+info "Installing Python3 packages (pi)" 
+sudo -u pi python3 -m pip install -r ../requirements.txt --user
