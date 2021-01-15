@@ -117,9 +117,9 @@ class Text(IntEnum):
     UPDATE_SYSTEM = 17
 
 
-class ButtonBitIndex(IntEnum):
-    MENU = 0
-    JOYSTICK = 1
+class Button(IntEnum):
+    MENU = 1
+    JOYSTICK = 2
 
 
 class JoystickByteIndex(IntEnum):
@@ -152,30 +152,25 @@ spi = spidev.SpiDev()
 
 
 # Helper functions -------------------------------------------------------------
-def _uint8_to_int8(bytes):
+def _byte_to_bits(byte):
     return bin(byte)[2:].rjust(8, "0")
 
 
-def _byte_to_int8(b):
+def _uint8_to_int8(b):
     """
     Converts a byte to a signed int (int8) instead of unsigned int (uint8).
     """
     return b if b < 128 else (-256 + b)
 
 
-def _x_offset(x):  # x was int8
-    # brackets were cast to int8
-    return (
-        x
-        + _servo1_offset
-        + (X_TILT_SERVO1 * _servo2_offset)
-        + (X_TILT_SERVO1 * _servo3_offset)
-    )
-
-
-def _y_offset(y):  # y was int8
-    # brackets were cast to int
-    return y + (Y_TILT_SERVO2 * _servo2_offset) + (Y_TILT_SERVO3 * _servo3_offset)
+def _xy_offsets(x, y):  # x & y were int8
+    # fmt: off
+    # for x brackets were cast to int8
+    x_offset = x + _servo1_offset + (X_TILT_SERVO1 * _servo2_offset) + (X_TILT_SERVO1 * _servo3_offset)
+    # for y brackets were cast to int
+    y_offset = y + (Y_TILT_SERVO2 * _servo2_offset) + (Y_TILT_SERVO3 * _servo3_offset)
+    # fmt: on
+    return x_offset, y_offset
 
 
 def _get_host_ip():
@@ -277,8 +272,7 @@ def disable_servo_power():
 
 def set_plate_angles(plate_x_deg: int, plate_y_deg: int):
     # Take into account offsets when converting from degrees to values sent to hat
-    plate_x = _x_offset(plate_x_deg)
-    plate_y = _y_offset(plate_y_deg)
+    plate_x, plate_y = _xy_offsets(plate_x_deg, plate_y_deg)
     send(
         np.array(
             [
@@ -345,18 +339,6 @@ def set_icon_text(icon_idx: Icon, text_idx: Text):
     )
 
 
-# def set_icon(icon_idx: Icon):
-#     global _icon_idx
-#     _icon_idx = icon_idx
-#     send([SendCommand.TEXT_ICON_SELECT, _icon_idx, _text_idx, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-
-
-# def set_text(text_idx: Text):
-#     global _text_idx
-#     _text_idx == text_idx
-#     send([SendCommand.TEXT_ICON_SELECT, _icon_idx, _text_idx, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-
-
 def sync():
     """
     Empty function that was previously needed due to the way the communications
@@ -373,55 +355,48 @@ def sync():
 # The EventDispatcher class function _raw_event calls all of these.
 #     def _raw_event(self) -> Event:
 #         return Event(getMenuBtn(), getJoystickBtn(), getJoystickX(), getJoystickY())
-#
 def get_menu_btn():
-    # Send noop and check menu button bit in the response
-    # Ensure the values here are `fresh` since we don't know when we sent the last packet
+    """ Check menu button bit in the response. """
+    # Send noop to ensure "fresh" values
+    send([SendCommand.NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
     hat_to_pi = receive()
-    buttons_byte = hat_to_pi[0]
-    buttons_bits = _byte_to_bits(buttons_byte)
-
-    if buttons_bits[ButtonBitIndex.MENU] == "0":
-        return False
-    elif buttons_bits[ButtonBitIndex.MENU] == "1":
-        return True
-    else:
-        # Should never happen unless there's a bug somewhere in the code
-        raise ValueError(f"Invalid menu button bit: `{buttons_bits[0]}`")
+    return hat_to_pi[0] == Button.MENU
 
 
 def get_joystick_btn():
-    # Send noop and check joystick button bit in the response
-    # Ensure the values here are `fresh` since we don't know when we sent the last packet
+    """ Check joystick button bit in the response. """
+    # Send noop to ensure "fresh" values
+    send([SendCommand.NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
     hat_to_pi = receive()
-    buttons_byte = hat_to_pi[0]
-    buttons_bits = _byte_to_bits(buttons_byte)
-
-    if buttons_bits[ButtonBitIndex.JOYSTICK] == "0":
-        return False
-    elif buttons_bits[ButtonBitIndex.JOYSTICK] == "1":
-        return True
-    else:
-        # Should never happen unless there's a bug somewhere in the code
-        raise ValueError(f"Invalid joystick button bit: `{buttons_bits[0]}`")
+    return hat_to_pi[0] == Button.JOYSTICK
 
 
 def get_joystick_x():
-    # Send noop and check joystick x value byte in the response
-    # Ensure the values here are `fresh` since we don't know when we sent the last packet
+    """ Check joystick x value byte in the response. """
+    # Send noop to ensure "fresh" values
+    send([SendCommand.NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
     hat_to_pi = receive()
-    joystick_x = hat_to_pi[JoystickByteIndex.X]
-    joystick_x = _uint8_to_int8(joystick_x)
+    joystick_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X])
     return joystick_x / 100.0
 
 
 def get_joystick_y():
-    # Send noop and check joystick y value byte in the response
-    # Ensure the values here are `fresh` since we don't know when we sent the last packet
+    """ Check joystick y value byte in the response. """
+    # Send noop to ensure "fresh" values
+    send([SendCommand.NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
     hat_to_pi = receive()
-    joystick_y = hat_to_pi[JoystickByteIndex.Y]
-    joystick_y = _uint8_to_int8(joystick_y)
+    joystick_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y])
     return joystick_y / 100.0
+
+
+def get_joystick():
+    """ Check joystick x and y value bytes in the response. """
+    # Send noop to ensure "fresh" values
+    send([SendCommand.NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+    hat_to_pi = receive()
+    joystick_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X])
+    joystick_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.y])
+    return joystick_x / 100.0, joystick_y / 100.0
 
 
 def enable_fan(enabled: bool):

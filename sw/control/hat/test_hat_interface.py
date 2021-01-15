@@ -13,7 +13,7 @@ def test_display():
     sleep(1)
     icons = list(Icon)
     for icon in icons:
-        set_icon(icon)
+        set_icon_text(icon, Text.MANUAL)
         sync()
         sleep(0.1)
 
@@ -22,14 +22,13 @@ def test_display():
     sleep(1)
     texts = list(Text)
     for text in texts:
-        set_text(text)
+        set_icon_text(Icon.BLANK, text)
         sync()
         sleep(0.1)
 
     # display all the text
     print("plate angles")
-    set_icon(Icon.BLANK)
-    set_text(Text.MANUAL)
+    set_icon_text(Icon.BLANK, Text.MANUAL)
     sync()
     sleep(1)
     lower_plate()
@@ -85,3 +84,4 @@ def test_display():
 
 if __name__ == "__main__":
     test_display()
+
