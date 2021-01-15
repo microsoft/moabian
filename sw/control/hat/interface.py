@@ -337,24 +337,6 @@ def set_icon_text(icon_idx: Icon, text_idx: Text):
     )
 
 
-def sync():
-    """
-    Empty function that was previously needed due to the way the communications
-    layer worked.
-    """
-    pass
-
-
-# TODO: For all the buttons and joystick values, this really should be in a
-#       single function that polls for everything (after all we send everything
-#       all at once...)
-#
-# Under control/controllers/common.event.py:
-# The EventDispatcher class function _raw_event calls all of these.
-#     def _raw_event(self) -> Event:
-#         return Event(get_menu_btn(), get_joystick_btn(), get_joystick_x(), get_joystick_y())
-
-
 def poll_buttons():
     """
     Check whether buttons are pressed and the joystick x & y values in the
@@ -375,6 +357,8 @@ def poll_buttons():
     # Get x & y coordinates of joystick normalized to [-1, +1]
     joy_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X]) / 100.0
     joy_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y]) / 100.0
+    if menu_btn or joy_btn or (abs(joy_x) > 0.3) or (abs(joy_y) > 0.3):
+        print(f"Polling buttons. Raw response: {hat_to_pi}. (menu_btn, joy_btn, joy_x, k=joy_y) = {menu_btn, joy_btn, joy_x, joy_y}")
     return menu_btn, joy_btn, joy_x, joy_y
 
 
