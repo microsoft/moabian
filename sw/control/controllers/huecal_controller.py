@@ -7,13 +7,13 @@ Calibration Controller
 Use CalibrationDetector and perform calibration for plate and ball detection
 """
 
-import json
 import os
 import pwd
+import json
 import math
+import time
 import logging as log
 
-from time import sleep
 from copy import copy
 from enum import Enum
 from dataclasses import asdict

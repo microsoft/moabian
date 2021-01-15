@@ -1,17 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-import os
 import math
 import cython
-import socket
-from enum import IntEnum
-from typing import Tuple
 
 ctypedef char bool
 ctypedef signed char int8_t
 ctypedef unsigned char uint8_t
-
 
 
 cdef float _bandpass_lookup[256]
