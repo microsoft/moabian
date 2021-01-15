@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 import socket
 import spidev
+import numpy as np
 import RPi.GPIO as gpio
 
 from enum import IntEnum
@@ -126,17 +127,18 @@ class JoystickByteIndex(IntEnum):
     Y = 2
 
 
+# GPIO pins
+class GpioPin(IntEnum):
+    BOOT_EN   = 5   # Bcm 5  - RPi pin 29 - RPI_BPLUS_GPIO_J8_29
+    FAN_EN    = 26  # Bcm 26 - RPi pin 37 - RPI_BPLUS_GPIO_J8_37
+    HAT_EN    = 20  # Bcm 20 - RPi pin 38 - RPI_BPLUS_GPIO_J8_38
+    HAT_RESET = 6   # Bcm 6  - RPi pin 31 - RPI_BPLUS_GPIO_J8_31
+    HAT_PWR_N = 3   # Bcm 3  - RPi pin 5  - RPI_BPLUS_GPIO_J8_05
+
+
 X_TILT_SERVO1 = -0.5
 Y_TILT_SERVO2 = 0.866
 Y_TILT_SERVO3 = -0.866
-
-
-# GPIO pins
-BOOT_EN   = 5   # Bcm 5  - RPi pin 29 - RPI_BPLUS_GPIO_J8_29
-FAN_EN    = 26  # Bcm 26 - RPi pin 37 - RPI_BPLUS_GPIO_J8_37
-HAT_EN    = 20  # Bcm 20 - RPi pin 38 - RPI_BPLUS_GPIO_J8_38
-HAT_RESET = 6   # Bcm 6  - RPi pin 31 - RPI_BPLUS_GPIO_J8_31
-HAT_PWR_N = 3   # Bcm 3  - RPi pin 5  - RPI_BPLUS_GPIO_J8_05
 # fmt: on
 
 
@@ -197,19 +199,21 @@ def _get_sw_version():
 
 def runtime():
     """ Set mode to runtime mode (not bootloader mode). """
-    gpio.output(HAT_EN, gpio.LOW)
+    gpio.output(GpioPin.HAT_EN, gpio.LOW)
     sleep(0.02)  # 20ms
-    gpio.output(HAT_EN, gpio.HIGH)
-    gpio.output(HAT_RESET, gpio.LOW)
-    gpio.output(BOOT_EN, gpio.LOW)
+    gpio.output(GpioPin.HAT_EN, gpio.HIGH)
+    gpio.output(GpioPin.HAT_RESET, gpio.LOW)
+    gpio.output(GpioPin.BOOT_EN, gpio.LOW)
     sleep(0.25)  # 250ms
 
 
 def setupGPIO():
     gpio.setwarnings(False)
     gpio.setmode(gpio.BCM)
-    gpio.setup([BOOT_EN, FAN_EN, HAT_EN, HAT_RESET], gpio.OUT)
-    gpio.setup(HAT_PWR_N, gpio.IN)
+    gpio.setup(
+        [GpioPin.BOOT_EN, GpioPin.FAN_EN, GpioPin.HAT_EN, GpioPin.HAT_RESET], gpio.OUT
+    )
+    gpio.setup(GpioPin.HAT_PWR_N, gpio.IN)
 
 
 def send(packet):
@@ -246,7 +250,7 @@ def close():
 
 def activate_plate():
     """ Set the plate to track plate angles. """
-    transceive([SERVO_ENABLE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+    send([SendCommand.SERVO_ENABLE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 
 
 def hover_plate():
@@ -268,20 +272,45 @@ def lower_plate():
 
 def disable_servo_power():
     """ Disables the power to the servos. """
-    transceive([SERVO_DISABLE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+    send([SendCommand.SERVO_DISABLE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 
 
 def set_plate_angles(plate_x_deg: int, plate_y_deg: int):
     # Take into account offsets when converting from degrees to values sent to hat
     plate_x = _x_offset(plate_x_deg)
     plate_y = _y_offset(plate_y_deg)
-    transceive([SET_PLATE_ANGLES, plate_x, plate_y, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+    send(
+        np.array(
+            [
+                SendCommand.SET_PLATE_ANGLES,
+                plate_x,
+                plate_y,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+            ]
+        )
+    )
 
 
 def set_servo_positions(servo1_pos: int, servo2_pos: int, servo3_pos: int):
-    moab_set_servoPositions(servo1_pos, servo2_pos, servo3_pos)
-    transceive(
-        [SET_SERVOS, servo1_pos, servo2_pos, servo3_pos, 0x00, 0x00, 0x00, 0x00, 0x00]
+    send(
+        np.array(
+            [
+                SendCommand.SET_SERVOS,
+                servo1_pos,
+                servo2_pos,
+                servo3_pos,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+            ]
+        )
     )
 
 
@@ -299,27 +328,31 @@ def set_servo_offsets(servo1_offset: int, servo2_offset: int, servo3_offset: int
 
 
 def set_icon_text(icon_idx: Icon, text_idx: Text):
-    transceive(
-        [TEXT_ICON_SELECT, icon_idx, text_idx, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+    send(
+        [
+            SendCommand.TEXT_ICON_SELECT,
+            icon_idx,
+            text_idx,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+        ]
     )
 
 
-def set_icon(icon_idx: Icon):
-    global _icon_idx
-    _icon_idx = icon_idx
-    # TODO: should this be sent immediately or with `sync`?
-    transceive(
-        [TEXT_ICON_SELECT, _icon_idx, _text_idx, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-    )
+# def set_icon(icon_idx: Icon):
+#     global _icon_idx
+#     _icon_idx = icon_idx
+#     send([SendCommand.TEXT_ICON_SELECT, _icon_idx, _text_idx, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 
 
-def set_text(text_idx: Text):
-    global _text_idx
-    _text_idx == text_idx
-    # TODO: should this be sent immediately or with `sync`?
-    transceive(
-        [TEXT_ICON_SELECT, _icon_idx, _text_idx, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-    )
+# def set_text(text_idx: Text):
+#     global _text_idx
+#     _text_idx == text_idx
+#     send([SendCommand.TEXT_ICON_SELECT, _icon_idx, _text_idx, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 
 
 def sync():
@@ -341,9 +374,8 @@ def sync():
 #
 def get_menu_btn():
     # Send noop and check menu button bit in the response
-    transceive([NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
     # Ensure the values here are `fresh` since we don't know when we sent the last packet
-    hat_to_pi = transceive([NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+    hat_to_pi = receive()
     buttons_byte = hat_to_pi[0]
     buttons_bits = _byte_to_bits(buttons_byte)
 
@@ -358,9 +390,8 @@ def get_menu_btn():
 
 def get_joystick_btn():
     # Send noop and check joystick button bit in the response
-    transceive([NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
     # Ensure the values here are `fresh` since we don't know when we sent the last packet
-    hat_to_pi = transceive([NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+    hat_to_pi = receive()
     buttons_byte = hat_to_pi[0]
     buttons_bits = _byte_to_bits(buttons_byte)
 
@@ -375,9 +406,8 @@ def get_joystick_btn():
 
 def get_joystick_x():
     # Send noop and check joystick x value byte in the response
-    transceive([NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
     # Ensure the values here are `fresh` since we don't know when we sent the last packet
-    hat_to_pi = transceive([NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+    hat_to_pi = receive()
     joystick_x = hat_to_pi[JoystickByteIndex.X]
     joystick_x = _uint8_to_int8(joystick_x)
     return joystick_x / 100.0
@@ -385,20 +415,19 @@ def get_joystick_x():
 
 def get_joystick_y():
     # Send noop and check joystick y value byte in the response
-    transceive([NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
     # Ensure the values here are `fresh` since we don't know when we sent the last packet
-    hat_to_pi = transceive([NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+    hat_to_pi = receive()
     joystick_y = hat_to_pi[JoystickByteIndex.Y]
     joystick_y = _uint8_to_int8(joystick_y)
     return joystick_y / 100.0
 
 
 def enable_fan(enabled: bool):
-    gpio.output(FAN_EN, gpio.HIGH if enabled else gpio.LOW)
+    gpio.output(GpioPin.FAN_EN, gpio.HIGH if enabled else gpio.LOW)
 
 
 def enable_hat(enabled: bool):
-    gpio.output(HAT_EN, gpio.HIGH if enabled else gpio.LOW)
+    gpio.output(GpioPin.HAT_EN, gpio.HIGH if enabled else gpio.LOW)
 
 
 def poll_temp():
@@ -409,7 +438,7 @@ def poll_temp():
 
 
 def poll_power_btn():
-    return gpio.input(HAT_PWR_N) != gpio.HIGH
+    return gpio.input(GpioPin.HAT_PWR_N) != gpio.HIGH
 
 
 def print_arbitrary_message(s):
@@ -421,11 +450,11 @@ def print_arbitrary_message(s):
     num_msgs = int(np.ceil(len(s) / 8))
 
     # Fill the message with trailing termination chars to so we always
-    # transceive 9 bytes
+    # send 9 bytes
     s += (num_msgs * 8 - len(s)) * b"\0"
 
     for msg_idx in range(num_msgs):
-        transceive([ARBITRARY_MESSAGE, *s[8 * msg_idx : 8 * msg_idx + 8]])
+        send([SendCommand.ARBITRARY_MESSAGE, *s[8 * msg_idx : 8 * msg_idx + 8]])
 
 
 def print_ip():
@@ -445,3 +474,4 @@ def print_info_screen():
     print_arbitrary_message(
         f"PROJECT MOAB\n\nSW VERSION\n{sw_major}{sw_minor}{sw_bug}\n\nIP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}"
     )
+
