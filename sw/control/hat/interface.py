@@ -395,7 +395,7 @@ def get_joystick():
     send([SendCommand.NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
     hat_to_pi = receive()
     joystick_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X])
-    joystick_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.y])
+    joystick_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y])
     return joystick_x / 100.0, joystick_y / 100.0
 
 
@@ -451,4 +451,3 @@ def print_info_screen():
     print_arbitrary_message(
         f"PROJECT MOAB\n\nSW VERSION\n{sw_major}{sw_minor}{sw_bug}\n\nIP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}"
     )
-
