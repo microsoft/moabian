@@ -75,7 +75,8 @@ class EventDispatcher:
         self.flick_dir = FlickDir.Unset
 
     def _raw_event(self) -> Event:
-        return Event(hat.poll_buttons())
+        # Note the * to unpack the tuple to create the Event
+        return Event(*hat.poll_buttons())
 
     def get_next_event(self) -> Optional[Event]:
         """
