@@ -13,7 +13,7 @@ import pwd
 import math
 import logging as log
 
-from time
+from time import sleep
 from copy import copy
 from enum import Enum
 from dataclasses import asdict
