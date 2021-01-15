@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
+import os
 import time
 import socket
 import spidev
 import numpy as np
+import logging as log
 import RPi.GPIO as gpio
 
 from enum import IntEnum
@@ -357,8 +359,6 @@ def poll_buttons():
     # Get x & y coordinates of joystick normalized to [-1, +1]
     joy_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X]) / 100.0
     joy_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y]) / 100.0
-    if menu_btn or joy_btn or (abs(joy_x) > 0.3) or (abs(joy_y) > 0.3):
-        print(f"Polling buttons. Raw response: {hat_to_pi}. (menu_btn, joy_btn, joy_x, k=joy_y) = {menu_btn, joy_btn, joy_x, joy_y}")
     return menu_btn, joy_btn, joy_x, joy_y
 
 
@@ -395,23 +395,25 @@ def print_arbitrary_message(s):
 
     for msg_idx in range(num_msgs):
         send([SendCommand.ARBITRARY_MESSAGE, *s[8 * msg_idx : 8 * msg_idx + 8]])
+    # After sending all buffer info, send the command to display the buffer
+    send([SendCommand.DISPLAY_BUFFER, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 
 
 def print_ip():
     ip1, ip2, ip3, ip4 = _get_host_ip()
     send_ip_address(ip1, ip2, ip3, ip4)
-    print_arbitrary_message(f"PROJECT MOAB\n\nIP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}")
+    print_arbitrary_message(f"PROJECT MOAB\nIP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}\n")
 
 
 def print_sw_version():
     sw_major, sw_minor, sw_bug = _get_sw_version()
-    print_arbitrary_message(f"PROJECT MOAB\n\nSW VERSION\n{sw_major}{sw_minor}{sw_bug}")
+    print_arbitrary_message(f"PROJECT MOAB\nSW VERSION\n{sw_major}.{sw_minor}.{sw_bug}\n")
 
 
 def print_info_screen():
     sw_major, sw_minor, sw_bug = _get_sw_version()
     ip1, ip2, ip3, ip4 = _get_host_ip()
     print_arbitrary_message(
-        f"PROJECT MOAB\n\nSW VERSION\n{sw_major}{sw_minor}{sw_bug}\n\nIP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}"
+        f"PROJECT MOAB\nSW VERSION\n{sw_major}.{sw_minor}.{sw_bug}\nIP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}\n"
     )
 
