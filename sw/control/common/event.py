@@ -4,7 +4,7 @@
 from enum import Enum
 from typing import List, Optional
 from dataclasses import dataclass
-from pymoab import get_joystick_btn, get_joystick_x, get_joystick_y, get_menu_btn
+from control.hat import interface as pymoab
 
 
 @dataclass
@@ -76,7 +76,10 @@ class EventDispatcher:
 
     def _raw_event(self) -> Event:
         return Event(
-            get_menu_btn(), get_joystick_btn(), get_joystick_x(), get_joystick_y()
+            pymoab.get_menu_btn(),
+            pymoab.get_joystick_btn(),
+            pymoab.get_joystick_x(),
+            pymoab.get_joystick_y(),
         )
 
     def get_next_event(self) -> Optional[Event]:
