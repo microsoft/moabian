@@ -44,6 +44,7 @@ if __name__ == '__main__':
     hostname = socket.gethostname()
 
     ip = getHostIP()
+    print(f" • Grid testing         http://{ip}:{port}/grid.html")
     print(f" • Moab main.py stream  http://{ip}:{port}/index.html")
     print(f" • Native OpenCV stream http://{ip}:{port}/opencv.html")
     app.run(host=ip, port=port, threaded=True)

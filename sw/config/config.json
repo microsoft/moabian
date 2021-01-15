@@ -100,12 +100,13 @@
             }
         },
         "classic": {
-            "frequencyHz": 30,
-            "debug": false,
+            "debug": true,
             "debugDecorator": {
-                "name": "control.debug.X11Decorator",
-                "windowName": "frame"
+                "name": "control.debug.FileDecorator",
+                "quality": "90",
+                "filename": "/tmp/camera/frame.jpg"
             },
+            "frequencyHz": 30,
             "sensor": {
                 "name": "control.sensors.OpenCVCameraSensor",
                 "brightness": 60,
