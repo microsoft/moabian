@@ -17,8 +17,8 @@ from enum import Enum
 from time import sleep
 from dataclasses import asdict
 from typing import Dict, Optional, cast
+from control.hat import interface as pymoab
 
-import pymoab
 
 from ..device import Device
 from ..detectors import HSVDetector
@@ -43,7 +43,7 @@ class HueCalibrationController(IController):
         self.config = config
 
         # plate must be level
-        pymoab.setPlateAngles(0, 0)
+        pymoab.set_plate_angles(0, 0)
 
         # initial state
         self.state = CalibrationState.Start
@@ -63,12 +63,10 @@ class HueCalibrationController(IController):
         sender.stop()
 
         # Hover the plate and deactivate the servos
-        pymoab.hoverPlate()
-        pymoab.sync()
-        sleep(0.5)
-        pymoab.disableServoPower()
-        pymoab.sync()
-        sleep(0.5)
+        pymoab.hover_plate()
+        pymoab.sleep(0.5)
+        pymoab.disable_servo_power()
+        pymoab.sleep(0.5)
 
     def on_joy_down(self, sender: IDevice):
         if self.state == CalibrationState.WaitUser:
@@ -129,8 +127,7 @@ class HueCalibrationController(IController):
 
     def _start_calibration(self):
         if self.ball_detector:
-            pymoab.setIcon(pymoab.Icon.BLANK)
-            pymoab.setText(pymoab.Text.CAL_INSTR)
+            pymoab.set_icon_text(pymoab.Icon.BLANK, pymoab.Text.CAL_INSTR)
 
             # start search here
             self.found_ball = False
@@ -212,10 +209,8 @@ class HueCalibrationController(IController):
         self._print_results()
         self._write_calibration(sender)
 
-        pymoab.setIcon(pymoab.Icon.CHECK)
-        pymoab.setText(pymoab.Text.CAL_COMPLETE)
-        pymoab.sync()
-        sleep(2)
+        pymoab.set_icon_text(pymoab.Icon.CHECK, pymoab.Text.CAL_COMPLETE)
+        pymoab.sleep(2)
 
         sender.stop()
 
@@ -223,10 +218,8 @@ class HueCalibrationController(IController):
         log.warn("Failed to calibrate.")
         self._print_results()
 
-        pymoab.setIcon(pymoab.Icon.BLANK)
-        pymoab.setText(pymoab.Text.ERROR)
-        pymoab.sync()
-        sleep(2)
+        pymoab.set_icon_text(pymoab.Icon.BLANK, pymoab.Text.ERROR)
+        pymoab.sleep(2)
 
         sender.stop()
 

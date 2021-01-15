@@ -4,8 +4,7 @@
 from enum import Enum
 from typing import List, Optional
 from dataclasses import dataclass
-
-from pymoab import getJoystickBtn, getJoystickX, getJoystickY, getMenuBtn
+from control.hat import interface as pymoab
 
 
 @dataclass
@@ -76,7 +75,12 @@ class EventDispatcher:
         self.flick_dir = FlickDir.Unset
 
     def _raw_event(self) -> Event:
-        return Event(getMenuBtn(), getJoystickBtn(), getJoystickX(), getJoystickY())
+        return Event(
+            pymoab.get_menu_btn(),
+            pymoab.get_joystick_btn(),
+            pymoab.get_joystick_x(),
+            pymoab.get_joystick_y(),
+        )
 
     def get_next_event(self) -> Optional[Event]:
         """
@@ -108,7 +112,7 @@ class EventDispatcher:
         """
         Watch for changes between current state
         and previous state.
-        
+
         Dispatch events to all listeners.
         """
         for listener in self.listeners:

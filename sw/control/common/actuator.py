@@ -19,7 +19,7 @@ class IActuator:
     def __init__(self, config: Config, device: IDevice):
         self.config = config
 
-    def setPlateAngles(self, sender: IDevice, plate_angles: Vector2):
+    def set_plate_angles(self, sender: IDevice, plate_angles: Vector2):
         pass
 
     def getLastSetPlateAngles(self) -> Vector2:

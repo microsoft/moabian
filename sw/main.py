@@ -23,7 +23,7 @@ import signal
 import sys
 import time
 
-import pymoab
+from control.hat import interface as pymoab
 from dacite import from_dict
 from collections import deque
 from control.common import IDevice
@@ -106,20 +106,16 @@ def signal_handler(sig, frame) -> int:
     log.info(f"Signal {sig} received, shutting down...")
 
     # Lower the plate and deactivate the servos
-    # lowerPlate is 155º; testing a lower position of 160º
-    pymoab.setServoPositions(155, 155, 155)
-    pymoab.sync()
-    time.sleep(0.2)
+    # lower_plate is 155º; testing a lower position of 160º
+    pymoab.set_servo_positions(155, 155, 155)
+    pymoab.time.sleep(0.2)
 
-    pymoab.disableServoPower()
-    pymoab.sync()
-    time.sleep(0.1)
+    pymoab.disable_servo_power()
+    pymoab.time.sleep(0.1)
 
     # Clear the screen
-    pymoab.setIcon(pymoab.Icon.BLANK)
-    pymoab.setText(pymoab.Text.BLANK)
-    pymoab.sync()
-    time.sleep(0.1)
+    pymoab.set_icon_text(pymoab.Icon.BLANK, pymoab.Text.BLANK)
+    pymoab.time.sleep(0.1)
 
     sys.exit(0)
 
@@ -139,16 +135,13 @@ def main():
     # onetime init of pymoab library
     # side effect of setting OLED to Initalizing... which is ok
     pymoab.init()
-    pymoab.sync()
-    time.sleep(0.1)
+    pymoab.time.sleep(0.1)
 
     # put plate in "ready" mode, then cut power until needed
-    pymoab.setServoPositions(150, 150, 150)
-    pymoab.sync()
-    time.sleep(0.1)
-    pymoab.disableServoPower()
-    pymoab.sync()
-    time.sleep(0.1)
+    pymoab.set_servo_positions(150, 150, 150)
+    pymoab.time.sleep(0.1)
+    pymoab.disable_servo_power()
+    pymoab.time.sleep(0.1)
 
     # optional perf timing
     global perf_timer

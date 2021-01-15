@@ -17,33 +17,22 @@ from sys import exit, argv
 
 def shutdown():
     sleep(0.01)
-    lowerPlate()
-    sync()
-    sleep(0.5)
+    lower_plate()
+        sleep(0.5)
 
-    # Due to firmware 2.1 bug, disableServoPower sets icon=0 and text=0
-    disableServoPower()
-    sync()
-    sleep(0.1)
-
-
-def setTextIcon(text, icon):
-    setText(text)
-    setIcon(icon)
-    sync()
-    sleep(0.1)
+    # Due to firmware 2.1 bug, disable_servo_power sets icon=0 and text=0
+    disable_servo_power()
+        sleep(0.1)
 
 
 def startup():
     init()
-    sync()
-    sleep(0.1)
+        sleep(0.1)
 
-    setTextIcon(Text.INIT, Icon.DOT)
+    set_icon_text(Icon.DOT, Text.INIT)
 
-    activatePlate()
-    sync()
-    sleep(0.1)
+    activate_plate()
+        sleep(0.1)
 
 
 def sigint(signal_received, frame):
@@ -54,18 +43,16 @@ def sigint(signal_received, frame):
 def set_servo_offsets(s1, s2, s3):
     startup()
 
-    setServoOffsets(s1, s2, s3)
-    setPlateAngles(0, 0)
-    sync()
-    sleep(0.1)
-    setTextIcon(Text.CAL_COMPLETE, Icon.DOT)
+    set_servo_offsets(s1, s2, s3)
+    set_plate_angles(0, 0)
+        sleep(0.1)
+    set_icon_text(Icon.DOT, Text.CAL_COMPLETE)
 
     print("Press the menu button or CTRL-C to quit...")
     sleep(0.1)
-    while not getMenuBtn():
+    while not get_menu_btn():
         sleep(0.01)
-        sync()
-
+        
     shutdown()
 
 
