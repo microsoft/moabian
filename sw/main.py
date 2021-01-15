@@ -108,14 +108,14 @@ def signal_handler(sig, frame) -> int:
     # Lower the plate and deactivate the servos
     # lower_plate is 155º; testing a lower position of 160º
     pymoab.set_servo_positions(155, 155, 155)
-    pymoab.time.sleep(0.2)
+    time.sleep(0.2)
 
     pymoab.disable_servo_power()
-    pymoab.time.sleep(0.1)
+    time.sleep(0.1)
 
     # Clear the screen
     pymoab.set_icon_text(pymoab.Icon.BLANK, pymoab.Text.BLANK)
-    pymoab.time.sleep(0.1)
+    time.sleep(0.1)
 
     sys.exit(0)
 
@@ -135,13 +135,13 @@ def main():
     # onetime init of pymoab library
     # side effect of setting OLED to Initalizing... which is ok
     pymoab.init()
-    pymoab.time.sleep(0.1)
+    time.sleep(0.1)
 
     # put plate in "ready" mode, then cut power until needed
     pymoab.set_servo_positions(150, 150, 150)
-    pymoab.time.sleep(0.1)
+    time.sleep(0.1)
     pymoab.disable_servo_power()
-    pymoab.time.sleep(0.1)
+    time.sleep(0.1)
 
     # optional perf timing
     global perf_timer

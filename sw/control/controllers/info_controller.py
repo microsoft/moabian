@@ -1,10 +1,13 @@
-from time import sleep
-from typing import Dict
-from control.hat import interface as pymoab
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
 
 import time
 import socket
 import os
+
+from time import sleep
+from typing import Dict
+from control.hat import interface as hat
 
 from ..common import IController, IDevice, CircleFeature, Vector2
 import logging as log
@@ -15,16 +18,16 @@ class InfoController(IController):
         super().__init__(config, device)
         """Print out the IP address and SW version when user enters InfoController"""
 
-        pymoab.print_info_screen()
+        hat.print_info_screen()
 
     def on_menu_down(self, sender: IDevice):
         sender.stop()
 
         # Hover the plate and deactivate the servos
-        pymoab.hover_plate()
-        pymoab.sleep(0.5)
-        pymoab.disable_servo_power()
-        pymoab.sleep(0.5)
+        hat.hover_plate()
+        time.sleep(0.5)
+        hat.disable_servo_power()
+        time.sleep(0.5)
 
     def getControlOutput(
         self,
