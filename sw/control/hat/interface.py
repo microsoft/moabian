@@ -353,48 +353,29 @@ def sync():
 # The EventDispatcher class function _raw_event calls all of these.
 #     def _raw_event(self) -> Event:
 #         return Event(get_menu_btn(), get_joystick_btn(), get_joystick_x(), get_joystick_y())
-def get_menu_btn():
-    """ Check menu button bit in the response. """
-    # Send noop to ensure "fresh" values
-    send([SendCommand.NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+
+
+def poll_buttons():
+    """
+    Check whether buttons are pressed and the joystick x & y values in the
+    response.
+
+    Return:
+        - menu_btn: Bool
+        - joy_btn : Bool
+        - joy_x   : Float normalized from -1 to +1
+        - joy_y   : Float normalized from -1 to +1
+    """
+    # Note the values in receive will be the values from the time of the
+    # previous spi message
     hat_to_pi = receive()
-    return hat_to_pi[0] == Button.MENU
-
-
-def get_joystick_btn():
-    """ Check joystick button bit in the response. """
-    # Send noop to ensure "fresh" values
-    send([SendCommand.NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-    hat_to_pi = receive()
-    return hat_to_pi[0] == Button.JOYSTICK
-
-
-def get_joystick_x():
-    """ Check joystick x value byte in the response. """
-    # Send noop to ensure "fresh" values
-    send([SendCommand.NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-    hat_to_pi = receive()
-    joystick_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X])
-    return joystick_x / 100.0
-
-
-def get_joystick_y():
-    """ Check joystick y value byte in the response. """
-    # Send noop to ensure "fresh" values
-    send([SendCommand.NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-    hat_to_pi = receive()
-    joystick_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y])
-    return joystick_y / 100.0
-
-
-def get_joystick():
-    """ Check joystick x and y value bytes in the response. """
-    # Send noop to ensure "fresh" values
-    send([SendCommand.NOOP, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-    hat_to_pi = receive()
-    joystick_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X])
-    joystick_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y])
-    return joystick_x / 100.0, joystick_y / 100.0
+    # Check if buttons are pressed
+    menu_btn = hat_to_pi[0] == Button.MENU
+    joy_btn = hat_to_pi[0] == Button.JOYSTICK
+    # Get x & y coordinates of joystick normalized to [-1, +1]
+    joy_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X]) / 100.0
+    joy_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y]) / 100.0
+    return menu_btn, joy_btn, joy_x, joy_y
 
 
 def enable_fan(enabled: bool):
@@ -449,3 +430,4 @@ def print_info_screen():
     print_arbitrary_message(
         f"PROJECT MOAB\n\nSW VERSION\n{sw_major}{sw_minor}{sw_bug}\n\nIP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}"
     )
+

@@ -75,12 +75,7 @@ class EventDispatcher:
         self.flick_dir = FlickDir.Unset
 
     def _raw_event(self) -> Event:
-        return Event(
-            hat.get_menu_btn(),
-            hat.get_joystick_btn(),
-            hat.get_joystick_x(),
-            hat.get_joystick_y(),
-        )
+        return Event(hat.poll_buttons())
 
     def get_next_event(self) -> Optional[Event]:
         """
