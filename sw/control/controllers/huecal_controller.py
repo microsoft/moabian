@@ -18,8 +18,7 @@ from copy import copy
 from enum import Enum
 from dataclasses import asdict
 from typing import Dict, Optional, cast
-from control.hat import interface as pymoab
-
+from control.hat import interface as hat
 
 from ..device import Device
 from ..detectors import HSVDetector
@@ -44,7 +43,7 @@ class HueCalibrationController(IController):
         self.config = config
 
         # plate must be level
-        pymoab.set_plate_angles(0, 0)
+        hat.set_plate_angles(0, 0)
 
         # initial state
         self.state = CalibrationState.Start
@@ -64,9 +63,9 @@ class HueCalibrationController(IController):
         sender.stop()
 
         # Hover the plate and deactivate the servos
-        pymoab.hover_plate()
+        hat.hover_plate()
         time.sleep(0.5)
-        pymoab.disable_servo_power()
+        hat.disable_servo_power()
         time.sleep(0.5)
 
     def on_joy_down(self, sender: IDevice):
@@ -128,7 +127,7 @@ class HueCalibrationController(IController):
 
     def _start_calibration(self):
         if self.ball_detector:
-            pymoab.set_icon_text(pymoab.Icon.BLANK, pymoab.Text.CAL_INSTR)
+            hat.set_icon_text(hat.Icon.BLANK, hat.Text.CAL_INSTR)
 
             # start search here
             self.found_ball = False
@@ -210,7 +209,7 @@ class HueCalibrationController(IController):
         self._print_results()
         self._write_calibration(sender)
 
-        pymoab.set_icon_text(pymoab.Icon.CHECK, pymoab.Text.CAL_COMPLETE)
+        hat.set_icon_text(hat.Icon.CHECK, hat.Text.CAL_COMPLETE)
         time.sleep(2)
 
         sender.stop()
@@ -219,7 +218,7 @@ class HueCalibrationController(IController):
         log.warn("Failed to calibrate.")
         self._print_results()
 
-        pymoab.set_icon_text(pymoab.Icon.BLANK, pymoab.Text.ERROR)
+        hat.set_icon_text(hat.Icon.BLANK, hat.Text.ERROR)
         time.sleep(2)
 
         sender.stop()

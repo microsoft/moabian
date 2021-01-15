@@ -14,7 +14,7 @@ import numpy as np
 from typing import Dict
 from enum import IntEnum
 from dataclasses import dataclass
-from control.hat import interface as pymoab
+from control.hat import interface as hat
 
 from ..common import IController, IDevice, CircleFeature, Vector2
 
@@ -124,9 +124,9 @@ class PIDController(IController):
         sender.stop()
 
         # Hover the plate and deactivate the servos
-        pymoab.hover_plate()
+        hat.hover_plate()
         time.sleep(0.5)
-        pymoab.disable_servo_power()
+        hat.disable_servo_power()
         time.sleep(0.5)
 
     def getControlOutput(

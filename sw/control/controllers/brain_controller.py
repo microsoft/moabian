@@ -16,7 +16,7 @@ import logging as log
 
 from typing import Dict
 from dataclasses import dataclass
-from control.hat import interface as pymoab
+from control.hat import interface as hat
 
 from ..common import CircleFeature, IController, IDevice, Vector2
 
@@ -213,9 +213,9 @@ class BrainController(IController):
         sender.stop()
 
         # Hover the plate and deactivate the servos
-        pymoab.hover_plate()
+        hat.hover_plate()
         time.sleep(0.5)
-        pymoab.disable_servo_power()
+        hat.disable_servo_power()
         time.sleep(0.5)
 
     def getControlOutput(

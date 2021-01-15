@@ -4,7 +4,7 @@
 import numpy as np
 from enum import Enum
 from pydoc import locate
-from control.hat import interface as pymoab
+from control.hat import interface as hat
 from typing import Any, Callable, Dict, Optional, cast
 
 from .debug import *
