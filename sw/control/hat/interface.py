@@ -291,7 +291,8 @@ def set_plate_angles(plate_x_deg: int, plate_y_deg: int):
                 0x00,
                 0x00,
                 0x00,
-            ]
+            ],
+            dtype=np.int8,
         )
     )
 
@@ -309,7 +310,8 @@ def set_servo_positions(servo1_pos: int, servo2_pos: int, servo3_pos: int):
                 0x00,
                 0x00,
                 0x00,
-            ]
+            ],
+            dtype=np.int8,
         )
     )
 
@@ -339,7 +341,7 @@ def set_icon_text(icon_idx: Icon, text_idx: Text):
             0x00,
             0x00,
             0x00,
-        ]
+        ],
     )
 
 
