@@ -13,8 +13,7 @@ import numpy as np
 from typing import Dict
 from enum import IntEnum
 from dataclasses import dataclass
-
-import pymoab
+from control.hat import interface as pymoab
 
 from ..common import IController, IDevice, CircleFeature, Vector2
 
@@ -124,12 +123,10 @@ class PIDController(IController):
         sender.stop()
 
         # Hover the plate and deactivate the servos
-        pymoab.hoverPlate()
-        pymoab.sync()
-        time.sleep(0.5)
-        pymoab.disableServoPower()
-        pymoab.sync()
-        time.sleep(0.5)
+        pymoab.hover_plate()
+        pymoab.time.sleep(0.5)
+        pymoab.disable_servo_power()
+        pymoab.time.sleep(0.5)
 
     def getControlOutput(
         self,

@@ -4,9 +4,8 @@
 import numpy as np
 from enum import Enum
 from pydoc import locate
+from control.hat import interface as pymoab
 from typing import Any, Callable, Dict, Optional, cast
-
-import pymoab
 
 from .debug import *
 from .timers import BusyTimer
@@ -89,7 +88,7 @@ class Device(IDevice):
 
             # actuate
             if self.actuator:
-                self.actuator.setPlateAngles(self, output)
+                self.actuator.set_plate_angles(self, output)
 
             # and execute debuging decorators
             if self.config.debug:
@@ -97,8 +96,7 @@ class Device(IDevice):
                     self.debug_decorator.decorate({SENSOR_IMG_ARG: img})
 
         # sync our desired state with servos and display
-        pymoab.sync()
-
+        pymoab.
     def run(self):
         if self.sensor:
             self.sensor.start()
@@ -138,7 +136,10 @@ class Device(IDevice):
         # sensor
         sensor: Optional[ISensor] = None
         if config.sensor:
-            sensor = cast(ISensor, device.component_from_config(config.sensor),)
+            sensor = cast(
+                ISensor,
+                device.component_from_config(config.sensor),
+            )
 
         # unpack the detectors
         detectors: Optional[Dict[str, IDetector]] = None
@@ -155,7 +156,8 @@ class Device(IDevice):
         controller: Optional[IController] = None
         if config.controller:
             controller = cast(
-                IController, device.component_from_config(config.controller),
+                IController,
+                device.component_from_config(config.controller),
             )
 
             # register for events
@@ -166,7 +168,10 @@ class Device(IDevice):
         # actuator
         actuator: Optional[IActuator] = None
         if config.actuator:
-            actuator = cast(IActuator, device.component_from_config(config.actuator),)
+            actuator = cast(
+                IActuator,
+                device.component_from_config(config.actuator),
+            )
 
         # set 'em
         device.sensor = sensor

@@ -12,41 +12,30 @@ import argparse
 
 def shutdown():
     print("deactivating...")
-    lowerPlate()
-    sync()
-    sleep(0.5)
+    lower_plate()
+        sleep(0.5)
 
-    # Due to firmware 2.1 bug, disableServoPower sets icon=0 and text=0
+    # Due to firmware 2.1 bug, disable_servo_power sets icon=0 and text=0
     print("cutting servo power")
-    disableServoPower()
-    sync()
-    sleep(0.1)
-
-
-def setTextIcon(text, icon):
-    setText(text)
-    setIcon(icon)
-    sync()
-    sleep(0.1)
+    disable_servo_power()
+        sleep(0.1)
 
 
 def startup():
     # This needs to be called before INIT
     # Also: do not call sync() on this (segfault)
     # print("setting servo offset")
-    # setServoOffsets(-2, 1, 0)
+    # set_servo_offsets(-2, 1, 0)
 
     print("initalizing")
     init()
-    sync()
-    sleep(0.1)
+        sleep(0.1)
 
-    setTextIcon(Text.INIT, Icon.DOT)
+    set_icon_text(Icon.DOT, Text.INIT)
 
-    #print("activating plate")
-    #activatePlate()
-    #sync()
-    #sleep(0.1)
+    # print("activating plate")
+    # activate_plate()
+    #     # sleep(0.1)
 
 
 def sigint(signal_received, frame):
@@ -68,32 +57,28 @@ def main(args):
     y = -70 * x + 160
     print(f"Setting plate to {x:.2f} or {y:.2f}°")
 
-    setServoPositions(y,y,y)
-    sync()
-    sleep(0.1)
-    setTextIcon(Text.CAL_COMPLETE, Icon.DOT)
+    set_servo_positions(y, y, y)
+        sleep(0.1)
+    set_icon_text(Icon.DOT, Text.CAL_COMPLETE)
 
     print("press menu to quit...")
     sleep(0.1)
-    while not getMenuBtn():
+    while not get_menu_btn():
         sleep(0.01)
-        sync()
-
+        
     shutdown()
 
 
 def clamp(num, min_value, max_value):
     return max(min(num, max_value), min_value)
 
+
 def parseArgs():
     p = argparse.ArgumentParser(
-        prog="zaxis",
-        description="Set the height of the plate in the z-dimension"
+        prog="zaxis", description="Set the height of the plate in the z-dimension"
     )
 
-    p.add_argument(dest="height",
-                   type=float,
-                   help="height from 0 to 1")
+    p.add_argument(dest="height", type=float, help="height from 0 to 1")
 
     if len(argv) == 1:
         p.print_help()
@@ -102,10 +87,10 @@ def parseArgs():
     args = p.parse_args()
     return args
 
+
 if __name__ == "__main__":
     args = parseArgs()
     print(vars(args), flush=True)
 
     signal(SIGINT, sigint)
     main(args)
-

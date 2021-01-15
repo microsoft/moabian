@@ -9,8 +9,7 @@ Use joystick to navigate between other controllers.
 
 from typing import ClassVar, List
 from dataclasses import dataclass, field
-
-import pymoab
+from control.hat import interface as pymoab
 
 from ..common import IController, IDevice
 
@@ -48,8 +47,10 @@ class MenuController(IController):
         self.display_menu_item(self.menu_idx)
 
     def display_menu_item(self, idx: int):
-        pymoab.setIcon(pymoab.Icon[self.menu_items[idx].icon])
-        pymoab.setText(pymoab.Text[self.menu_items[idx].text])
+        pymoab.set_icon_text(
+            pymoab.Icon[self.menu_items[idx].icon],
+            pymoab.Text[self.menu_items[idx].text],
+        )
 
     def on_flick_down(self, sender: IDevice):
         self.menu_idx = min(len(self.menu_items) - 1, self.menu_idx + 1)
@@ -62,8 +63,7 @@ class MenuController(IController):
     def on_joy_down(self, sender: IDevice):
         menu_item = self.menu_items[self.menu_idx]
         sender.set_next_device(menu_item.device)
-        pymoab.setIcon(pymoab.Icon[menu_item.icon2])
-        pymoab.setText(pymoab.Text[menu_item.text])
+        pymoab.set_icon_text(pymoab.Icon[menu_item.icon2], pymoab.Text[menu_item.text])
 
         # save the menu item so we pop back up to this index when we return
         sender.previous_menu = self.menu_idx

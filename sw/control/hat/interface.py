@@ -176,20 +176,18 @@ def _xy_offsets(x, y):  # x & y were int8
 def _get_host_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("1.1.1.1", 1))
-    local_ip = s.getsockname()[0]  # Returns a string like `1.2.3.4`
-    local_ip = [int(b) for b in local_ip.split(".")]
-    return local_ip
+    ip = s.getsockname()[0]  # returns string like '1.2.3.4'
+    ip_quads = [int(b) for b in ip.split(".")]
+    log.info(f"IP: {ip}")
+    return ip_quads
 
 
 def _get_sw_version():
-    # TODO: make getting the env variable robust
-    version = os.environ.get("MOABIAN")  # Returns a string like `1.2.3`
-    if version:
-        version = [int(b) for b in version.split(".")]
-        sw_major, sw_minor, sw_bug = version
-    else:
-        sw_major, sw_minor, sw_bug = 0, 0, 0  # If retrieving the env variable fails
-    return sw_major, sw_minor, sw_bug
+    ver_string = os.environ.get("MOABIAN", "1.0.0")
+    ver_triplet = [int(b) for b in ver_string.split(".")]
+    log.info(f"Version string: {ver_string}")
+    log.info(f"Version triplet: {ver_triplet}")
+    return ver_triplet
 
 
 def runtime():
@@ -354,7 +352,7 @@ def sync():
 # Under control/controllers/common.event.py:
 # The EventDispatcher class function _raw_event calls all of these.
 #     def _raw_event(self) -> Event:
-#         return Event(getMenuBtn(), getJoystickBtn(), getJoystickX(), getJoystickY())
+#         return Event(get_menu_btn(), get_joystick_btn(), get_joystick_x(), get_joystick_y())
 def get_menu_btn():
     """ Check menu button bit in the response. """
     # Send noop to ensure "fresh" values
