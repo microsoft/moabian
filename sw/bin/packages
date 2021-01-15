@@ -49,8 +49,8 @@ opencv=(
     libpango-1.0-0
     libpangocairo-1.0-0
     libswscale5
-    libtiff5
-    libwebp6
+    # libtiff5
+    # libwebp6
 )
 echo "• installing: opencv"
 apt-get install -qq --no-install-recommends ${opencv[*]}

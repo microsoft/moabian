@@ -24,22 +24,6 @@ class CallbackDecorator(IDebugDecorator):
             callback(args)
 
 
-class X11Decorator(CallbackDecorator):
-    def __init__(self, config: dict):
-        super().__init__(config)
-
-        cv2.namedWindow(self.config["windowName"])
-
-    def decorate(self, args):
-        super().decorate(args)
-
-        cv2.imshow(self.config["windowName"], args[SENSOR_IMG_ARG])
-        cv2.waitKey(1) & 0xff
-
-    def __del__(self):
-        cv2.destroyAllWindows()
-
-
 class FileDecorator(CallbackDecorator):
     def __init__(self, config: dict):
         super().__init__(config)
