@@ -13,6 +13,7 @@ import time
 import requests
 import numpy as np
 import logging as log
+
 from typing import Dict
 from dataclasses import dataclass
 from control.hat import interface as pymoab
@@ -213,9 +214,9 @@ class BrainController(IController):
 
         # Hover the plate and deactivate the servos
         pymoab.hover_plate()
-        pymoab.time.sleep(0.5)
+        time.sleep(0.5)
         pymoab.disable_servo_power()
-        pymoab.time.sleep(0.5)
+        time.sleep(0.5)
 
     def getControlOutput(
         self,

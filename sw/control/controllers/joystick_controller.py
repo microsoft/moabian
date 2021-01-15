@@ -7,11 +7,10 @@ Joystick Controller
 Use joystick input to control the plate directly.
 """
 
-from time import sleep
+import time
+
 from typing import Dict
 from control.hat import interface as pymoab
-
-import time
 
 from ..common import IController, IDevice, CircleFeature, Vector2
 
@@ -27,9 +26,9 @@ class JoystickController(IController):
 
         # Hover the plate and deactivate the servos
         pymoab.hover_plate()
-        pymoab.sleep(0.5)
+        time.sleep(0.5)
         pymoab.disable_servo_power()
-        pymoab.sleep(0.5)
+        time.sleep(0.5)
 
     def on_joy_moved(self, sender: object, x: float, y: float):
         self.joystick = Vector2(-y, x)

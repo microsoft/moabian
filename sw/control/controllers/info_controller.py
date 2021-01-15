@@ -1,10 +1,13 @@
-from time import sleep
-from typing import Dict
-from control.hat import interface as pymoab
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
 
 import time
 import socket
 import os
+
+from time import sleep
+from typing import Dict
+from control.hat import interface as pymoab
 
 from ..common import IController, IDevice, CircleFeature, Vector2
 import logging as log
@@ -22,9 +25,9 @@ class InfoController(IController):
 
         # Hover the plate and deactivate the servos
         pymoab.hover_plate()
-        pymoab.sleep(0.5)
+        time.sleep(0.5)
         pymoab.disable_servo_power()
-        pymoab.sleep(0.5)
+        time.sleep(0.5)
 
     def getControlOutput(
         self,

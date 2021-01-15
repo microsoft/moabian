@@ -10,6 +10,7 @@ the plate angles.
 
 import time
 import numpy as np
+
 from typing import Dict
 from enum import IntEnum
 from dataclasses import dataclass
@@ -124,9 +125,9 @@ class PIDController(IController):
 
         # Hover the plate and deactivate the servos
         pymoab.hover_plate()
-        pymoab.time.sleep(0.5)
+        time.sleep(0.5)
         pymoab.disable_servo_power()
-        pymoab.time.sleep(0.5)
+        time.sleep(0.5)
 
     def getControlOutput(
         self,
