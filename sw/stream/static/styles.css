@@ -1,6 +1,5 @@
 <!-- https://dev.to/hankchizljaw/a-modern-css-reset-6p3 -->
 
-
 * { box-sizing: border-box; }
 
 body, h1, h2, p { margin: 0; }
@@ -14,6 +13,7 @@ body {
     --secondaryColor: #ffcc67;
     --accentColor: #4e5166;
 
+    min-height: 100vh;
     background-color: #f9f9f9;
     line-height: 1.5;
     text-align:center;
@@ -32,17 +32,6 @@ img {
 html {
     font-family: Avenir, Helvetica;
     font-size: 100%;
-}
-
-.here:after {
-    /* content:""; */
-    /* position: absolute; */
-    /* z-index: -1; */
-    /* top: 0; */
-    /* bottom: 0; */
-    /* left: 50%; */
-    /* border-left: 2px dotted #ff0000; */
-    /* transform: translate(-50%); */
 }
 
 .lines {
@@ -96,4 +85,3 @@ img {
 .vertical {
   background-size: 5px 100%;
 }
-
