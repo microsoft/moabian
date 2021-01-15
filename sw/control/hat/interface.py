@@ -1,12 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
+import time
 import socket
 import spidev
 import numpy as np
 import RPi.GPIO as gpio
 
 from enum import IntEnum
-from time import sleep
 
 """
 # Messaging from the Pi to the hat ---------------------------------------------
@@ -193,11 +193,11 @@ def _get_sw_version():
 def runtime():
     """ Set mode to runtime mode (not bootloader mode). """
     gpio.output(GpioPin.HAT_EN, gpio.LOW)
-    sleep(0.02)  # 20ms
+    time.sleep(0.02)  # 20ms
     gpio.output(GpioPin.HAT_EN, gpio.HIGH)
     gpio.output(GpioPin.HAT_RESET, gpio.LOW)
     gpio.output(GpioPin.BOOT_EN, gpio.LOW)
-    sleep(0.25)  # 250ms
+    time.sleep(0.25)  # 250ms
 
 
 def setupGPIO():

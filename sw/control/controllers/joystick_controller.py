@@ -44,6 +44,6 @@ class JoystickController(IController):
         # Without this sleep (for 90% of our update period), input polling
         # will return zeros intermittently and the actuator will twitch
         update_timestep = 1.0 / sender.config.frequencyHz
-        sleep(update_timestep - 0.1 * update_timestep)
+        time.sleep(update_timestep - 0.1 * update_timestep)
 
         return self.joystick * self.config.maxAngle
