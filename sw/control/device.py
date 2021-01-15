@@ -95,8 +95,6 @@ class Device(IDevice):
                 if self.debug_decorator is not None:
                     self.debug_decorator.decorate({SENSOR_IMG_ARG: img})
 
-        # sync our desired state with servos and display
-        pymoab.
     def run(self):
         if self.sensor:
             self.sensor.start()
