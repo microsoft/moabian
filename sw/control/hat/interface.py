@@ -234,11 +234,12 @@ def init(bus=0, device=0):
     Initializes the library.
     Call once at startup.
     """
-    setupGPIO()
-    runtime()
+    global spi
     spi = spidev.SpiDev()
     spi.open(bus, device)
     spi.max_speed_hz = 10000
+    setupGPIO()
+    runtime()
 
 
 def close():
