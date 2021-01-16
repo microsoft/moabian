@@ -150,7 +150,7 @@ _servo2_offset = 0
 _servo3_offset = 0
 _icon_idx = 0
 _text_idx = 0
-spi = spidev.SpiDev()
+spi = None
 
 
 # Helper functions -------------------------------------------------------------
@@ -218,11 +218,13 @@ def send(packet):
     Python immediately converts hex  to python )
     """
     assert len(packet) == 9
+    assert spi is not None
     spi.writebytes2(packet)
 
 
 def receive():
     """Receive 9 bytes from hat."""
+    assert spi is not None
     return spi.readbytes(9)
 
 
@@ -234,6 +236,7 @@ def init(bus=0, device=0):
     """
     setupGPIO()
     runtime()
+    spi = spidev.SpiDev()
     spi.open(bus, device)
     spi.max_speed_hz = 10000
 
@@ -241,6 +244,10 @@ def init(bus=0, device=0):
 def close():
     spi.close()
     gpio.cleanup()
+
+
+def ping():
+    print_arbitrary_message("Pong.")
 
 
 def activate_plate():
