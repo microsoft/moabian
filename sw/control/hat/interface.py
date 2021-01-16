@@ -218,7 +218,7 @@ def send(packet):
     Python immediately converts hex  to python )
     """
     assert len(packet) == 9
-    return spi.writebytes2(packet)
+    spi.writebytes2(packet)
 
 
 def receive():
