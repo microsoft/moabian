@@ -382,6 +382,7 @@ def poll_power_btn():
 
 
 def print_arbitrary_message(s):
+    s = s.upper()
     s = bytes(s, "utf-8")
     s += b"\0"
     assert len(s) < 256
