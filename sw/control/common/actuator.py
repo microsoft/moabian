@@ -16,8 +16,9 @@ class IActuator:
     class Config:
         pass
 
-    def __init__(self, config: Config, device: IDevice):
+    def __init__(self, config: Config, device: IDevice, hat):
         self.config = config
+        self.hat = hat
 
     def set_plate_angles(self, sender: IDevice, plate_angles: Vector2):
         pass

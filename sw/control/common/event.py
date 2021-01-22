@@ -4,7 +4,7 @@
 from enum import Enum
 from typing import List, Optional
 from dataclasses import dataclass
-from control.hat import interface as hat
+from control.hat.interface import Hat
 
 
 @dataclass
@@ -60,7 +60,8 @@ class EventDispatcher:
     Call dispatch_event() in main loop.
     """
 
-    def __init__(self):
+    def __init__(self, hat):
+        self.hat = hat
         # ...are you listening?
         self.listeners: List[IEventListener] = []
 
@@ -76,7 +77,7 @@ class EventDispatcher:
 
     def _raw_event(self) -> Event:
         # Note the * to unpack the tuple to create the Event
-        return Event(*hat.poll_buttons())
+        return Event(*self.hat.poll_buttons())
 
     def get_next_event(self) -> Optional[Event]:
         """
@@ -87,6 +88,8 @@ class EventDispatcher:
         """
         # poll the current state of the hardware
         curr_event = self._raw_event()
+        if curr_event.menu_btn:
+            print("Event:", curr_event)
 
         # first scan will set previous
         event = None

@@ -4,7 +4,6 @@
 import numpy as np
 from enum import Enum
 from pydoc import locate
-from control.hat import interface as hat
 from typing import Any, Callable, Dict, Optional, cast
 
 from .debug import *
@@ -28,11 +27,13 @@ class Device(IDevice):
         self,
         config: IDevice.Config,
         calibration: IDevice.Calibration,
+        hat,
         inputHandler: InputHandler = None,
         debugDecorator: Optional[IDebugDecorator] = None,
     ):
         super().__init__(config, calibration, debugDecorator)
         self.config = config
+        self.hat = hat
 
         self.inputHandler = inputHandler
 
@@ -45,7 +46,7 @@ class Device(IDevice):
         self.running = False
 
         # listeners get added in createFromConfig...
-        self.events = EventDispatcher()
+        self.events = EventDispatcher(self.hat)
 
     def update(self):
 
@@ -88,7 +89,7 @@ class Device(IDevice):
 
             # actuate
             if self.actuator:
-                self.actuator.set_plate_angles(self, output)
+                self.actuator.set_plate_angles(output)
 
             # and execute debuging decorators
             if self.config.debug:
@@ -118,6 +119,7 @@ class Device(IDevice):
     def createFromConfig(
         config: IDevice.Config,
         calibration: IDevice.Calibration,
+        hat,
         inputHandler: InputHandler = None,
     ) -> Optional[IDevice]:
 
@@ -129,7 +131,7 @@ class Device(IDevice):
             debug_decorator = decorator_ref(config.debugDecorator)  # type: ignore
 
         # create device
-        device = Device(config, calibration, inputHandler, debug_decorator)
+        device = Device(config, calibration, hat, inputHandler, debug_decorator)
 
         # sensor
         sensor: Optional[ISensor] = None
@@ -154,9 +156,11 @@ class Device(IDevice):
         controller: Optional[IController] = None
         if config.controller:
             controller = cast(
-                IController,
-                device.component_from_config(config.controller),
+                IController, device.component_from_config(config.controller)
             )
+            if controller is not None:
+                controller.hat = hat
+                controller.init_hat()
 
             # register for events
             device.events.listeners.append(controller)
@@ -170,6 +174,9 @@ class Device(IDevice):
                 IActuator,
                 device.component_from_config(config.actuator),
             )
+            if actuator is not None:
+                actuator.hat = hat
+                actuator.init_hat()
 
         # set 'em
         device.sensor = sensor

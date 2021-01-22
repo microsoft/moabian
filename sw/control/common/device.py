@@ -90,11 +90,13 @@ class IDevice:
         return self.next_device
 
     def component_from_config(
-        self, component_config: ComponentConfig
+        self, component_config: ComponentConfig, **kwargs
     ) -> Optional[object]:
         """
         Import classes with the following signature,
         and construct them with their config class.
+
+        Then add any additional params to their class
 
             class Foo:
                 @dataclass
@@ -125,4 +127,5 @@ class IDevice:
         except Exception as e:
             log.exception(f"Error creating class {class_name}\n{e}")
             return None
+
         return ref

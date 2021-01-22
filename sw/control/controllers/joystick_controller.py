@@ -10,14 +10,13 @@ Use joystick input to control the plate directly.
 import time
 
 from typing import Dict
-from control.hat import interface as hat
 
 from ..common import IController, IDevice, CircleFeature, Vector2
 
 
 class JoystickController(IController):
     def __init__(self, config: IController.Config, device: IDevice):
-        super().__init__(config, device)
+        super().__init__(config, device, hat=None)
         self.config = config
         self.joystick = Vector2(0, 0)
 
@@ -25,9 +24,9 @@ class JoystickController(IController):
         sender.stop()
 
         # Hover the plate and deactivate the servos
-        hat.hover_plate()
+        self.hat.hover_plate()
         time.sleep(0.5)
-        hat.disable_servo_power()
+        self.hat.disable_servo_power()
         time.sleep(0.5)
 
     def on_joy_moved(self, sender: object, x: float, y: float):

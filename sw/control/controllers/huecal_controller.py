@@ -18,7 +18,6 @@ from copy import copy
 from enum import Enum
 from dataclasses import asdict
 from typing import Dict, Optional, cast
-from control.hat import interface as hat
 
 from ..device import Device
 from ..detectors import HSVDetector
@@ -39,11 +38,11 @@ class CalibrationState(Enum):
 
 class HueCalibrationController(IController):
     def __init__(self, config: IController.Config, device: IDevice):
-        super().__init__(config, device)
+        super().__init__(config, device, hat=None)
         self.config = config
 
         # plate must be level
-        hat.set_plate_angles(0, 0)
+        self.hat.set_plate_angles(0, 0)
 
         # initial state
         self.state = CalibrationState.Start
@@ -63,9 +62,9 @@ class HueCalibrationController(IController):
         sender.stop()
 
         # Hover the plate and deactivate the servos
-        hat.hover_plate()
+        self.hat.hover_plate()
         time.sleep(0.5)
-        hat.disable_servo_power()
+        self.hat.disable_servo_power()
         time.sleep(0.5)
 
     def on_joy_down(self, sender: IDevice):
@@ -127,7 +126,7 @@ class HueCalibrationController(IController):
 
     def _start_calibration(self):
         if self.ball_detector:
-            hat.set_icon_text(hat.Icon.BLANK, hat.Text.CAL_INSTR)
+            self.hat.set_icon_text(self.hat.Icon.BLANK, self.hat.Text.CAL_INSTR)
 
             # start search here
             self.found_ball = False
@@ -209,7 +208,7 @@ class HueCalibrationController(IController):
         self._print_results()
         self._write_calibration(sender)
 
-        hat.set_icon_text(hat.Icon.CHECK, hat.Text.CAL_COMPLETE)
+        self.hat.set_icon_text(self.hat.Icon.CHECK, self.hat.Text.CAL_COMPLETE)
         time.sleep(2)
 
         sender.stop()
@@ -218,7 +217,7 @@ class HueCalibrationController(IController):
         log.warn("Failed to calibrate.")
         self._print_results()
 
-        hat.set_icon_text(hat.Icon.BLANK, hat.Text.ERROR)
+        self.hat.set_icon_text(self.hat.Icon.BLANK, self.hat.Text.ERROR)
         time.sleep(2)
 
         sender.stop()

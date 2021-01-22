@@ -16,7 +16,6 @@ import logging as log
 
 from typing import Dict
 from dataclasses import dataclass
-from control.hat import interface as hat
 
 from ..common import CircleFeature, IController, IDevice, Vector2
 
@@ -63,7 +62,7 @@ class BrainController(IController):
         sensorSize: int = 256
 
     def __init__(self, config: Config, device: IDevice):
-        super().__init__(config, device)
+        super().__init__(config, device, hat=None)
         self.config = config
 
         self.max_angle = self.config.maxAngle
@@ -213,9 +212,9 @@ class BrainController(IController):
         sender.stop()
 
         # Hover the plate and deactivate the servos
-        hat.hover_plate()
+        self.hat.hover_plate()
         time.sleep(0.5)
-        hat.disable_servo_power()
+        self.hat.disable_servo_power()
         time.sleep(0.5)
 
     def getControlOutput(

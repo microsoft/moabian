@@ -78,7 +78,7 @@ class SendCommand(IntEnum):
     SET_DEBUGGING_DEBUG     = 0x47  # (Log level 7) Print everything possible
     REQUEST_STATE_INFO      = 0x4E  # Return the state info (all the information in the main loop of the firmware)
     REQUEST_FW_VERSION      = 0x4F  # Ask the hat to reply back the firmware version, fw version < 2.5 will not reply
-    ARBITRARY_MESSAGE       = 0x80  # There is a arbitrary length message being transmitted (max len 256 bytes) 
+    ARBITRARY_MESSAGE       = 0x80  # There is a arbitrary length message being transmitted (max len 256 bytes)
                                     # and put into the text buffer
 
 # Messaging from the hat to the Pi
@@ -144,14 +144,14 @@ Y_TILT_SERVO3 = -0.866
 # fmt: on
 
 
-# Global variables for things that are constantly polled -----------------------
-_servo1_offset = 0
-_servo2_offset = 0
-_servo3_offset = 0
-_icon_idx = 0
-_text_idx = 0
-spi = None
-
+# # Global variables for things that are constantly polled -----------------------
+# _servo1_offset = 0
+# _servo2_offset = 0
+# _servo3_offset = 0
+# _icon_idx = 0
+# _text_idx = 0
+# spi = None
+# print("\n\n\n\n\nSPI IS NONE HERE IMPORT \n\n\n\n\n\n")
 
 # Helper functions -------------------------------------------------------------
 def _byte_to_bits(byte):
@@ -163,16 +163,6 @@ def _uint8_to_int8(b):
     Converts a byte to a signed int (int8) instead of unsigned int (uint8).
     """
     return b if b < 128 else (-256 + b)
-
-
-def _xy_offsets(x, y):  # x & y were int8
-    # fmt: off
-    # for x brackets were cast to int8
-    x_offset = x + _servo1_offset + (X_TILT_SERVO1 * _servo2_offset) + (X_TILT_SERVO1 * _servo3_offset)
-    # for y brackets were cast to int
-    y_offset = y + (Y_TILT_SERVO2 * _servo2_offset) + (Y_TILT_SERVO3 * _servo3_offset)
-    # fmt: on
-    return x_offset, y_offset
 
 
 def _get_host_ip():
@@ -192,6 +182,16 @@ def _get_sw_version():
     return ver_triplet
 
 
+def setupGPIO():
+    gpio.setwarnings(False)
+    gpio.setmode(gpio.BCM)
+    gpio.setup(
+        [GpioPin.BOOT_EN, GpioPin.FAN_EN, GpioPin.HAT_EN, GpioPin.HAT_RESET],
+        gpio.OUT,
+    )
+    gpio.setup(GpioPin.HAT_PWR_N, gpio.IN)
+
+
 def runtime():
     """ Set mode to runtime mode (not bootloader mode). """
     gpio.output(GpioPin.HAT_EN, gpio.LOW)
@@ -200,174 +200,6 @@ def runtime():
     gpio.output(GpioPin.HAT_RESET, gpio.LOW)
     gpio.output(GpioPin.BOOT_EN, gpio.LOW)
     time.sleep(0.25)  # 250ms
-
-
-def setupGPIO():
-    gpio.setwarnings(False)
-    gpio.setmode(gpio.BCM)
-    gpio.setup(
-        [GpioPin.BOOT_EN, GpioPin.FAN_EN, GpioPin.HAT_EN, GpioPin.HAT_RESET], gpio.OUT
-    )
-    gpio.setup(GpioPin.HAT_PWR_N, gpio.IN)
-
-
-def send(packet):
-    """
-    Send 9 bytes to hat.
-    Use `writebytes2` instead of `writebytes` since it works with numpy array.
-    Python immediately converts hex  to python )
-    """
-    assert len(packet) == 9
-    assert spi is not None
-    spi.writebytes2(packet)
-
-
-def receive():
-    """Receive 9 bytes from hat."""
-    assert spi is not None
-    return spi.readbytes(9)
-
-
-# Library functions ------------------------------------------------------------
-def init(bus=0, device=0):
-    """
-    Initializes the library.
-    Call once at startup.
-    """
-    global spi
-    spi = spidev.SpiDev()
-    spi.open(bus, device)
-    spi.max_speed_hz = 10000
-    setupGPIO()
-    runtime()
-
-
-def close():
-    spi.close()
-    gpio.cleanup()
-
-
-def ping():
-    print_arbitrary_message("Pong.")
-
-
-def activate_plate():
-    """ Set the plate to track plate angles. """
-    send([SendCommand.SERVO_ENABLE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-
-
-def hover_plate():
-    """
-    Set the plate to its hover position.
-    This was experimentally found to be 150 (down but still leaving some
-    space at the bottom).
-    """
-    set_servo_positions(150, 150, 150)
-
-
-def lower_plate():
-    """
-    Set the plate to its lower position (usually powered-off state).
-    This was experimentally found to be 155 (lowest possible position).
-    """
-    set_servo_positions(155, 155, 155)
-
-
-def disable_servo_power():
-    """ Disables the power to the servos. """
-    send([SendCommand.SERVO_DISABLE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-
-
-def set_plate_angles(plate_x_deg: int, plate_y_deg: int):
-    # Take into account offsets when converting from degrees to values sent to hat
-    plate_x, plate_y = _xy_offsets(plate_x_deg, plate_y_deg)
-    send(
-        np.array(
-            [
-                SendCommand.SET_PLATE_ANGLES,
-                plate_x,
-                plate_y,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-            ],
-            dtype=np.int8,
-        )
-    )
-
-
-def set_servo_positions(servo1_pos: int, servo2_pos: int, servo3_pos: int):
-    send(
-        np.array(
-            [
-                SendCommand.SET_SERVOS,
-                servo1_pos,
-                servo2_pos,
-                servo3_pos,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-            ],
-            dtype=np.int8,
-        )
-    )
-
-
-def set_servo_offsets(servo1_offset: int, servo2_offset: int, servo3_offset: int):
-    """
-    Set post-factory calibration offsets for each servo.
-    Normally this call should not be needed.
-    """
-    global _servo1_offset
-    global _servo2_offset
-    global _servo3_offset
-    _servo1_offset = servo1_offset
-    _servo2_offset = servo2_offset
-    _servo3_offset = servo3_offset
-
-
-def set_icon_text(icon_idx: Icon, text_idx: Text):
-    send(
-        [
-            SendCommand.TEXT_ICON_SELECT,
-            icon_idx,
-            text_idx,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-        ],
-    )
-
-
-def poll_buttons():
-    """
-    Check whether buttons are pressed and the joystick x & y values in the
-    response.
-
-    Return:
-        - menu_btn: Bool
-        - joy_btn : Bool
-        - joy_x   : Float normalized from -1 to +1
-        - joy_y   : Float normalized from -1 to +1
-    """
-    # Note the values in receive will be the values from the time of the
-    # previous spi message
-    hat_to_pi = receive()
-    # Check if buttons are pressed
-    menu_btn = hat_to_pi[0] == Button.MENU
-    joy_btn = hat_to_pi[0] == Button.JOYSTICK
-    # Get x & y coordinates of joystick normalized to [-1, +1]
-    joy_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X]) / 100.0
-    joy_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y]) / 100.0
-    return menu_btn, joy_btn, joy_x, joy_y
 
 
 def enable_fan(enabled: bool):
@@ -389,40 +221,238 @@ def poll_power_btn():
     return gpio.input(GpioPin.HAT_PWR_N) != gpio.HIGH
 
 
-def print_arbitrary_message(s):
-    s = s.upper()
-    s = bytes(s, "utf-8")
-    s += b"\0"
-    assert len(s) < 256
+class Hat(object):
+    _instance = None
 
-    # Calculate the number of messages required to send the message
-    num_msgs = int(np.ceil(len(s) / 8))
+    def __init__(
+        self,
+        spi_bus=0,
+        spi_device=0,
+        spi_max_speed_hz=10000,
+        servo1_offset=0,
+        servo2_offset=0,
+        servo3_offset=0,
+    ):
+        self._servo1_offset = servo1_offset
+        self._servo2_offset = servo2_offset
+        self._servo3_offset = servo3_offset
+        self._icon_idx = 0
+        self._text_idx = 0
+        self.spi = None
+        self.spi = spidev.SpiDev()
+        self.spi.open(spi_bus, spi_device)
+        self.spi.max_speed_hz = spi_max_speed_hz
 
-    # Fill the message with trailing termination chars to so we always
-    # send 9 bytes
-    s += (num_msgs * 8 - len(s)) * b"\0"
+        self.Text = Text
+        self.Icon = Icon
 
-    for msg_idx in range(num_msgs):
-        send([SendCommand.ARBITRARY_MESSAGE, *s[8 * msg_idx : 8 * msg_idx + 8]])
-    # After sending all buffer info, send the command to display the buffer
-    send([SendCommand.DISPLAY_BUFFER, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+        setupGPIO()
+        runtime()
 
+    def close(self):
+        self.spi.close()
+        gpio.cleanup()
 
-def print_ip():
-    ip1, ip2, ip3, ip4 = _get_host_ip()
-    send_ip_address(ip1, ip2, ip3, ip4)
-    print_arbitrary_message(f"PROJECT MOAB\nIP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}\n")
+    def _xy_offsets(self, x, y):  # x & y were int8
+        # fmt: off
+        # for x brackets were cast to int8
+        x_offset = x + self._servo1_offset + (X_TILT_SERVO1 * self._servo2_offset) + (X_TILT_SERVO1 * self._servo3_offset)
+        # for y brackets were cast to int
+        y_offset = y + (Y_TILT_SERVO2 * self._servo2_offset) + (Y_TILT_SERVO3 * self._servo3_offset)
+        # fmt: on
+        return x_offset, y_offset
 
+    def send(self, packet):
+        """
+        Send 9 bytes to hat.
+        Use `writebytes2` instead of `writebytes` since it works with numpy array.
+        Python immediately converts hex  to python )
+        """
+        assert len(packet) == 9
+        assert self.spi is not None
+        time.sleep(0.001)
+        self.spi.writebytes2(packet)
 
-def print_sw_version():
-    sw_major, sw_minor, sw_bug = _get_sw_version()
-    print_arbitrary_message(f"PROJECT MOAB\nSW VERSION\n{sw_major}.{sw_minor}.{sw_bug}\n")
+    def receive(self):
+        """Receive 9 bytes from hat."""
+        time.sleep(0.0001)
+        assert self.spi is not None
+        return self.spi.readbytes(9)
 
+    def print_arbitrary_message(self, s):
+        s = s.upper()
+        s = bytes(s, "utf-8")
+        s += b"\0"
+        assert len(s) < 256
 
-def print_info_screen():
-    sw_major, sw_minor, sw_bug = _get_sw_version()
-    ip1, ip2, ip3, ip4 = _get_host_ip()
-    print_arbitrary_message(
-        f"PROJECT MOAB\nSW VERSION\n{sw_major}.{sw_minor}.{sw_bug}\nIP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}\n"
-    )
+        # Calculate the number of messages required to send the message
+        num_msgs = int(np.ceil(len(s) / 8))
 
+        # Fill the message with trailing termination chars to so we always
+        # send 9 bytes
+        s += (num_msgs * 8 - len(s)) * b"\0"
+
+        for msg_idx in range(num_msgs):
+            self.send(
+                [SendCommand.ARBITRARY_MESSAGE, *s[8 * msg_idx : 8 * msg_idx + 8]]
+            )
+        # After sending all buffer info, send the command to display the buffer
+        self.send(
+            [SendCommand.DISPLAY_BUFFER, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+        )
+
+    def ping(self):
+        self.print_arbitrary_message("Pong.")
+
+    def activate_plate(self):
+        """ Set the plate to track plate angles. """
+        self.send(
+            [
+                SendCommand.SERVO_ENABLE,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+            ]
+        )
+
+    def disable_servo_power(self):
+        """ Disables the power to the servos. """
+        self.send(
+            [
+                SendCommand.SERVO_DISABLE,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+            ]
+        )
+
+    def set_plate_angles(self, plate_x_deg: int, plate_y_deg: int):
+        # Take into account offsets when converting from degrees to values sent to hat
+        plate_x, plate_y = self._xy_offsets(plate_x_deg, plate_y_deg)
+        self.send(
+            np.array(
+                [
+                    SendCommand.SET_PLATE_ANGLES,
+                    plate_x,
+                    plate_y,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                ],
+                dtype=np.int8,
+            )
+        )
+
+    def set_servo_positions(self, servo1_pos: int, servo2_pos: int, servo3_pos: int):
+        self.send(
+            np.array(
+                [
+                    SendCommand.SET_SERVOS,
+                    servo1_pos,
+                    servo2_pos,
+                    servo3_pos,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                ],
+                dtype=np.int8,
+            )
+        )
+
+    def set_servo_offsets(
+        self, servo1_offset: int, servo2_offset: int, servo3_offset: int
+    ):
+        """
+        Set post-factory calibration offsets for each servo.
+        Normally this call should not be needed.
+        """
+        self._servo1_offset = servo1_offset
+        self._servo2_offset = servo2_offset
+        self._servo3_offset = servo3_offset
+
+    def set_icon_text(self, icon_idx: Icon, text_idx: Text):
+        self.send(
+            [
+                SendCommand.TEXT_ICON_SELECT,
+                icon_idx,
+                text_idx,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+            ],
+        )
+
+    def hover_plate(self):
+        """
+        Set the plate to its hover position.
+        This was experimentally found to be 150 (down but still leaving some
+        space at the bottom).
+        """
+        self.set_servo_positions(150, 150, 150)
+
+    def lower_plate(self):
+        """
+        Set the plate to its lower position (usually powered-off state).
+        This was experimentally found to be 155 (lowest possible position).
+        """
+        self.set_servo_positions(155, 155, 155)
+
+    def poll_buttons(self):
+        """
+        Check whether buttons are pressed and the joystick x & y values in the
+        response.
+
+        Return:
+            - menu_btn: Bool
+            - joy_btn : Bool
+            - joy_x   : Float normalized from -1 to +1
+            - joy_y   : Float normalized from -1 to +1
+        """
+        # Note the values in receive will be the values from the time of the
+        # previous spi message
+        hat_to_pi = self.receive()
+        # Check if buttons are pressed
+        menu_btn = hat_to_pi[0] == Button.MENU
+        joy_btn = hat_to_pi[0] == Button.JOYSTICK
+        # Get x & y coordinates of joystick normalized to [-1, +1]
+        joy_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X]) / 100.0
+        joy_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y]) / 100.0
+        return menu_btn, joy_btn, joy_x, joy_y
+
+    def print_ip(self):
+        ip1, ip2, ip3, ip4 = _get_host_ip()
+        self.send_ip_address(ip1, ip2, ip3, ip4)
+        self.print_arbitrary_message(
+            f"PROJECT MOAB\nIP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}\n"
+        )
+
+    def print_sw_version(self):
+        sw_major, sw_minor, sw_bug = _get_sw_version()
+        self.print_arbitrary_message(
+            f"PROJECT MOAB\nSW VERSION\n{sw_major}.{sw_minor}.{sw_bug}\n"
+        )
+
+    def print_info_screen(self):
+        sw_major, sw_minor, sw_bug = _get_sw_version()
+        ip1, ip2, ip3, ip4 = _get_host_ip()
+        self.print_arbitrary_message(
+            f"PROJECT MOAB\nSW VERSION\n{sw_major}.{sw_minor}.{sw_bug}\nIP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}\n"
+        )

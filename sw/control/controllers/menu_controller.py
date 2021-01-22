@@ -6,10 +6,9 @@ Menu Controller
 
 Use joystick to navigate between other controllers.
 """
-
+import time
 from typing import ClassVar, List
 from dataclasses import dataclass, field
-from control.hat import interface as hat
 
 from ..common import IController, IDevice
 
@@ -38,32 +37,37 @@ class MenuController(IController):
         )
 
     def __init__(self, config: Config, device: IDevice):
-        super().__init__(config, device)
+        super().__init__(config, device, hat=None)
         self.config = config
 
         self.menu_items = self.config.menuItems
         self.menu_idx = device.previous_menu
 
+    def init_hat(self):
         self.display_menu_item(self.menu_idx)
 
     def display_menu_item(self, idx: int):
-        hat.set_icon_text(
-            hat.Icon[self.menu_items[idx].icon],
-            hat.Text[self.menu_items[idx].text],
+        self.hat.set_icon_text(
+            self.hat.Icon[self.menu_items[idx].icon],
+            self.hat.Text[self.menu_items[idx].text],
         )
 
     def on_flick_down(self, sender: IDevice):
         self.menu_idx = min(len(self.menu_items) - 1, self.menu_idx + 1)
         self.display_menu_item(self.menu_idx)
+        time.sleep(0.1)
 
     def on_flick_up(self, sender: IDevice):
         self.menu_idx = max(0, self.menu_idx - 1)
         self.display_menu_item(self.menu_idx)
+        time.sleep(0.1)
 
     def on_joy_down(self, sender: IDevice):
         menu_item = self.menu_items[self.menu_idx]
         sender.set_next_device(menu_item.device)
-        hat.set_icon_text(hat.Icon[menu_item.icon2], hat.Text[menu_item.text])
+        self.hat.set_icon_text(
+            self.hat.Icon[menu_item.icon2], self.hat.Text[menu_item.text]
+        )
 
         # save the menu item so we pop back up to this index when we return
         sender.previous_menu = self.menu_idx

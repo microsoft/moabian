@@ -55,7 +55,7 @@
         },
         "calibration": {
             "frequencyHz": 30,
-            "debug": true,
+            "debug": false,
             "debugDecorator": {
                 "name": "control.debug.FileDecorator",
                 "quality": "90",

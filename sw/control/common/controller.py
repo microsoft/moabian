@@ -19,8 +19,12 @@ class IController(IEventListener):
     class Config(IDevice):
         maxAngle: int = 15
 
-    def __init__(self, config: Config, device: IDevice):
+    def __init__(self, config: Config, device: IDevice, hat):
         self.config = config
+        self.hat = hat
+
+    def init_hat(self):
+        pass
 
     def getControlOutput(
         self,

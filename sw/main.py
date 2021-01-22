@@ -23,12 +23,12 @@ import signal
 import sys
 import time
 
-from control.hat import interface as pymoab
+from control.hat.interface import Hat
 from dacite import from_dict
 from collections import deque
 from control.common import IDevice
 from control.device import Device
-from control.timers import ThreadedTimer, BusyTimer
+from control.timers import BusyTimer
 from control.perfcounters import PerformanceCounters
 from control.config import calibration_path, config_path
 
@@ -107,15 +107,15 @@ def signal_handler(sig, frame) -> int:
 
     # Lower the plate and deactivate the servos
     # lower_plate is 155º; testing a lower position of 160º
-    pymoab.set_servo_positions(155, 155, 155)
-    time.sleep(0.2)
+    # pymoab.set_servo_positions(155, 155, 155)
+    # time.sleep(0.2)
 
-    pymoab.disable_servo_power()
-    time.sleep(0.1)
+    # pymoab.disable_servo_power()
+    # time.sleep(0.1)
 
-    # Clear the screen
-    pymoab.set_icon_text(pymoab.Icon.BLANK, pymoab.Text.BLANK)
-    time.sleep(0.1)
+    # # Clear the screen
+    # pymoab.set_icon_text(pymoab.Icon.BLANK, pymoab.Text.BLANK)
+    # time.sleep(0.1)
 
     sys.exit(0)
 
@@ -132,22 +132,15 @@ def main():
     # Now that log is configured, we can say we're starting up
     log.info("Moab starting.")
 
-    # onetime init of pymoab library
-    # side effect of setting OLED to Initalizing... which is ok
-    pymoab.init()
+    # Create the hat interface object
+    hat = Hat()
     time.sleep(0.1)
 
-    # put plate in "ready" mode, then cut power until needed
-    pymoab.set_servo_positions(150, 150, 150)
+    # put plate in "hover" mode, then cut power until needed
+    hat.hover_plate()
     time.sleep(0.1)
-    pymoab.disable_servo_power()
+    hat.disable_servo_power()
     time.sleep(0.1)
-
-    # optional perf timing
-    global perf_timer
-    if args.perf_interval_sec > 0:
-        perf_timer = ThreadedTimer()
-        perf_timer.start(args.perf_interval_sec, printPerformanceCounters)
 
     try:
         devices = config["devices"]
@@ -173,7 +166,7 @@ def main():
         try:
             config = from_dict(IDevice.Config, devices.get(curr_device))
             config.menu_idx = previous_menu
-            device = Device.createFromConfig(config, calibration)
+            device = Device.createFromConfig(config, calibration, hat)
 
             log.info("{} §".format(curr_device.upper()))
             device.run()
@@ -196,8 +189,6 @@ def main():
         config = load_config(args.config)
         calibration = load_calibration(args.calibration)
 
-
-perf_timer = ThreadedTimer()
 
 if __name__ == "__main__":
     main()
