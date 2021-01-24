@@ -1,8 +1,8 @@
 import time
 
-from hat import Hat, Icon, Text
-from env import MoabEnv
-from common import Vector2
+from env.hat import Hat, Icon, Text
+from env.env import MoabEnv
+from env.common import Vector2
 
 
 class ManualController:

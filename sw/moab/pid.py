@@ -1,12 +1,12 @@
 import time
 import numpy as np
 
-from hat import Icon, Text
-from env import MoabEnv
-from common import Vector2
+from env.hat import Icon, Text
+from env.env import MoabEnv
+from env.common import Vector2
 
 
-class HighPassFilter(object):
+class HighPassFilter:
     def __init__(self, frequency, fc=50):
         self.x_dot_cstate = 0
         self.frequency = frequency
