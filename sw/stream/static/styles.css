@@ -38,12 +38,12 @@ html {
     width: fit-content;
     height: fit-content;
     position: relative;
-  background-image: linear-gradient(#00f, #00f);
-  background-size: 20px 100%;
-  background-repeat: no-repeat;
-  background-position: center center;
+    background-image: linear-gradient(#00f, #00f);
+    background-size: 20px 100%;
+    background-repeat: no-repeat;
+    background-position: center center;
 
-  filter: brightness(0.8); 
+    filter: brightness(0.8); 
 }
 
 img {
@@ -52,7 +52,6 @@ img {
 
 .container {
     display: grid;
-    border: 1px dotted #4e5166;
     grid-template-columns: 1fr max-content 1fr;
     grid-template-rows: 1fr;
 }
@@ -79,9 +78,9 @@ img {
 }
 
 .horizontal {
-  background-size: 100% 5px;
+  background-size: 100% 3px;
 }
 
 .vertical {
-  background-size: 5px 100%;
+  background-size: 3px 100%;
 }
