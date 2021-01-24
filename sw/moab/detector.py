@@ -8,6 +8,7 @@ HSV filtering ball detector
 from typing import List, Optional
 
 import cv2
+import math
 import numpy as np
 from pymoab import hue_mask
 from common import Vector2, CircleFeature, Calibration
@@ -107,12 +108,12 @@ class HSVDetector:
                     # Convert from pixels to absolute with 0,0 as center of detected plate
                     x = self.x_obs - x_center
                     y = self.y_obs - y_center
-                    self.last_detected = CircleFeature(Vector2(x, y), radius)
-                    return self.last_detected
+                    self.last_detected = (Vector2(x, y), radius)
+                    return True, self.last_detected
                 else:
                     pass  # counter.update("miss", 1, FrequencyCounter)
 
             # counter.update("hit", 0, FrequencyCounter)
             # counter.update("miss", 0, FrequencyCounter)
 
-        return ball_detected, CircleFeature()
+        return ball_detected, (Vector2(0, 0), 0.0)

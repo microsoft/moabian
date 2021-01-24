@@ -1,6 +1,6 @@
 import time
 
-from hat import Hat
+from hat import Hat, Icon, Text
 from env import MoabEnv
 from common import Vector2
 
@@ -17,16 +17,15 @@ class ManualController:
 
 
 def main():
+    # Only manual needs access to the hat outside of the env
     hat = Hat()
-    frequency = 30
-    with MoabEnv(hat=hat, frequency=frequency) as env:
+    with MoabEnv(hat=hat) as env:
         controller = ManualController(hat)
-        env.step((0, 0))
+        state = env.reset(Icon.DOT, Text.MANUAL)
         while True:
-            action = controller()
+            action = controller(state)
             print(action)
             env.step(action)
-            time.sleep(1.0 / frequency)
 
 
 if __name__ == "__main__":
