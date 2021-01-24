@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"name": "sw",
+			"path": ".."
+		},
+		{
+			"name": "stream",
+			"path": "../stream"
+		},
+		{
+			"name": "control",
+			"path": "../control"
+		},
+		{
+			"name": "moab",
+			"path": "."
+		}
+	],
+	"settings": {}
+}
