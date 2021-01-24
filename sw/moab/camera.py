@@ -60,7 +60,7 @@ class OpenCVCameraSensor:
             self.source.release()
             self.source = None
 
-    def __call__(self, save=False):
+    def __call__(self):
         # safety check
         if self.source is None:
             raise Exception("Using camera before it has been started.")
@@ -73,7 +73,7 @@ class OpenCVCameraSensor:
         ret, frame = self.source.read()
         if ret:
             if save:
-                cv2.imwrite("/tmp/frame.jpg", frame, 70)
+                cv2.imwrite("/tmp/frame.jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 70])
             return frame, elapsed_time
         else:
             raise ValueError("Could not get the next frame")
