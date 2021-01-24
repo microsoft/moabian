@@ -28,7 +28,7 @@ class PIDController:
         Ki=0.001 / 2.375,  # Integral coefficient
         Kd=0.090 / 2.375,  # Derivative coefficient
         fc=15,  # Cutoff frequency of the high pass filter
-        frequency=30,
+        frequency=25,
     ):
         # TODO: The PID controller should probably use matrices instead of 2
         #       independent SISO (single-input single-output) controls.
@@ -43,8 +43,8 @@ class PIDController:
         # pass filtered signal: fc*s / (s + fc) = fc*s * 1 / (s + fc)
         # For more info: https://en.wikipedia.org/wiki/Differentiator
         # Or: https://www.youtube.com/user/ControlLectures/
-        self.filter_x = HighPassFilter(self.frequency, self.fc)
-        self.filter_y = HighPassFilter(self.frequency, self.fc)
+        self.hpf_x = HighPassFilter(self.frequency, self.fc)
+        self.hpf_y = HighPassFilter(self.frequency, self.fc)
 
         self.sum_x = 0
         self.sum_y = 0
@@ -53,14 +53,19 @@ class PIDController:
         ball_detected, position = state
         x, y = position
         if ball_detected:
-            action_x = self.Kp * x + self.Ki * self.sum_x + self.Kd * self.filter_x(x)
-            action_y = self.Kp * y + self.Ki * self.sum_y + self.Kd * self.filter_y(y)
+            action_x = self.Kp * x + self.Ki * self.sum_x + self.Kd * self.hpf_x(x)
+            action_y = self.Kp * y + self.Ki * self.sum_y + self.Kd * self.hpf_y(y)
+            # action_x = np.clip(action_x, -22, 22)
+            # action_y = np.clip(action_y, -22, 22)
             action = Vector2(action_x, -action_y)
-            print("Ball found")
+            # Update the integral term
+            self.sum_x += x
+            self.sum_y += y
+            # print("Ball found")
         else:
             # Move plate back to flat
             action = Vector2(0, 0)
-            print("No ball")
+            # print("No ball")
 
         return action
 

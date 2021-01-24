@@ -32,6 +32,7 @@ class HSVDetector:
             self.calibration = calibration
         else:
             self.calibration = Calibration()
+
         self.frame_size = frame_size
         self.kernel_size = kernel_size
         self.ball_min = ball_min
@@ -45,13 +46,13 @@ class HSVDetector:
         # if we haven't been overridden, use ballHue from
         # the calibration settings.
         if self.hue is None:
-            self.hue = self.calibration.ballHue
+            self.hue = self.calibration.ball_hue
 
         self.kernel = cv2.getStructuringElement(
             cv2.MORPH_ELLIPSE, tuple(self.kernel_size)
         )
 
-    def __call__(self, img: np.ndarray) -> CircleFeature:
+    def __call__(self, img: np.ndarray, debug=False) -> CircleFeature:
         if img is not None:
             # covert to HSV space
             color = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -94,12 +95,11 @@ class HSVDetector:
                 norm_radius = radius / self.frame_size
                 if self.ball_min < norm_radius < self.ball_max:
                     ball_detected = True
-                    # counter.update("hit", 1, FrequencyCounter)
 
                     # rotate the center coords into sensor coords
                     # the ball detector uses rotate coordinates, so we must as well
                     rot_center = Vector2(
-                        self.calibration.plateXOffset, self.calibration.plateYOffset
+                        self.calibration.plate_x_offset, self.calibration.plate_y_offset
                     ).rotate(math.radians(-self.calibration.rotation))
 
                     x_center = (rot_center.x + 0.5) * self.frame_size
@@ -108,12 +108,38 @@ class HSVDetector:
                     # Convert from pixels to absolute with 0,0 as center of detected plate
                     x = self.x_obs - x_center
                     y = self.y_obs - y_center
-                    self.last_detected = (Vector2(x, y), radius)
-                    return True, self.last_detected
-                else:
-                    pass  # counter.update("miss", 1, FrequencyCounter)
 
-            # counter.update("hit", 0, FrequencyCounter)
-            # counter.update("miss", 0, FrequencyCounter)
+                    if debug:
+                        center = (int(x), int(y))
+                        cv2.circle(img, center, 2, (255, 0, 255), 2)
+                        cv2.circle(img, center, int(radius), (255, 0, 255), 2)
+
+                        # Rotate the image -30 degrees so it looks normal
+                        w, h = img.shape[:2]
+                        center = (w / 2, h / 2)
+                        M = cv2.getRotationMatrix2D(center, 30, 1.0)
+                        img = cv2.warpAffine(img, M, (w, h))
+                        cv2.imwrite(
+                            "/tmp/camera/frame.jpg",
+                            img[::-1, :, :],  # Mirror along x axis
+                            [cv2.IMWRITE_JPEG_QUALITY, 70],
+                        )
+
+                    self.last_detected = (Vector2(x, y), radius)
+                    return ball_detected, self.last_detected
+                else:
+                    pass
+
+        if debug:
+            # Rotate the image -30 degrees so it looks normal
+            w, h = img.shape[:2]
+            center = (w / 2, h / 2)
+            M = cv2.getRotationMatrix2D(center, 30, 1.0)
+            img = cv2.warpAffine(img, M, (w, h))
+            cv2.imwrite(
+                "/tmp/camera/frame.jpg",
+                img[::-1, :, :],  # Mirror along x axis
+                [cv2.IMWRITE_JPEG_QUALITY, 70],
+            )
 
         return ball_detected, (Vector2(0, 0), 0.0)

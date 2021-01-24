@@ -19,7 +19,7 @@ class ManualController:
 def main():
     # Only manual needs access to the hat outside of the env
     hat = Hat()
-    with MoabEnv(hat=hat) as env:
+    with MoabEnv(hat=hat, frequency=22, debug=True) as env:
         controller = ManualController(hat)
         state = env.reset(Icon.DOT, Text.MANUAL)
         while True:

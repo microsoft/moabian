@@ -65,7 +65,7 @@ class CircleFeature:
 
 @dataclass
 class Calibration:
-    ballHue = 27
-    plateXOffset = -0.092
-    plateYOffset = -0.016
+    ball_hue = 27
+    plate_x_offset = -0.092
+    plate_y_offset = -0.016
     rotation = -30.0

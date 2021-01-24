@@ -21,10 +21,8 @@ class OpenCVCameraSensor:
         width=256,
         height=256,
         rotation=0,
-        brightness=50,
-        contrast=100,
-        saturation=100,
-        gain=100,
+        brightness=60,
+        contrast=0,
         fps=30,
     ):
         self.device_id = device_id
@@ -33,8 +31,6 @@ class OpenCVCameraSensor:
         self.rotation = rotation
         self.brightness = brightness
         self.contrast = contrast
-        self.saturation = saturation
-        self.gain = gain
         self.fps = fps
         self.prev_time = 0.0
         self.source = None
@@ -43,15 +39,12 @@ class OpenCVCameraSensor:
     def start(self):
         self.source = cv2.VideoCapture(self.device_id)
         if self.source:
-            cv2.CAP_PROP_FRAME_WIDTH = self.width
-            cv2.CAP_PROP_FRAME_HEIGHT = self.height
-            cv2.CAP_PROP_FPS = self.fps
-            cv2.CAP_PROP_BRIGHTNESS = self.brightness
-            cv2.CAP_PROP_CONTRAST = self.contrast
-            cv2.CAP_PROP_CONTRAST = self.saturation
-            cv2.CAP_PROP_CONTRAST = self.gain
-            # Not meant to be configurable
-            cv2.CAP_PROP_MODE = 0
+            self.source.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
+            self.source.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
+            self.source.set(cv2.CAP_PROP_FPS, self.fps)
+            self.source.set(cv2.CAP_PROP_MODE, 0)  # Not meant to be configurable
+            self.source.set(cv2.CAP_PROP_BRIGHTNESS, self.brightness)
+            self.source.set(cv2.CAP_PROP_CONTRAST, self.contrast)
         else:
             raise Exception("Couldn't create camera.")
 
@@ -72,8 +65,6 @@ class OpenCVCameraSensor:
 
         ret, frame = self.source.read()
         if ret:
-            if save:
-                cv2.imwrite("/tmp/frame.jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 70])
             return frame, elapsed_time
         else:
             raise ValueError("Could not get the next frame")

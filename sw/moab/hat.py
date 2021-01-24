@@ -132,7 +132,6 @@ class JoystickByteIndex(IntEnum):
 # GPIO pins
 class GpioPin(IntEnum):
     BOOT_EN   = 5   # Bcm 5  - RPi pin 29 - RPI_BPLUS_GPIO_J8_29
-    FAN_EN    = 26  # Bcm 26 - RPi pin 37 - RPI_BPLUS_GPIO_J8_37
     HAT_EN    = 20  # Bcm 20 - RPi pin 38 - RPI_BPLUS_GPIO_J8_38
     HAT_RESET = 6   # Bcm 6  - RPi pin 31 - RPI_BPLUS_GPIO_J8_31
     HAT_PWR_N = 3   # Bcm 3  - RPi pin 5  - RPI_BPLUS_GPIO_J8_05
@@ -186,7 +185,7 @@ def setupGPIO():
     gpio.setwarnings(False)
     gpio.setmode(gpio.BCM)
     gpio.setup(
-        [GpioPin.BOOT_EN, GpioPin.FAN_EN, GpioPin.HAT_EN, GpioPin.HAT_RESET],
+        [GpioPin.BOOT_EN, GpioPin.HAT_EN, GpioPin.HAT_RESET],
         gpio.OUT,
     )
     gpio.setup(GpioPin.HAT_PWR_N, gpio.IN)
@@ -202,19 +201,8 @@ def runtime():
     time.sleep(0.25)  # 250ms
 
 
-def enable_fan(enabled: bool):
-    gpio.output(GpioPin.FAN_EN, gpio.HIGH if enabled else gpio.LOW)
-
-
 def enable_hat(enabled: bool):
     gpio.output(GpioPin.HAT_EN, gpio.HIGH if enabled else gpio.LOW)
-
-
-def poll_temp():
-    temp = 0
-    with open("/sys/class/thermal/thermal_zone0/temp", "r") as file:
-        temp = int(file.read()) / 1000.0
-    return temp
 
 
 def poll_power_btn():
@@ -345,7 +333,6 @@ class Hat(object):
     def set_plate_angles(self, plate_x_deg: int, plate_y_deg: int):
         # Take into account offsets when converting from degrees to values sent to hat
         plate_x, plate_y = self._xy_offsets(plate_x_deg, plate_y_deg)
-        print("Plate (x,y):", (plate_x, plate_y))
         self.send(
             np.array(
                 [
@@ -364,7 +351,6 @@ class Hat(object):
         )
 
     def set_servo_positions(self, servo1_pos: int, servo2_pos: int, servo3_pos: int):
-        print("Servo (s1, s2, s3):", (servo1_pos, servo2_pos, servo3_pos))
         self.send(
             np.array(
                 [
