@@ -22,9 +22,6 @@ class CameraOpenCV(BaseCamera):
         while True:
             # read current frame
             _, img = camera.read()
-            cropped = img
 
             # encode as a jpeg image and return it
-            yield cv2.imencode('.jpg', cropped)[1].tobytes()
-
-
+            yield cv2.imencode('.jpg', img)[1].tobytes()

@@ -6,7 +6,7 @@ from flask import Flask, render_template, Response, url_for, redirect
 from camera_file import CameraFile
 from camera_opencv import CameraOpenCV
 
-app = Flask(__name__, 
+app = Flask(__name__,
         static_url_path='',
         static_folder='static',
         template_folder='templates')
@@ -22,7 +22,7 @@ def gen(camera):
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
-@app.route('/video_mjpeg')
+@app.route('/file_mjpeg')
 def video_mjpeg():
     return Response(gen(CameraFile()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
@@ -44,9 +44,7 @@ if __name__ == '__main__':
     hostname = socket.gethostname()
 
     ip = getHostIP()
-    print(f" • Grid testing         http://{ip}:{port}/grid.html")
-    print(f" • Moab main.py stream  http://{ip}:{port}/index.html")
-    print(f" • Native OpenCV stream http://{ip}:{port}/opencv.html")
+    print(f" • Camera View      http://{ip}:{port}/")
     app.run(host=ip, port=port, threaded=True)
 
 
