@@ -1,8 +1,8 @@
 import time
 
-from env.hat import Hat, Icon, Text
-from env.env import MoabEnv
-from env.common import Vector2
+from hw.hat import Hat, Icon, Text
+from hw.env import MoabEnv
+from hw.common import Vector2
 
 
 class ZeroController:
