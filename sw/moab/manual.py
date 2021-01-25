@@ -18,7 +18,7 @@ class ManualController:
 
 def main():
     # Only manual needs access to the hat outside of the env
-    hat = Hat()
+    hat = Hat(spi_max_speed_hz=1_000)
     with MoabEnv(hat=hat, frequency=22, debug=True) as env:
         controller = ManualController(hat)
         state = env.reset(Icon.DOT, Text.MANUAL)

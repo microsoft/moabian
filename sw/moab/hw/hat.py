@@ -231,6 +231,11 @@ class Hat(object):
         self.spi.open(spi_bus, spi_device)
         self.spi.max_speed_hz = spi_max_speed_hz
 
+        self.menu_btn = False
+        self.joy_btn = False
+        self.joy_x = 0
+        self.joy_y = 0
+
         self.Text = Text
         self.Icon = Icon
 
@@ -265,13 +270,9 @@ class Hat(object):
         assert len(packet) == 9
         assert self.spi is not None
         time.sleep(0.001)
-        self.spi.writebytes2(packet)
-
-    def receive(self):
-        """Receive 9 bytes from hat."""
-        time.sleep(0.0001)
-        assert self.spi is not None
-        return self.spi.readbytes(9)
+        packet = np.asarray(packet)
+        hat_to_pi = self.spi.xfer(packet.tolist())
+        self._save_buttons(hat_to_pi)
 
     def print_arbitrary_message(self, s):
         s = s.upper()
@@ -420,16 +421,15 @@ class Hat(object):
             - joy_x   : Float normalized from -1 to +1
             - joy_y   : Float normalized from -1 to +1
         """
-        # Note the values in receive will be the values from the time of the
-        # previous spi message
-        hat_to_pi = self.receive()
+        return self.menu_btn, self.joy_btn, self.joy_x, self.joy_y
+
+    def _save_buttons(self, hat_to_pi):
         # Check if buttons are pressed
-        menu_btn = hat_to_pi[0] == Button.MENU
-        joy_btn = hat_to_pi[0] == Button.JOYSTICK
+        self.menu_btn = hat_to_pi[0] == Button.MENU
+        self.joy_btn = hat_to_pi[0] == Button.JOYSTICK
         # Get x & y coordinates of joystick normalized to [-1, +1]
-        joy_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X]) / 100.0
-        joy_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y]) / 100.0
-        return menu_btn, joy_btn, joy_x, joy_y
+        self.joy_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X]) / 100.0
+        self.joy_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y]) / 100.0
 
     def print_ip(self):
         ip1, ip2, ip3, ip4 = _get_host_ip()

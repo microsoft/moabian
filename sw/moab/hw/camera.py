@@ -64,7 +64,6 @@ class OpenCVCameraSensor:
         ret, frame = self.source.read()
         if ret:
             frame = frame[4:-28, 44:-84]
-            print(frame.shape)
             return frame, elapsed_time
         else:
             raise ValueError("Could not get the next frame")
