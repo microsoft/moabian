@@ -17,7 +17,7 @@ class MoabEnv:
         self.debug = debug
 
         self.dt = 1 / frequency
-        self.prev_time = time.perf_counter()
+        self.prev_time = time.time()
 
     def __enter__(self):
         self.hat.activate_plate()
@@ -34,7 +34,7 @@ class MoabEnv:
     def reset(self, control_icon=None, control_name=None):
         if control_icon and control_name:
             self.hat.set_icon_text(control_icon, control_name)
-        self.prev_time = time.perf_counter()
+        self.prev_time = time.time()
         # Return the state after a step with no motor actions
         return self.step((0, 0))
 
@@ -49,9 +49,8 @@ class MoabEnv:
         # Wait until the next timestep to return state at the prev timestep
         # TODO: work out how we want to handle timing (delay by 1 timestep, have
         # asyncronous states/actions, etc)
-        current_time = time.perf_counter()
         # Sleep until the next timestep
-        time.sleep(max(self.prev_time + self.dt - current_time, 0))
-        self.prev_time = current_time
+        time.sleep(max(self.prev_time + self.dt - time.time(), 0))
+        self.prev_time = time.time()
 
         return ball_detected, ball_center
