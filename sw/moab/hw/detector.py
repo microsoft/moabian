@@ -111,19 +111,17 @@ class HSVDetector:
 
                     if debug:
                         center = (int(self.x_obs), int(self.y_obs))
-                        print("Detected position:", (x, y))
-                        print("Detected pixels:", center)
                         cv2.circle(img, center, 2, (255, 0, 255), 2)
                         cv2.circle(img, center, int(radius), (255, 0, 255), 2)
 
-                        # # Rotate the image -30 degrees so it looks normal
-                        # w, h = img.shape[:2]
-                        # center = (w / 2, h / 2)
-                        # M = cv2.getRotationMatrix2D(center, 30, 1.0)
-                        # img = cv2.warpAffine(img, M, (w, h))
+                        # Rotate the image -30 degrees so it looks normal
+                        w, h = img.shape[:2]
+                        center = (w / 2, h / 2)
+                        M = cv2.getRotationMatrix2D(center, 30, 1.0)
+                        img = cv2.warpAffine(img, M, (w, h))
                         cv2.imwrite(
                             "/tmp/camera/frame.jpg",
-                            img,  # [::-1, :, :],  # Mirror along x axis
+                            img[::-1, :, :],  # Mirror along x axis
                             [cv2.IMWRITE_JPEG_QUALITY, 70],
                         )
 
@@ -133,14 +131,14 @@ class HSVDetector:
                     pass
 
         if debug:
-            # # Rotate the image -30 degrees so it looks normal
-            # w, h = img.shape[:2]
-            # center = (w / 2, h / 2)
-            # M = cv2.getRotationMatrix2D(center, 30, 1.0)
-            # img = cv2.warpAffine(img, M, (w, h))
+            # Rotate the image -30 degrees so it looks normal
+            w, h = img.shape[:2]
+            center = (w / 2, h / 2)
+            M = cv2.getRotationMatrix2D(center, 30, 1.0)
+            img = cv2.warpAffine(img, M, (w, h))
             cv2.imwrite(
                 "/tmp/camera/frame.jpg",
-                img,  # [::-1, :, :],  # Mirror along x axis
+                img[::-1, :, :],  # Mirror along x axis
                 [cv2.IMWRITE_JPEG_QUALITY, 70],
             )
 

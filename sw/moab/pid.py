@@ -55,28 +55,26 @@ class PIDController:
         if ball_detected:
             action_x = self.Kp * x + self.Ki * self.sum_x + self.Kd * self.hpf_x(x)
             action_y = self.Kp * y + self.Ki * self.sum_y + self.Kd * self.hpf_y(y)
-            # action_x = np.clip(action_x, -22, 22)
-            # action_y = np.clip(action_y, -22, 22)
-            action = Vector2(action_x, -action_y)
+            action_x = np.clip(action_x, -22, 22)
+            action_y = np.clip(action_y, -22, 22)
+            action = Vector2(-action_x, -action_y)
             # Update the integral term
             self.sum_x += x
             self.sum_y += y
-            # print("Ball found")
         else:
             # Move plate back to flat
             action = Vector2(0, 0)
-            # print("No ball")
 
         return action
 
 
 def main():
-    with MoabEnv() as env:
+    with MoabEnv(debug=True) as env:
         controller = PIDController()
         state = env.reset(Icon.DOT, Text.CLASSIC)
         while True:
             action = controller(state)
-            env.step(action)
+            state = env.step(action)
 
 
 if __name__ == "__main__":
