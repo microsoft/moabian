@@ -3,23 +3,15 @@ import cv2
 from base_camera import BaseCamera
 
 
-class CameraOpenCV(BaseCamera):
+class CameraNative(BaseCamera):
     video_source = 0
 
     @staticmethod
     def frames():
         camera = cv2.VideoCapture(0)
 
-        w = 384
-        h = 288
-
-        d = 256
-
-        x = int((w / 2 - d / 2))
-        y = int((h / 2 - d / 2))
-
-        x += -12
-        y +=  4
+        w = 512
+        h = 512
 
         camera.set(cv2.CAP_PROP_FRAME_WIDTH, w)
         camera.set(cv2.CAP_PROP_FRAME_HEIGHT, h)
@@ -32,7 +24,5 @@ class CameraOpenCV(BaseCamera):
             # read current frame
             _, img = camera.read()
 
-            crop = img[y:y+d, x:x+d]
-
             # encode as a jpeg image and return it
-            yield cv2.imencode('.jpg', crop)[1].tobytes()
+            yield cv2.imencode('.jpg', img)[1].tobytes()

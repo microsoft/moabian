@@ -5,6 +5,7 @@ from flask import Flask, render_template, Response, url_for, redirect
 
 from camera_file import CameraFile
 from camera_opencv import CameraOpenCV
+from camera_native import CameraNative
 
 app = Flask(__name__,
         static_url_path='',
@@ -22,16 +23,20 @@ def gen(camera):
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
-@app.route('/file_mjpeg')
+@app.route('/file.mjpeg')
 def video_mjpeg():
     return Response(gen(CameraFile()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/opencv_mjpeg')
+@app.route('/opencv.mjpeg')
 def opencv_mjpeg():
     return Response(gen(CameraOpenCV()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/native.mjpeg')
+def native_mjpeg():
+    return Response(gen(CameraNative()),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def getHostIP():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

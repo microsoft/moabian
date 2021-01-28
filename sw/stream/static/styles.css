@@ -78,9 +78,9 @@ img {
 }
 
 .horizontal {
-  background-size: 100% 3px;
+  background-size: 100% 1px;
 }
 
 .vertical {
-  background-size: 3px 100%;
+  background-size: 1px 100%;
 }
