@@ -8,6 +8,7 @@ Connect to a locally running brain server and
 ask for plate angles based on current hardware state.
 """
 
+import sys
 import math
 import time
 import pymoab
@@ -24,6 +25,7 @@ from ..common import CircleFeature, IController, IDevice, Vector2
 Plane = np.ndarray
 Ray = np.ndarray
 
+max_complaints = 3
 
 # Helper functions for linear algebra
 def rotation_about_x(theta):
@@ -72,6 +74,9 @@ class BrainController(IController):
         self.velocity = Vector2(0, 0)
         self.prev_position = Vector2(0, 0)
         self.currPlateAngles = Vector2(0, 0)
+
+        self.tick = 0
+        self.complaints = 0
 
     def _surface_plane(self) -> Plane:
         """
@@ -162,6 +167,10 @@ class BrainController(IController):
             ball.radius + obstacle.radius
         )
 
+        self.tick = self.tick + 1
+        if self.tick == 1:
+            self.csv_header() 
+
         observables = {
             # BonsaiMoabSimV4
             "elapsed_time": elapsedSec,
@@ -193,20 +202,65 @@ class BrainController(IController):
         # bringing down this run loop. Plate will default to level
         # when it loses the connection.
         result = Vector2(0, 0)
-        try:
-            action = requests.get(self.prediction_url, json=observables).json()
+        response = requests.get(self.prediction_url, json=observables)
+        action = response.json()
 
-            for key, _ in action.items():
-                action[key] *= self.max_angle
-                action[key] = np.clip(action[key], -self.max_angle, self.max_angle)
+        self.csv_row(observables, response)
 
-            self.prev_position = ball.center
-            result = Vector2(action["input_pitch"], action["input_roll"])
-        except Exception as e:
-            log.exception(f"Exception calling predictor\n{e}")
-            pass
+        if response.ok:
+            # reset the complaint counter
+            if self.complaints > 0:
+                self.complaints = 0
+                pymoab.setIcon(pymoab.Icon.DOT)
+        else:
+            pymoab.setIcon(pymoab.Icon.X)
+            self.complaints += 1
+            return result
+
+        # map the action space [-1, ..., 1] to motor angles
+        for key, _ in action.items():
+            action[key] *= self.max_angle
+            action[key] = np.clip(action[key], -self.max_angle, self.max_angle)
+
+        self.prev_position = ball.center
+        result = Vector2(action["input_pitch"], action["input_roll"])
 
         return result
+
+    def csv_header(self):
+        cols = ["tick", "dt", "ball_x", "ball_y", "ball_vel_x", "ball_vel_y"]
+        cols = cols + ['status','pitch', 'roll']
+    
+        print(cols, file=sys.stderr)
+        return
+
+    def csv_row(self, observables, response):
+        cols = ["elapsed_time", "ball_x", "ball_y", "ball_vel_x", "ball_vel_y"]
+
+        # state vector...
+        s = [observables[i] for i in cols]
+
+        # response has two parts:
+        #   http header (I just want the status_code for 200 == ok)
+        #   http text...(which is in JSON format --> dictionary)
+        #      which is the actual brain actions
+
+        # action vector...
+        a = [response.status_code]
+        d = response.json()
+        if response.ok is False:
+            a.append(d.get('input_pitch'))
+            a.append(d.get('input_roll'))
+        
+        # combine to log...
+        l = [self.tick]  + s + a
+
+        # round floats to 5 digits
+        l = [f"{n:.5f}" if type(n) is float else n for n in l]
+        l = ','.join([str(e) for e in l])
+
+        print(l, file=sys.stderr)
+        return
 
     def on_menu_down(self, sender: IDevice):
         sender.stop()
