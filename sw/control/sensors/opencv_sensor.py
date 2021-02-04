@@ -19,6 +19,7 @@ from typing import Tuple, Optional
 # Link to raspicam_cv implementation for mapping values
 # https://github.com/cedricve/raspicam/blob/651c56418a5a594fc12f1414eb14f2b899729cb1/src/raspicam_cv.h#L108
 
+
 class OpenCVCameraSensor(ISensor):
     @dataclass
     class Config(ISensor.Config):
@@ -46,8 +47,7 @@ class OpenCVCameraSensor(ISensor):
         self.source: Optional[cv2.VideoCapture] = None
         self.last_frame: Optional[np.ndarray] = None
 
-        # move init_debug into X11 debug handler version only
-        # self._init_debug(device)
+        self.prevTime = time()
 
     def start(self):
         self.source = cv2.VideoCapture(self.config.deviceId)
