@@ -23,29 +23,11 @@ class CallbackDecorator(IDebugDecorator):
         for callback in self.callbacks:
             callback(args)
 
-
-class X11Decorator(CallbackDecorator):
-    def __init__(self, config: dict):
-        super().__init__(config)
-
-        cv2.namedWindow(self.config["windowName"])
-
-    def decorate(self, args):
-        super().decorate(args)
-
-        cv2.imshow(self.config["windowName"], args[SENSOR_IMG_ARG])
-        cv2.waitKey(1) & 0xff
-
-    def __del__(self):
-        cv2.destroyAllWindows()
-
-
 class FileDecorator(CallbackDecorator):
     def __init__(self, config: dict):
         super().__init__(config)
 
         self.filename = self.config["filename"]
-        self.quality = int(self.config["quality"])
         self.disable = False
 
         # Create path to filename in case it doesn't exist
@@ -60,12 +42,10 @@ class FileDecorator(CallbackDecorator):
         if self.disable:
             return
 
+        # save frame as a JPEG file (with quality of 80)
         try:
-            cv2.imwrite(
-                self.filename,
-                args[SENSOR_IMG_ARG],
-                [cv2.IMWRITE_JPEG_QUALITY, self.quality],
-            )
+            cv2.imwrite(self.filename, args[SENSOR_IMG_ARG], 
+                    [cv2.IMWRITE_JPEG_QUALITY, 80])
 
         except Exception as ex:
             self.disable = True
