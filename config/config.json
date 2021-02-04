@@ -38,7 +38,7 @@
                 "handlers": [
                     "console"
                 ],
-                "level": "INFO"
+                "level": "DEBUG"
             }
         },
         "root": {
@@ -52,26 +52,6 @@
         "menu": {
             "frequencyHz": 20,
             "controller": "control.controllers.MenuController"
-        },
-        "calibration": {
-            "frequencyHz": 30,
-            "debug": true,
-            "debugDecorator": {
-                "name": "control.debug.FileDecorator",
-                "filename": "/tmp/camera/frame.jpg"
-            },
-            "sensor": {
-                "name": "control.sensors.OpenCVCameraSensor",
-                "brightness": 60,
-                "contrast": 50,
-                "saturation": 50,
-                "gain": 0
-            },
-            "detectors": {
-                "ball": "control.detectors.HSVDetector"
-            },
-            "controller": "control.controllers.HueCalibrationController",
-            "actuator": "control.actuators.ServoActuator"
         },
         "manual": {
             "controller": "control.controllers.JoystickController",
@@ -99,10 +79,10 @@
         },
         "classic": {
             "frequencyHz": 30,
-            "debug": false,
+            "debug": true,
             "debugDecorator": {
-                "name": "control.debug.X11Decorator",
-                "windowName": "frame"
+                "name": "control.debug.FileDecorator",
+                "filename": "/tmp/camera/frame.jpg"
             },
             "sensor": {
                 "name": "control.sensors.OpenCVCameraSensor",
@@ -128,6 +108,11 @@
         },
         "brain": {
             "frequencyHz": 22,
+            "debug": true,
+            "debugDecorator": {
+                "name": "control.debug.FileDecorator",
+                "filename": "/tmp/camera/frame.jpg"
+            },
             "sensor": {
                 "name": "control.sensors.OpenCVCameraSensor",
                 "brightness": 60,
@@ -176,6 +161,11 @@
         },
         "custom2": {
             "frequencyHz": 22,
+            "debug": true,
+            "debugDecorator": {
+                "name": "control.debug.FileDecorator",
+                "filename": "/tmp/camera/frame.jpg"
+            },
             "sensor": {
                 "name": "control.sensors.OpenCVCameraSensor",
                 "brightness": 60,
@@ -196,6 +186,26 @@
                 "endPoint": "http://localhost:5002",
                 "sensorSize": 256
             },
+            "actuator": "control.actuators.ServoActuator"
+        },
+        "calibration": {
+            "frequencyHz": 30,
+            "debug": true,
+            "debugDecorator": {
+                "name": "control.debug.FileDecorator",
+                "filename": "/tmp/camera/frame.jpg"
+            },
+            "sensor": {
+                "name": "control.sensors.OpenCVCameraSensor",
+                "brightness": 60,
+                "contrast": 50,
+                "saturation": 50,
+                "gain": 0
+            },
+            "detectors": {
+                "ball": "control.detectors.HSVDetector"
+            },
+            "controller": "control.controllers.HueCalibrationController",
             "actuator": "control.actuators.ServoActuator"
         },
         "info": {
