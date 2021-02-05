@@ -37,8 +37,8 @@ class OpenCVCameraSensor:
     def start(self):
         self.source = cv2.VideoCapture(self.device_id)
         if self.source:
-            self.source.set(cv2.CAP_PROP_FRAME_WIDTH, 384)
-            self.source.set(cv2.CAP_PROP_FRAME_HEIGHT, 288)
+            self.source.set(cv2.CAP_PROP_FRAME_WIDTH, 256)  # 384)
+            self.source.set(cv2.CAP_PROP_FRAME_HEIGHT, 256)  # 288)
             self.source.set(cv2.CAP_PROP_FPS, self.fps)
             self.source.set(cv2.CAP_PROP_MODE, 0)  # Not meant to be configurable
             self.source.set(cv2.CAP_PROP_BRIGHTNESS, self.brightness)
@@ -63,8 +63,8 @@ class OpenCVCameraSensor:
 
         ret, frame = self.source.read()
         if ret:
-            frame = frame[:-24, 40:-80]  # Crop so middle of plate is middle of image
-            cv2.resize(frame, (256, 256))  # Crop off edges to make image (256, 256)
+            # frame = frame[:-24, 40:-80]  # Crop so middle of plate is middle of image
+            # cv2.resize(frame, (256, 256))  # Crop off edges to make image (256, 256)
             return frame, elapsed_time
         else:
             raise ValueError("Could not get the next frame")
