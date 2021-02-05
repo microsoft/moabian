@@ -23,7 +23,7 @@ class InfoController(IController):
         pymoab.showIP(*ip_quads)
 
         # Version
-        ver_string = os.environ.get("MOABIAN", "1.0.0")
+        ver_string = os.environ.get("MOABIAN", "2.5.0")
         ver_quad = [int(b) for b in ver_string.split(".")]
         log.info(f"Version string: {ver_string}")
         log.info(f"Version quad: {ver_quad}")

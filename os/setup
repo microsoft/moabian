@@ -119,18 +119,6 @@ function layer-classic-moabian
 }
 
 
-function blah
-{
-    sudo -u pi -s <<'EOF'
-        dest="$HOME/.vim/pack/moabian/start"
-        rm -rf $dest
-        mkdir -p "$dest"
-        git clone https://github.com/lifepillar/vim-solarized8 "$dest/solarized8"
-        git clone https://github.com/scotstan/vim-polyglot "$dest/polyglot"
-EOF
-}
-
-
 function layer-pip-docker
 {
     # Also leverages pre-built binary wheels for Rpi4 via /etc/pip.conf
@@ -161,6 +149,12 @@ function layer-pip-docker
     fi
 }
 
+function layer-web
+{
+    pushd sw/stream
+    sudo -u pi python3 -m pip3 install -r requirements.txt --user
+    popd
+}
 
 function layer-moab-services 
 {
@@ -282,6 +276,7 @@ function main
     info "services setup" && layer-moab-services
     info "install bcm2835 library" && layer-bcm2835
     info "install go and mcumgr" && layer-mcumgr
+    info "installing web server" && layer-web
     info "renaming to moab.local" && layer-rename
     info "cleaning up" && sudo apt autoremove --yes
 }

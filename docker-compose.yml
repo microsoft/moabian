@@ -25,7 +25,11 @@ services:
     network_mode: host
     working_dir: /app
     stop_grace_period: 1s
-    volumes: [ "${PWD}/config:/app/config" ]
+    volumes: [ 
+      "${PWD}/config:/app/config",
+      "/tmp/camera:/tmp/camera",
+      "/tmp/logs:/tmp/logs",
+    ]
     command: python3 main.py -t 5
     environment:
       MOABIAN: $MOABIAN

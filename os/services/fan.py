@@ -58,11 +58,11 @@ def main(args):
             temp = int(file.read()) / 1000.0
 
             if temp >= args.temperature and fanIsRunning == False:
-                print(f"{temp:.1f}º C; FAN: ON", flush=True)
+                print(f"{temp:.1f}° C; FAN: ON", flush=True)
                 turnOn()
 
             if temp < (args.temperature - args.delta) and fanIsRunning == True:
-                print(f"{temp:.1f}º C; FAN: OFF", flush=True)
+                print(f"{temp:.1f}° C; FAN: OFF", flush=True)
                 turnOff()
 
         time.sleep(args.sec)

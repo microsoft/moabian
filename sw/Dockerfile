@@ -110,7 +110,6 @@ RUN /app/bin/pymoab
 RUN apt-get autoremove build-essential cpp-8 gcc-8
 
 COPY control /app/control
-COPY config /app/config
 COPY main.py /app
 CMD python3 main.py -t 5
 

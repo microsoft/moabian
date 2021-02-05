@@ -19,5 +19,6 @@ function setup()
 setup moab.service
 setup power.service
 setup fan.service
+setup web.service
 
 sudo systemctl daemon-reload

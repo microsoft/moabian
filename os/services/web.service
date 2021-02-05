@@ -1,0 +1,12 @@
+[Unit]
+Description=Moab Web Service
+After=network.target
+
+[Service]
+Group=www-data
+User=pi
+WorkingDirectory=/home/pi/moab/sw/stream
+ExecStart=/home/pi/.local/bin/gunicorn --workers 1 --bind unix:/tmp/web.sock --timeout 120 app:app
+
+[Install]
+WantedBy=multi-user.target
