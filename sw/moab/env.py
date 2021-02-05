@@ -1,8 +1,8 @@
 import time
 
-from .camera import OpenCVCameraSensor as Camera
-from .detector import HSVDetector as Detector
-from .hat import Hat
+from camera import OpenCVCameraSensor as Camera
+from detector import HSVDetector as Detector
+from hat import Hat
 
 
 class MoabEnv:
@@ -40,7 +40,7 @@ class MoabEnv:
 
     def step(self, action):
         plate_x, plate_y = action
-        self.hat.set_plate_angles(plate_x, plate_y)
+        self.hat.set_plate_angles(int(plate_x), int(plate_y))
 
         frame, elapsed_time = self.camera()
         ball_detected, cicle_feature = self.detector(frame, debug=self.debug)
@@ -49,6 +49,8 @@ class MoabEnv:
         # Wait until the next timestep to return state at the prev timestep
         # TODO: work out how we want to handle timing (delay by 1 timestep, have
         # asyncronous states/actions, etc)
+        if self.prev_time + self.dt - time.time() < 0:
+            print("Missed frame")
         # Sleep until the next timestep
         time.sleep(max(self.prev_time + self.dt - time.time(), 0))
         self.prev_time = time.time()

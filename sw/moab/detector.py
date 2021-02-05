@@ -11,7 +11,24 @@ import cv2
 import math
 import numpy as np
 from pymoab import hue_mask
-from .common import Vector2, CircleFeature, Calibration
+from common import Vector2, CircleFeature, Calibration
+
+
+def polar(x, y, degrees=True):
+    r = math.sqrt(x * x + y * y)
+    theta = math.atan(y / x)
+    if degrees:
+        theta *= 180 / np.pi
+    return r, theta
+
+
+def pixels_to_meters(x, y, frame_size=256, feild_of_view=0.85):
+    # The plate is default roughly 110% of the field of view
+    plate_diameter_meters = 0.225
+    plate_diameter_pixels = frame_size * feild_of_view
+    conversion = plate_diameter_meters / plate_diameter_pixels
+
+    return x / 2.375, y / 2.375
 
 
 class HSVDetector:
@@ -42,6 +59,7 @@ class HSVDetector:
         self.sigma = sigma
         self.bandpass_gain = bandpass_gain
         self.mask_gain = mask_gain
+        self.i = 0
 
         # if we haven't been overridden, use ballHue from
         # the calibration settings.
@@ -96,6 +114,7 @@ class HSVDetector:
                 if self.ball_min < norm_radius < self.ball_max:
                     ball_detected = True
 
+                    # 1st ------------------------------------------------------
                     # rotate the center coords into sensor coords
                     # the ball detector uses rotate coordinates, so we must as well
                     rot_center = Vector2(
@@ -106,39 +125,76 @@ class HSVDetector:
                     y_center = (rot_center.y + 0.5) * self.frame_size
 
                     # Convert from pixels to absolute with 0,0 as center of detected plate
-                    x = self.x_obs - x_center
-                    y = self.y_obs - y_center
+                    x1 = self.x_obs - x_center
+                    y1 = self.y_obs - y_center
+
+                    # 2nd ------------------------------------------------------
+                    v = Vector2(self.x_obs, self.y_obs)
+                    v -= Vector2(self.frame_size / 2, self.frame_size / 2)
+                    # v.rotate(self.calibration.rotation)
+                    x, y = v.x, v.y
+                    theta = -30
+
+                    x2 = x * math.cos(theta) - y * math.sin(theta)
+                    y2 = x * math.sin(theta) + y * math.cos(theta)
+
+                    # 3rd ------------------------------------------------------
+                    v2 = v.rotate(theta)
+                    x3, y3 = v2.x, v2.y
+
+                    # end ------------------------------------------------------
+                    if self.i % 10 == 0:
+                        # print("")
+                        # # fmt: off
+                        # # print(f"(x0, y0) = ({x : .2f}, {y : .2f}), (r, theta) = ({polar(x, y)[0]: .2f}, {polar(x, y)[1]: .2f})")
+                        # # print(f"(x1, y1) = ({x1: .2f}, {y1: .2f}), (r, theta) = ({polar(x1, y1)[0]: .2f}, {polar(x1, y1)[1]: .2f})")
+                        # # print(f"(x2, y2) = ({x2: .2f}, {y2: .2f}), (r, theta) = ({polar(x2, y2)[0]: .2f}, {polar(x2, y2)[1]: .2f})")
+                        # # print(f"(x3, y3) = ({x3: .2f}, {y3: .2f}), (r, theta) = ({polar(x3, y3)[0]: .2f}, {polar(x3, y3)[1]: .2f})")
+                        # print(f"(x0, y0) = ({x : 5.1f}, {y : 5.1f}), θ = {polar(x, y)[1]: 5.1f}°")
+                        # print(f"(x1, y1) = ({x1: 5.1f}, {y1: 5.1f}), θ = {polar(x1, y1)[1]: 5.1f}°")
+                        # print(f"(x2, y2) = ({x2: 5.1f}, {y2: 5.1f}), θ = {polar(x2, y2)[1]: 5.1f}°")
+                        # print(f"(x3, y3) = ({x3: 5.1f}, {y3: 5.1f}), θ = {polar(x3, y3)[1]: 5.1f}°")
+                        pass
+                        # fmt: on
+
+                    self.i += 1
 
                     if debug:
+                        # Draw on a circle
                         center = (int(self.x_obs), int(self.y_obs))
                         cv2.circle(img, center, 2, (255, 0, 255), 2)
                         cv2.circle(img, center, int(radius), (255, 0, 255), 2)
 
-                        # Rotate the image -30 degrees so it looks normal
-                        w, h = img.shape[:2]
-                        center = (w / 2, h / 2)
-                        M = cv2.getRotationMatrix2D(center, 30, 1.0)
-                        img = cv2.warpAffine(img, M, (w, h))
+                        # # Rotate the image -30 degrees so it looks normal
+                        # w, h = img.shape[:2]
+                        # center = (w / 2, h / 2)
+                        # M = cv2.getRotationMatrix2D(center, 30, 1.0)
+                        # img = cv2.warpAffine(img, M, (w, h))
+                        # img = img[::-1, :, :]  # Mirror along x axis
+
                         cv2.imwrite(
                             "/tmp/camera/frame.jpg",
-                            img[::-1, :, :],  # Mirror along x axis
+                            img,
                             [cv2.IMWRITE_JPEG_QUALITY, 70],
                         )
 
+                    x, y = pixels_to_meters(x, y, frame_size=self.frame_size)
                     self.last_detected = (Vector2(x, y), radius)
                     return ball_detected, self.last_detected
                 else:
                     pass
 
         if debug:
-            # Rotate the image -30 degrees so it looks normal
-            w, h = img.shape[:2]
-            center = (w / 2, h / 2)
-            M = cv2.getRotationMatrix2D(center, 30, 1.0)
-            img = cv2.warpAffine(img, M, (w, h))
+            # # Rotate the image -30 degrees so it looks normal
+            # w, h = img.shape[:2]
+            # center = (w / 2, h / 2)
+            # M = cv2.getRotationMatrix2D(center, 30, 1.0)
+            # img = cv2.warpAffine(img, M, (w, h))
+            # img = img[::-1, :, :]  # Mirror along x axis
+
             cv2.imwrite(
                 "/tmp/camera/frame.jpg",
-                img[::-1, :, :],  # Mirror along x axis
+                img,
                 [cv2.IMWRITE_JPEG_QUALITY, 70],
             )
 

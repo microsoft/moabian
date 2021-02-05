@@ -63,7 +63,8 @@ class OpenCVCameraSensor:
 
         ret, frame = self.source.read()
         if ret:
-            frame = frame[4:-28, 44:-84]
+            frame = frame[:-24, 40:-80]  # Crop so middle of plate is middle of image
+            cv2.resize(frame, (256, 256))  # Crop off edges to make image (256, 256)
             return frame, elapsed_time
         else:
             raise ValueError("Could not get the next frame")
