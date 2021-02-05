@@ -137,6 +137,11 @@
         },
         "custom1": {
             "frequencyHz": 22,
+            "debug": true,
+            "debugDecorator": {
+                "name": "control.debug.FileDecorator",
+                "filename": "/tmp/camera/frame.jpg"
+            },
             "sensor": {
                 "name": "control.sensors.OpenCVCameraSensor",
                 "brightness": 60,
