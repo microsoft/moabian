@@ -151,8 +151,9 @@ function layer-pip-docker
 
 function layer-web
 {
-    pushd sw/stream
-    sudo -u pi python3 -m pip3 install -r requirements.txt --user
+    apt-get install --no-install-recommends -y nginx
+    pushd ../sw/stream
+    sudo -u pi python3 -m pip install -r requirements.txt --user
     popd
 }
 
@@ -163,9 +164,12 @@ function layer-moab-services
 }
 
 function layer-rename {
-    sed -i -e 's/raspberrypi/moab/' /etc/hosts /etc/hostname
-    echo "raspberrypi.local renamed to moab.local"
-    warn "Please reboot your Moab now by typing: sudo reboot now"
+    if grep raspberrypi /etc/hostname &> /dev/null ; then
+        sed -i -e 's/raspberrypi/moab/' /etc/hosts /etc/hostname
+        echo "raspberrypi.local renamed to moab.local"
+        warn "Please reboot your Moab now by typing: sudo reboot now"
+    fi
+
 }
 
 function touched { grep -qF "##moabian" "$1"; }
