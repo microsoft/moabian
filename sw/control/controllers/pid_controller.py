@@ -61,7 +61,7 @@ class PIDController(IController):
         Kp: float = 0.15
         Ki: float = 0.001
         Kd: float = 0.090
-        conversionFactor: float = 2.375
+        conversionFactor: float = 2.375     # used to be called "pixels_to_mm"
         fc: float = 15  # Cutoff frequency of the high pass filter
         frequency: float = 30
 
