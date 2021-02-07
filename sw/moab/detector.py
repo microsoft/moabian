@@ -114,6 +114,14 @@ class HSVDetector:
                 if self.ball_min < norm_radius < self.ball_max:
                     ball_detected = True
 
+                    x_center = self.frame_size // 2
+                    y_center = self.frame_size // 2
+
+                    # Convert from pixels to absolute with 0,0 as center of detected plate
+                    x = self.x_obs - x_center
+                    y = self.y_obs - y_center
+                    center = Vector2(x, y).rotate(np.radians(-30))
+
                     if debug:
                         # Draw on a circle
                         center = (int(self.x_obs), int(self.y_obs))
@@ -133,9 +141,6 @@ class HSVDetector:
                             [cv2.IMWRITE_JPEG_QUALITY, 70],
                         )
 
-                    # x, y = pixels_to_meters(x, y, frame_size=self.frame_size)
-                    center = Vector2(x, y).rotate(np.radians(-30))
-                    self.last_detected = (center, radius)
                     return ball_detected, self.last_detected
                 else:
                     pass
