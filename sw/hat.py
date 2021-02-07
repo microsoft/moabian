@@ -10,49 +10,6 @@ import RPi.GPIO as gpio
 
 from enum import IntEnum
 
-"""
-# Messaging from the Pi to the hat ---------------------------------------------
-# Data bytes (currently always 8 bytes)
-union pi_msg_to_hat_data_t:
-    struct:
-        uint8_t icon              # Selects 1 icon out of (currently) 8 options
-        uint8_t text              # Selects 1 string out of (currently) 32 options
-    struct:
-        int8_t plate_angle_x      # Plate X (pitch) angle
-        int8_t plate_angle_y      # Plate Y (roll) angle
-    struct:
-        uint8_t servo1_pos        # Servo 1 angle (for direct servo control)
-        uint8_t servo2_pos        # Servo 2 angle
-        uint8_t servo3_pos        # Servo 3 angle
-    struct:
-        char characters[8]
-    uint8_t raw[SEND_PACKET_BYTES - 1] # Enforce 8 byte message data
-
-# All packets are 9 bytes long
-union send_packet_standard:
-    struct:
-        uint8_t control           # Control byte (always the same)
-        pi_msg_to_hat_data_t data # Data (dependent on control byte)
-    char combined_packet[SEND_PACKET_BYTES]
-
-
-# Messaging from the hat to the Pi ---------------------------------------------
-#  Defining receive SPI packet
-union hat_buttons:
-    struct:
-        uint8_t menu: 1
-        uint8_t joystick: 1
-        uint8_t res: 6
-    char raw
-
-union receive_packet_type:
-    struct:
-        hat_buttons buttons
-        int8_t joystick_x
-        int8_t joystick_y
-    char combined_packet[RECEIVE_PACKET_BYTES]
-"""
-
 
 # fmt: off
 # Define which bytes represent which commands
@@ -143,15 +100,6 @@ Y_TILT_SERVO3 = -0.866
 # fmt: on
 
 
-# # Global variables for things that are constantly polled -----------------------
-# _servo1_offset = 0
-# _servo2_offset = 0
-# _servo3_offset = 0
-# _icon_idx = 0
-# _text_idx = 0
-# spi = None
-# print("\n\n\n\n\nSPI IS NONE HERE IMPORT \n\n\n\n\n\n")
-
 # Helper functions -------------------------------------------------------------
 def _byte_to_bits(byte):
     return bin(byte)[2:].rjust(8, "0")
@@ -194,14 +142,11 @@ def setupGPIO():
 def runtime():
     """ Set mode to runtime mode (not bootloader mode). """
     gpio.output(GpioPin.HAT_EN, gpio.LOW)
-    time.sleep(0.02)
+    time.sleep(0.02)  # 20ms
     gpio.output(GpioPin.HAT_EN, gpio.HIGH)
     gpio.output(GpioPin.HAT_RESET, gpio.LOW)
     gpio.output(GpioPin.BOOT_EN, gpio.LOW)
-
-    # load-bearing timer here; don't make it shorter
-    # https://youtu.be/QRVExJZKIT8
-    time.sleep(0.25)
+    time.sleep(0.25)  # 250ms
 
 
 def enable_hat(enabled: bool):
@@ -213,8 +158,6 @@ def poll_power_btn():
 
 
 class Hat(object):
-    _instance = None
-
     def __init__(
         self,
         spi_bus=0,
@@ -229,7 +172,6 @@ class Hat(object):
         self._servo3_offset = servo3_offset
         self._icon_idx = 0
         self._text_idx = 0
-        self.spi = None
         self.spi = spidev.SpiDev()
         self.spi.open(spi_bus, spi_device)
         self.spi.max_speed_hz = spi_max_speed_hz
