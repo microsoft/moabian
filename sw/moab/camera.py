@@ -21,7 +21,7 @@ class OpenCVCameraSensor:
         rotation=0,
         brightness=60,
         contrast=0,
-        fps=30,
+        frequency=30,
     ):
         self.device_id = device_id
         # self.width = width
@@ -29,7 +29,7 @@ class OpenCVCameraSensor:
         self.rotation = rotation
         self.brightness = brightness
         self.contrast = contrast
-        self.fps = fps
+        self.frequency = frequency
         self.prev_time = 0.0
         self.source = None
         self.last_frame = None
@@ -39,7 +39,7 @@ class OpenCVCameraSensor:
         if self.source:
             self.source.set(cv2.CAP_PROP_FRAME_WIDTH, 384)
             self.source.set(cv2.CAP_PROP_FRAME_HEIGHT, 288)
-            self.source.set(cv2.CAP_PROP_FPS, self.fps - 5)
+            self.source.set(cv2.CAP_PROP_FPS, self.frequency - 5)
             self.source.set(cv2.CAP_PROP_MODE, 0)  # Not meant to be configurable
             self.source.set(cv2.CAP_PROP_BRIGHTNESS, self.brightness)
             self.source.set(cv2.CAP_PROP_CONTRAST, self.contrast)

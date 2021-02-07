@@ -14,21 +14,13 @@ from pymoab import hue_mask
 from common import Vector2, CircleFeature, Calibration
 
 
-def polar(x, y, degrees=True):
-    r = math.sqrt(x * x + y * y)
-    theta = math.atan(y / x)
-    if degrees:
-        theta *= 180 / np.pi
-    return r, theta
-
-
-def pixels_to_meters(x, y, frame_size=256, feild_of_view=0.85):
-    # The plate is default roughly 110% of the field of view
+def pixels_to_meters(vec, frame_size=256, feild_of_view=1.05):
+    # The plate is default roughly 105% of the field of view
     plate_diameter_meters = 0.225
     plate_diameter_pixels = frame_size * feild_of_view
     conversion = plate_diameter_meters / plate_diameter_pixels
 
-    return x / 2.375, y / 2.375
+    return vec * conversion
 
 
 class HSVDetector:
@@ -61,14 +53,11 @@ class HSVDetector:
         self.mask_gain = mask_gain
         self.i = 0
 
-        # if we haven't been overridden, use ballHue from
-        # the calibration settings.
+        # if we haven't been overridden, use ballHue from calibration
         if self.hue is None:
             self.hue = self.calibration.ball_hue
 
-        self.kernel = cv2.getStructuringElement(
-            cv2.MORPH_ELLIPSE, tuple(self.kernel_size)
-        )
+        self.kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, tuple(kernel_size))
 
     def __call__(self, img: np.ndarray, debug=False) -> CircleFeature:
         if img is not None:
@@ -114,12 +103,9 @@ class HSVDetector:
                 if self.ball_min < norm_radius < self.ball_max:
                     ball_detected = True
 
-                    x_center = self.frame_size // 2
-                    y_center = self.frame_size // 2
-
                     # Convert from pixels to absolute with 0,0 as center of detected plate
-                    x = self.x_obs - x_center
-                    y = self.y_obs - y_center
+                    x = self.x_obs - self.frame_size // 2
+                    y = self.y_obs - self.frame_size // 2
                     center = Vector2(x, y).rotate(np.radians(-30))
 
                     if debug:
@@ -128,12 +114,12 @@ class HSVDetector:
                         cv2.circle(img, center, 2, (255, 0, 255), 2)
                         cv2.circle(img, center, int(radius), (255, 0, 255), 2)
 
-                        # # Rotate the image -30 degrees so it looks normal
-                        # w, h = img.shape[:2]
-                        # center = (w / 2, h / 2)
-                        # M = cv2.getRotationMatrix2D(center, 30, 1.0)
-                        # img = cv2.warpAffine(img, M, (w, h))
-                        # img = img[::-1, :, :]  # Mirror along x axis
+                        # Rotate the image -30 degrees so it looks normal
+                        w, h = img.shape[:2]
+                        center = (w / 2, h / 2)
+                        M = cv2.getRotationMatrix2D(center, 30, 1.0)
+                        img = cv2.warpAffine(img, M, (w, h))
+                        img = img[::-1, :, :]  # Mirror along x axis
 
                         cv2.imwrite(
                             "/tmp/camera/frame.jpg",
@@ -141,17 +127,20 @@ class HSVDetector:
                             [cv2.IMWRITE_JPEG_QUALITY, 70],
                         )
 
-                    return ball_detected, self.last_detected
+                    center = Vector2(x, y).rotate(np.radians(-30))
+                    center = pixels_to_meters(center, self.frame_size)
+                    print(center)
+                    return ball_detected, (center, radius)
                 else:
                     pass
 
         if debug:
-            # # Rotate the image -30 degrees so it looks normal
-            # w, h = img.shape[:2]
-            # center = (w / 2, h / 2)
-            # M = cv2.getRotationMatrix2D(center, 30, 1.0)
-            # img = cv2.warpAffine(img, M, (w, h))
-            # img = img[::-1, :, :]  # Mirror along x axis
+            # Rotate the image -30 degrees so it looks normal
+            w, h = img.shape[:2]
+            center = (w / 2, h / 2)
+            M = cv2.getRotationMatrix2D(center, 30, 1.0)
+            img = cv2.warpAffine(img, M, (w, h))
+            img = img[::-1, :, :]  # Mirror along x axis
 
             cv2.imwrite(
                 "/tmp/camera/frame.jpg",

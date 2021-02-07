@@ -35,9 +35,9 @@ def _derivative(requency, fc=None):
 
 # Controllers ------------------------------------------------------------------
 def pid_controller(
-    Kp=0.15,  # / 2.375,  # Proportional coefficient
-    Ki=0.001,  # / 2.375,  # Integral coefficient
-    Kd=0.090,  # / 2.375,  # Derivative coefficient
+    Kp=75,  # Proportional coefficient
+    Ki=0.5,  # Integral coefficient
+    Kd=45,  # Derivative coefficient
     frequency=30,
     fc=15,  # Cutoff frequency of the high pass filter (10 is overly smooth, 30 is like no filter)
     max_angle=16,
@@ -62,7 +62,6 @@ def pid_controller(
 
         ball_detected, position = state
         x, y = position
-        x, y = x / 2.375, y / 2.375
 
         if ball_detected:
             action_x = Kp * x + Ki * sum_x + Kd * hpf_x(x)
@@ -106,26 +105,6 @@ def random_control(low=-1, high=1, **kwargs):
     return lambda state: Vector2(x, y)
 
 
-def _detector_to_controller_units(position, sensor_size=256):
-    """
-    Convert a set of coordinates in pixels to meters
-
-    The input is a 2D point in sensor image space.
-    To get the location in meters, we need to unproject the camera
-    back to the plate surface plane.
-
-    We can derive the plate surface plane from the plate
-    angles and distances.
-    """
-    # The plate is roughly 85% of the field of view
-    PLATE_DIA_METERS = 0.225
-    PLATE_DIA_PIXELS = sensor_size * 1.05
-    scalar = PLATE_DIA_METERS / PLATE_DIA_PIXELS
-
-    # basic linear transform
-    return Vector2(position.x * scalar, position.y * scalar)
-
-
 def brain_controller(
     frequency=30, max_angle=22, end_point="http://localhost:5000", **kwargs
 ):
@@ -146,7 +125,6 @@ def brain_controller(
         ball_detected, position = state
         action = Vector2(0, 0)
 
-        position = _detector_to_controller_units(position)  # Convert to meters
         velocity = (position - prev_position) * frequency
         prev_position = position
 

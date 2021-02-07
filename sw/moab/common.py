@@ -57,6 +57,14 @@ class Vector2:
         return (int(self.x), int(self.y))
 
 
+def polar(x, y, degrees=True):
+    r = math.sqrt(x * x + y * y)
+    theta = math.atan(y / x)
+    if degrees:
+        theta *= 180 / np.pi
+    return r, theta
+
+
 @dataclass
 class CircleFeature:
     center: Vector2 = Vector2(0, 0)

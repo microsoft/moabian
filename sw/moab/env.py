@@ -6,13 +6,13 @@ from hat import Hat
 
 
 class MoabEnv:
-    def __init__(self, hat=None, frequency=25, debug=False):
+    def __init__(self, hat=None, frequency=30, debug=False):
         if hat:
             # For cases like manual control where the hat needs to be shared
             self.hat = hat
         else:
             self.hat = Hat()
-        self.camera = Camera()
+        self.camera = Camera(frequency=frequency)
         self.detector = Detector()
         self.debug = debug
 
