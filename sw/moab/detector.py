@@ -32,12 +32,13 @@ def draw_ball(img, center, radius):
 
 
 def save_img(filepath, img, rotated=False, quality=80):
-    # Rotate the image -30 degrees so it looks normal
-    w, h = img.shape[:2]
-    center = (w / 2, h / 2)
-    M = cv2.getRotationMatrix2D(center, 30, 1.0)
-    img = cv2.warpAffine(img, M, (w, h))
-    img = img[::-1, :, :]  # Mirror along x axis
+    if rotated:
+        # Rotate the image -30 degrees so it looks normal
+        w, h = img.shape[:2]
+        center = (w / 2, h / 2)
+        M = cv2.getRotationMatrix2D(center, 30, 1.0)
+        img = cv2.warpAffine(img, M, (w, h))
+        img = img[::-1, :, :]  # Mirror along x axis
 
     cv2.imwrite(
         filepath,
