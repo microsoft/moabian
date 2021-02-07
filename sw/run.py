@@ -56,7 +56,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-c",
         "--controller",
-        default="zero",
+        default="pid",
         choices=list(CONTROLLERS.keys()),
         help=f"""Select what type of action to take.
         Options are: {CONTROLLERS.keys()}

@@ -49,8 +49,10 @@ class MoabEnv:
         # Wait until the next timestep to return state at the prev timestep
         # TODO: work out how we want to handle timing (delay by 1 timestep, have
         # asyncronous states/actions, etc)
-        if self.prev_time + self.dt - time.time() < 0:
-            print("Missed frame")
+
+        # TODO: what is the right move here?
+        #if self.prev_time + self.dt - time.time() < 0:
+        #    print("Missed frame")
         # Sleep until the next timestep
         time.sleep(max(self.prev_time + self.dt - time.time(), 0))
         self.prev_time = time.time()
