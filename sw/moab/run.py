@@ -1,6 +1,11 @@
 import argparse
 
-from controllers import pid_controller, manual_controller, zero_controller
+from controllers import (
+    zero_controller,
+    pid_controller,
+    brain_controller,
+    manual_controller,
+)
 from hat import Icon, Text
 from env import MoabEnv
 from hat import Hat
@@ -8,20 +13,23 @@ from hat import Hat
 
 ICONS = {
     "pid": Icon.DOT,
-    "manual": Icon.DOT,
     "zero": Icon.DOT,
+    "brain": Icon.DOT,
+    "manual": Icon.DOT,
 }
 
 TEXTS = {
     "pid": Text.CLASSIC,
-    "manual": Text.MANUAL,
     "zero": Text.BLANK,
+    "brain": Text.BRAIN,
+    "manual": Text.MANUAL,
 }
 
 CONTROLLERS = {
     "pid": pid_controller,
-    "manual": manual_controller,
     "zero": zero_controller,
+    "brain": brain_controller,
+    "manual": manual_controller,
 }
 
 

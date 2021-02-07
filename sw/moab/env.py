@@ -40,7 +40,7 @@ class MoabEnv:
 
     def step(self, action):
         plate_x, plate_y = action
-        self.hat.set_plate_angles(int(plate_x), int(plate_y))
+        self.hat.set_plate_angles(plate_x, plate_y)
 
         frame, elapsed_time = self.camera()
         ball_detected, cicle_feature = self.detector(frame, debug=self.debug)

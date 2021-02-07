@@ -179,7 +179,8 @@ class HSVDetector:
                         )
 
                     x, y = pixels_to_meters(x, y, frame_size=self.frame_size)
-                    self.last_detected = (Vector2(x, y), radius)
+                    center = Vector2(x, y).rotate(np.radians(-30))
+                    self.last_detected = (center, radius)
                     return ball_detected, self.last_detected
                 else:
                     pass
