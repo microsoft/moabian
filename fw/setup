@@ -10,7 +10,7 @@ require() { hash "$@" || exit 127; }
 println() { printf '%s\n' "$*"; }
 die()     { ret=$?; printf "%s\n" "$@" >&2; exit "$ret"; }
 
-FW_FILENAME=${1:-"firmware.bin"}
+FW_FILENAME=${1:-"v3.0.0.bin"}
 
 [[ $EUID -eq 0 ]] || die "$0 needs to run as root. Try again with sudo."
 
