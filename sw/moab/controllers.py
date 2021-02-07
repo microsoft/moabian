@@ -120,7 +120,7 @@ def brain_controller(
     prev_position = Vector2(0, 0)
 
     def next_action(state):
-        nonlocal prev_position
+        nonlocal prev_position  # allow prev_position to be updated in inner scope
 
         ball_detected, position = state
         action = Vector2(0, 0)

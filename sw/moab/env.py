@@ -1,7 +1,7 @@
 import time
 
 from camera import OpenCVCameraSensor as Camera
-from detector import HSVDetector as Detector
+from detector import hsv_detector as detector
 from hat import Hat
 
 
@@ -13,7 +13,7 @@ class MoabEnv:
         else:
             self.hat = Hat()
         self.camera = Camera(frequency=frequency)
-        self.detector = Detector()
+        self.detector = detector(debug=debug)
         self.debug = debug
 
         self.dt = 1 / frequency
@@ -43,7 +43,7 @@ class MoabEnv:
         self.hat.set_plate_angles(plate_x, plate_y)
 
         frame, elapsed_time = self.camera()
-        ball_detected, cicle_feature = self.detector(frame, debug=self.debug)
+        ball_detected, cicle_feature = self.detector(frame)
         ball_center, ball_radius = cicle_feature
 
         # Wait until the next timestep to return state at the prev timestep
