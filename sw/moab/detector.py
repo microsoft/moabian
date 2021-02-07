@@ -114,51 +114,6 @@ class HSVDetector:
                 if self.ball_min < norm_radius < self.ball_max:
                     ball_detected = True
 
-                    # 1st ------------------------------------------------------
-                    # rotate the center coords into sensor coords
-                    # the ball detector uses rotate coordinates, so we must as well
-                    rot_center = Vector2(
-                        self.calibration.plate_x_offset, self.calibration.plate_y_offset
-                    ).rotate(math.radians(-self.calibration.rotation))
-
-                    x_center = (rot_center.x + 0.5) * self.frame_size
-                    y_center = (rot_center.y + 0.5) * self.frame_size
-
-                    # Convert from pixels to absolute with 0,0 as center of detected plate
-                    x1 = self.x_obs - x_center
-                    y1 = self.y_obs - y_center
-
-                    # 2nd ------------------------------------------------------
-                    v = Vector2(self.x_obs, self.y_obs)
-                    v -= Vector2(self.frame_size / 2, self.frame_size / 2)
-                    # v.rotate(self.calibration.rotation)
-                    x, y = v.x, v.y
-                    theta = -30
-
-                    x2 = x * math.cos(theta) - y * math.sin(theta)
-                    y2 = x * math.sin(theta) + y * math.cos(theta)
-
-                    # 3rd ------------------------------------------------------
-                    v2 = v.rotate(theta)
-                    x3, y3 = v2.x, v2.y
-
-                    # end ------------------------------------------------------
-                    if self.i % 10 == 0:
-                        # print("")
-                        # # fmt: off
-                        # # print(f"(x0, y0) = ({x : .2f}, {y : .2f}), (r, theta) = ({polar(x, y)[0]: .2f}, {polar(x, y)[1]: .2f})")
-                        # # print(f"(x1, y1) = ({x1: .2f}, {y1: .2f}), (r, theta) = ({polar(x1, y1)[0]: .2f}, {polar(x1, y1)[1]: .2f})")
-                        # # print(f"(x2, y2) = ({x2: .2f}, {y2: .2f}), (r, theta) = ({polar(x2, y2)[0]: .2f}, {polar(x2, y2)[1]: .2f})")
-                        # # print(f"(x3, y3) = ({x3: .2f}, {y3: .2f}), (r, theta) = ({polar(x3, y3)[0]: .2f}, {polar(x3, y3)[1]: .2f})")
-                        # print(f"(x0, y0) = ({x : 5.1f}, {y : 5.1f}), θ = {polar(x, y)[1]: 5.1f}°")
-                        # print(f"(x1, y1) = ({x1: 5.1f}, {y1: 5.1f}), θ = {polar(x1, y1)[1]: 5.1f}°")
-                        # print(f"(x2, y2) = ({x2: 5.1f}, {y2: 5.1f}), θ = {polar(x2, y2)[1]: 5.1f}°")
-                        # print(f"(x3, y3) = ({x3: 5.1f}, {y3: 5.1f}), θ = {polar(x3, y3)[1]: 5.1f}°")
-                        pass
-                        # fmt: on
-
-                    self.i += 1
-
                     if debug:
                         # Draw on a circle
                         center = (int(self.x_obs), int(self.y_obs))
@@ -178,7 +133,7 @@ class HSVDetector:
                             [cv2.IMWRITE_JPEG_QUALITY, 70],
                         )
 
-                    x, y = pixels_to_meters(x, y, frame_size=self.frame_size)
+                    # x, y = pixels_to_meters(x, y, frame_size=self.frame_size)
                     center = Vector2(x, y).rotate(np.radians(-30))
                     self.last_detected = (center, radius)
                     return ball_detected, self.last_detected
