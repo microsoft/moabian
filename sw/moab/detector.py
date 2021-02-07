@@ -26,7 +26,6 @@ def pixels_to_meters(vec, frame_size=256, feild_of_view=1.05):
 def draw_ball(img, center, radius):
     # WARNING: this function has side effects due to cv2!
     # Draw on a circle
-    print(center)
     cv2.circle(img, center, 2, (255, 0, 255), 2)
     cv2.circle(img, center, int(radius), (255, 0, 255), 2)
     return img
