@@ -33,7 +33,7 @@ function info {
 
 # bcm2835
 if [[ ! -e /usr/local/lib/libbcm2835.a ]]; then
-    warn "Install the bcm2835 library first from ~/moab/sw/bin/bcm2835"
+    warn "Install the bcm2835 library first from ~/moab/fw/bcm2835"
     exit 127
 fi
 
