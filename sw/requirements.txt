@@ -7,3 +7,6 @@ RPi.GPIO==0.7.0
 wheel==0.35.1
 setuptools==50.1.0
 spidev==3.5
+Flask==1.1.2
+inotify==0.2.10
+gunicorn==20.0.4

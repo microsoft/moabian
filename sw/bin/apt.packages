@@ -54,6 +54,3 @@ opencv=(
 )
 echo "• installing: opencv"
 apt-get install -qq --no-install-recommends ${opencv[*]}
-
-info "Installing Python3 packages (pi)" 
-sudo -u pi python3 -m pip install -r ../requirements.txt --user
