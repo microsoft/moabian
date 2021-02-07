@@ -133,24 +133,6 @@ def brain_controller(
             "ball_y": position.y,
             "ball_vel_x": velocity.x,
             "ball_vel_y": velocity.y,
-            # Ignore all these since the brain doesn't use them anyway
-            "ball_radius": 0.0,
-            "plate_theta_x": 0.0,
-            "plate_theta_y": 0.0,
-            "obstacle_x": 0.0,
-            "obstacle_y": 0.0,
-            "obstacle_radius": 0.0,
-            "obstacle_distance": 0.0,
-            "obstacle_direction": 0.0,
-            "obstacle_x": 0.0,
-            "obstacle_y": 0.0,
-            "obstacle_radius": 0.0,
-            "obstacle_distance": 0.0,
-            "obstacle_direction": 0.0,
-            "obstacle_pos_x": 0.0,
-            "obstacle_pos_y": 0.0,
-            "distance_to_obstacle": 0.0,
-            "direction_to_obstacle": 0.0,
         }
 
         if ball_detected:

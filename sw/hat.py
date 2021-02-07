@@ -194,11 +194,14 @@ def setupGPIO():
 def runtime():
     """ Set mode to runtime mode (not bootloader mode). """
     gpio.output(GpioPin.HAT_EN, gpio.LOW)
-    time.sleep(0.02)  # 20ms
+    time.sleep(0.02)
     gpio.output(GpioPin.HAT_EN, gpio.HIGH)
     gpio.output(GpioPin.HAT_RESET, gpio.LOW)
     gpio.output(GpioPin.BOOT_EN, gpio.LOW)
-    time.sleep(0.25)  # 250ms
+
+    # load-bearing timer here; don't make it shorter
+    # https://youtu.be/QRVExJZKIT8
+    time.sleep(0.25)
 
 
 def enable_hat(enabled: bool):
