@@ -9,6 +9,7 @@ import logging as log
 import RPi.GPIO as gpio
 
 from enum import IntEnum
+from typing import Union, List, Tuple
 
 
 # fmt: off
@@ -101,10 +102,6 @@ Y_TILT_SERVO3 = -0.866
 
 
 # Helper functions -------------------------------------------------------------
-def _byte_to_bits(byte):
-    return bin(byte)[2:].rjust(8, "0")
-
-
 def _uint8_to_int8(b):
     """
     Converts a byte to a signed int (int8) instead of unsigned int (uint8).
@@ -149,42 +146,55 @@ def runtime():
     time.sleep(0.25)  # 250ms
 
 
-def enable_hat(enabled: bool):
-    gpio.output(GpioPin.HAT_EN, gpio.HIGH if enabled else gpio.LOW)
+def right_pad_array(arr: Union[List, np.ndarray], length, dtype) -> np.ndarray:
+    len_arr = len(arr)
+    if len_arr < 9:
+        padded_arr = np.zeros(length, dtype=dtype)
+        padded_arr[:len_arr] = arr
+        return padded_arr
+    elif len_arr == 9:
+        return np.asarray(arr)
+    else:
+        raise ValueError(f"Given array: `{arr}` is longer than padded len: {length}.")
 
 
-def poll_power_btn():
-    return gpio.input(GpioPin.HAT_PWR_N) != gpio.HIGH
+def _xy_offsets(x, y, servo_offsets: Tuple[int, int, int]):
+    so_1, so_2, so_3 = servo_offsets
+
+    x_offset = x + so_1 + X_TILT_SERVO1 * so_2 + X_TILT_SERVO1 * so_3
+    y_offset = y + Y_TILT_SERVO2 * so_2 + Y_TILT_SERVO3 * so_3
+    return x_offset, y_offset
 
 
-class Hat(object):
+class Hat:
     def __init__(
         self,
-        spi_bus=0,
-        spi_device=0,
-        spi_max_speed_hz=10000,
-        servo1_offset=0,
-        servo2_offset=0,
-        servo3_offset=0,
+        spi_bus: int = 0,
+        spi_device: int = 0,
+        spi_max_speed_hz: int = 10000,
+        servo_offsets: Tuple[int, int, int] = (0, 0, 0),
     ):
-        self._servo1_offset = servo1_offset
-        self._servo2_offset = servo2_offset
-        self._servo3_offset = servo3_offset
-        self._icon_idx = 0
-        self._text_idx = 0
-        self.spi = spidev.SpiDev()
-        self.spi.open(spi_bus, spi_device)
-        self.spi.max_speed_hz = spi_max_speed_hz
+        self.servo_offsets: Tuple[int, int, int] = servo_offsets
 
-        self.menu_btn = False
-        self.joy_btn = False
-        self.joy_x = 0
-        self.joy_y = 0
+        self.menu_btn: bool = False
+        self.joy_btn: bool = False
+        self.joy_x: float = 0
+        self.joy_y: float = 0
 
-        self.Text = Text
-        self.Icon = Icon
+        # Attempt to open the spidev bus
+        try:
+            self.spi = spidev.SpiDev()
+            self.spi.open(spi_bus, spi_device)
+            self.spi.max_speed_hz = spi_max_speed_hz
+        except:
+            raise IOError(f"Could not open `/dev/spidev{spi_bus}.{spi_device}`.")
 
-        setupGPIO()
+        # Attempt to setup the GPIO pins and initialize the runtime
+        try:
+            setupGPIO()
+        except:
+            raise IOError(f"Could not setup GPIO pins")
+
         runtime()
 
     def close(self):
@@ -197,163 +207,22 @@ class Hat(object):
     def __exit__(self, type, value, traceback):
         self.close()
 
-    def _xy_offsets(self, x, y):  # x & y were int8
-        # fmt: off
-        # for x brackets were cast to int8
-        x_offset = x + self._servo1_offset + (X_TILT_SERVO1 * self._servo2_offset) + (X_TILT_SERVO1 * self._servo3_offset)
-        # for y brackets were cast to int
-        y_offset = y + (Y_TILT_SERVO2 * self._servo2_offset) + (Y_TILT_SERVO3 * self._servo3_offset)
-        # fmt: on
-        return x_offset, y_offset
-
-    def send(self, packet):
+    def trancieve(self, packet: Union[List, np.ndarray]):
         """
-        Send 9 bytes to hat.
-        Use `writebytes2` instead of `writebytes` since it works with numpy array.
-        Python immediately converts hex  to python )
+        Send and receive 9 bytes from hat.
         """
-        assert len(packet) == 9
-        assert self.spi is not None
+        packet = right_pad_array(packet, length=9, dtype=np.int8)
         time.sleep(0.001)
-        packet = np.asarray(packet)
         hat_to_pi = self.spi.xfer(packet.tolist())
         self._save_buttons(hat_to_pi)
 
-    def print_arbitrary_message(self, s):
-        s = s.upper()
-        s = bytes(s, "utf-8")
-        s += b"\0"
-        assert len(s) < 256
-
-        # Calculate the number of messages required to send the message
-        num_msgs = int(np.ceil(len(s) / 8))
-
-        # Fill the message with trailing termination chars to so we always
-        # send 9 bytes
-        s += (num_msgs * 8 - len(s)) * b"\0"
-
-        for msg_idx in range(num_msgs):
-            self.send(
-                [SendCommand.ARBITRARY_MESSAGE, *s[8 * msg_idx : 8 * msg_idx + 8]]
-            )
-        # After sending all buffer info, send the command to display the buffer
-        self.send(
-            [SendCommand.DISPLAY_BUFFER, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-        )
-
-    def ping(self):
-        self.print_arbitrary_message("Pong.")
-
-    def activate_plate(self):
-        """ Set the plate to track plate angles. """
-        self.send(
-            [
-                SendCommand.SERVO_ENABLE,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-            ]
-        )
-
-    def disable_servo_power(self):
-        """ Disables the power to the servos. """
-        self.send(
-            [
-                SendCommand.SERVO_DISABLE,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-            ]
-        )
-
-    def set_plate_angles(self, plate_x_deg: int, plate_y_deg: int):
-        # Take into account offsets when converting from degrees to values sent to hat
-        plate_x, plate_y = self._xy_offsets(plate_x_deg, plate_y_deg)
-        self.send(
-            np.array(
-                [
-                    SendCommand.SET_PLATE_ANGLES,
-                    plate_x,
-                    plate_y,
-                    0x00,
-                    0x00,
-                    0x00,
-                    0x00,
-                    0x00,
-                    0x00,
-                ],
-                dtype=np.int8,
-            )
-        )
-
-    def set_servo_positions(self, servo1_pos: int, servo2_pos: int, servo3_pos: int):
-        self.send(
-            np.array(
-                [
-                    SendCommand.SET_SERVOS,
-                    servo1_pos,
-                    servo2_pos,
-                    servo3_pos,
-                    0x00,
-                    0x00,
-                    0x00,
-                    0x00,
-                    0x00,
-                ],
-                dtype=np.int8,
-            )
-        )
-
-    def set_servo_offsets(
-        self, servo1_offset: int, servo2_offset: int, servo3_offset: int
-    ):
-        """
-        Set post-factory calibration offsets for each servo.
-        Normally this call should not be needed.
-        """
-        self._servo1_offset = servo1_offset
-        self._servo2_offset = servo2_offset
-        self._servo3_offset = servo3_offset
-
-    def set_icon_text(self, icon_idx: Icon, text_idx: Text):
-        self.send(
-            [
-                SendCommand.TEXT_ICON_SELECT,
-                icon_idx,
-                text_idx,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-            ],
-        )
-
-    def hover_plate(self):
-        """
-        Set the plate to its hover position.
-        This was experimentally found to be 150 (down but still leaving some
-        space at the bottom).
-        """
-        self.set_servo_positions(150, 150, 150)
-
-    def lower_plate(self):
-        """
-        Set the plate to its lower position (usually powered-off state).
-        This was experimentally found to be 155 (lowest possible position).
-        """
-        self.set_servo_positions(155, 155, 155)
+    def _save_buttons(self, hat_to_pi):
+        # Check if buttons are pressed
+        self.menu_btn = hat_to_pi[0] == Button.MENU
+        self.joy_btn = hat_to_pi[0] == Button.JOYSTICK
+        # Get x & y coordinates of joystick normalized to [-1, +1]
+        self.joy_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X]) / 100
+        self.joy_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y]) / 100
 
     def poll_buttons(self):
         """
@@ -368,30 +237,85 @@ class Hat(object):
         """
         return self.menu_btn, self.joy_btn, self.joy_x, self.joy_y
 
-    def _save_buttons(self, hat_to_pi):
-        # Check if buttons are pressed
-        self.menu_btn = hat_to_pi[0] == Button.MENU
-        self.joy_btn = hat_to_pi[0] == Button.JOYSTICK
-        # Get x & y coordinates of joystick normalized to [-1, +1]
-        self.joy_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X]) / 100.0
-        self.joy_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y]) / 100.0
+    def enable_servos(self):
+        """ Set the plate to track plate angles. """
+        self.trancieve([SendCommand.SERVO_ENABLE])
 
-    def print_ip(self):
-        ip1, ip2, ip3, ip4 = _get_host_ip()
-        self.send_ip_address(ip1, ip2, ip3, ip4)
-        self.print_arbitrary_message(
-            f"PROJECT MOAB\nIP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}\n"
+    def disable_servos(self):
+        """ Disables the power to the servos. """
+        self.trancieve([SendCommand.SERVO_DISABLE])
+
+    def set_angles(self, plate_x_deg: int, plate_y_deg: int):
+        # Take into account offsets when converting from degrees to values sent to hat
+        plate_x, plate_y = _xy_offsets(plate_x_deg, plate_y_deg, self.servo_offsets)
+        self.trancieve(
+            np.array(
+                [SendCommand.SET_PLATE_ANGLES, plate_x, plate_y],
+                dtype=np.int8,
+            )
         )
 
-    def print_sw_version(self):
-        sw_major, sw_minor, sw_bug = _get_sw_version()
-        self.print_arbitrary_message(
-            f"PROJECT MOAB\nSW VERSION\n{sw_major}.{sw_minor}.{sw_bug}\n"
+    def set_servos(self, servo1: int, servo2: int, servo3: int):
+        # so_1, so_2, so_3 = self.servo_offsets
+        self.trancieve(
+            np.array(
+                [SendCommand.SET_SERVOS, servo1, servo2, servo3],
+                # [SendCommand.SET_SERVOS, servo1 + so_1, servo2 + so_2, servo3 + so_3],
+                dtype=np.int8,
+            )
         )
+
+    def set_servo_offsets(self, servo1: int, servo2: int, servo3: int):
+        """
+        Set post-factory calibration offsets for each servo.
+        Normally this call should not be needed.
+        """
+        self.servo_offsets = (servo1, servo2, servo3)
+
+    def set_icon_text(self, icon_idx: Icon, text_idx: Text):
+        self.trancieve([SendCommand.TEXT_ICON_SELECT, icon_idx, text_idx])
+
+    def hover(self):
+        """
+        Set the plate to its hover position.
+        This was experimentally found to be 150 (down but still leaving some
+        space at the bottom).
+        """
+        self.set_servos(150, 150, 150)
+
+    def lower(self):
+        """
+        Set the plate to its lower position (usually powered-off state).
+        This was experimentally found to be 155 (lowest possible position).
+        """
+        self.set_servos(155, 155, 155)
+
+    def print_arbitrary_string(self, s: str):
+        s = s.upper()  # The firware currently only has uppercase fonts
+        s = bytes(s, "utf-8")
+        s += b"\0"  # Ensure a trailing termination character
+        assert len(s) <= 256
+
+        # Calculate the number of messages required to send the text
+        num_msgs = int(np.ceil(len(s) / 8))
+
+        # Pad the message with trailing termination chars to so we always
+        # send in 9 bytes increments (1 byte control, 8 bytes data)
+        s += (num_msgs * 8 - len(s)) * b"\0"
+
+        for msg_idx in range(num_msgs):
+            # Combine into one list to send
+            msg = [SendCommand.ARBITRARY_MESSAGE] + s[8 * msg_idx : 8 * msg_idx + 8]
+            self.trancieve(msg)
+
+        # After sending all buffer info, send the command to display the buffer
+        self.trancieve([SendCommand.DISPLAY_BUFFER])
 
     def print_info_screen(self):
         sw_major, sw_minor, sw_bug = _get_sw_version()
         ip1, ip2, ip3, ip4 = _get_host_ip()
-        self.print_arbitrary_message(
-            f"PROJECT MOAB\nSW VERSION\n{sw_major}.{sw_minor}.{sw_bug}\nIP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}\n"
+        self.print_arbitrary_string(
+            f"PROJECT MOAB\n"
+            f"SW VERSION\n{sw_major}.{sw_minor}.{sw_bug}\n"
+            f"IP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}\n"
         )

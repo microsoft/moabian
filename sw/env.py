@@ -20,14 +20,14 @@ class MoabEnv:
         self.prev_time = time.time()
 
     def __enter__(self):
-        self.hat.activate_plate()
-        self.hat.hover_plate()
+        self.hat.enable_servos()
+        self.hat.hover()
         self.camera.start()
         return self
 
     def __exit__(self, type, value, traceback):
-        self.hat.lower_plate()
-        self.hat.disable_servo_power()
+        self.hat.lower()
+        self.hat.disable_servos()
         self.hat.close()
         self.camera.stop()
 
@@ -40,7 +40,7 @@ class MoabEnv:
 
     def step(self, action):
         plate_x, plate_y = action
-        self.hat.set_plate_angles(plate_x, plate_y)
+        self.hat.set_angles(plate_x, plate_y)
 
         frame, elapsed_time = self.camera()
         ball_detected, cicle_feature = self.detector(frame)
@@ -51,7 +51,7 @@ class MoabEnv:
         # asyncronous states/actions, etc)
 
         # TODO: what is the right move here?
-        #if self.prev_time + self.dt - time.time() < 0:
+        # if self.prev_time + self.dt - time.time() < 0:
         #    print("Missed frame")
         # Sleep until the next timestep
         time.sleep(max(self.prev_time + self.dt - time.time(), 0))
