@@ -62,6 +62,5 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--frequency", default="30", type=int)
     parser.add_argument("-ma", "--max_angle", default="16", type=float)
     parser.add_argument("-p", "--port", default=5000, type=int)
-    # parser.add_argument("-q", "--image_quality", default="70", type=int, help="[1-100]")  # TODO: add this
     args, _ = parser.parse_known_args()
     main(args.controller, args.frequency, args.debug, args.max_angle, args.port)

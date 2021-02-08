@@ -53,11 +53,11 @@ def hsv_detector(
     kernel_size=[5, 5],
     ball_min=0.06,
     ball_max=0.22,
-    debug=False,
     hue=None,  # hue [0..255]
     sigma=0.05,  # narrow: 0.01, wide: 0.1
     bandpass_gain=12.0,
     mask_gain=4.0,
+    debug=False,
 ):
     if calibration is None:
         calibration = Calibration()
@@ -97,7 +97,6 @@ def hsv_detector(
                 # Convert from pixels to absolute with 0,0 as center of detected plate
                 x = x_obs - frame_size // 2
                 y = y_obs - frame_size // 2
-                center = Vector2(x, y).rotate(np.radians(-30))
 
                 if debug:
                     ball_center_pixels = (int(x_obs), int(y_obs))
