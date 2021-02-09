@@ -102,7 +102,7 @@ Y_TILT_SERVO3 = -0.866
 
 
 # Helper functions -------------------------------------------------------------
-def _uint8_to_int8(b):
+def _uint8_to_int8(b: int) -> int:
     """
     Converts a byte to a signed int (int8) instead of unsigned int (uint8).
     """
@@ -158,7 +158,7 @@ def right_pad_array(arr: Union[List, np.ndarray], length, dtype) -> np.ndarray:
         raise ValueError(f"Given array: `{arr}` is longer than padded len: {length}.")
 
 
-def _xy_offsets(x, y, servo_offsets: Tuple[int, int, int]):
+def _xy_offsets(x, y, servo_offsets: Tuple[int, int, int]) -> Tuple[int, int]:
     so_1, so_2, so_3 = servo_offsets
 
     x_offset = x + so_1 + X_TILT_SERVO1 * so_2 + X_TILT_SERVO1 * so_3
@@ -254,12 +254,8 @@ class Hat:
                 dtype=np.int8,
             )
         )
-        # Give enough time for the action to be taken
-        # Experimentally found 25ms to be enough but upped to 50ms for safety net
-        time.sleep(0.05)
 
     def set_servos(self, servo1: int, servo2: int, servo3: int):
-        # so_1, so_2, so_3 = self.servo_offsets
         self.trancieve(
             np.array(
                 [SendCommand.SET_SERVOS, servo1, servo2, servo3],
@@ -267,9 +263,6 @@ class Hat:
                 dtype=np.int8,
             )
         )
-        # Give enough time for the action to be taken
-        # Experimentally found 25ms to be enough but upped to 50ms for safety net
-        time.sleep(0.05)
 
     def set_servo_offsets(self, servo1: int, servo2: int, servo3: int):
         """
@@ -288,6 +281,9 @@ class Hat:
         space at the bottom).
         """
         self.set_servos(150, 150, 150)
+        # Give enough time for the action to be taken
+        # Experimentally found 25ms to be enough but upped to 50ms for safety net
+        time.sleep(0.05)
 
     def lower(self):
         """
@@ -295,6 +291,9 @@ class Hat:
         This was experimentally found to be 155 (lowest possible position).
         """
         self.set_servos(155, 155, 155)
+        # Give enough time for the action to be taken
+        # Experimentally found 25ms to be enough but upped to 50ms for safety net
+        time.sleep(0.05)
 
     def print_arbitrary_string(self, s: str):
         s = s.upper()  # The firware currently only has uppercase fonts
