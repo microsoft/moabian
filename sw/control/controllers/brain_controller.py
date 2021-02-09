@@ -19,6 +19,11 @@ from typing import Dict
 from dataclasses import dataclass
 
 from ..common import CircleFeature, IController, IDevice, Vector2
+from ..perfcounters import (
+    FrequencyCounter,
+    WindowedAverageCounter,
+    PerformanceCounters as counter,
+)
 
 
 # Some type aliases for clarity
@@ -169,7 +174,7 @@ class BrainController(IController):
 
         self.tick = self.tick + 1
         if self.tick == 1:
-            self.csv_header() 
+            self.csv_header()
 
         observables = {
             # BonsaiMoabSimV4
@@ -229,12 +234,13 @@ class BrainController(IController):
 
     def csv_header(self):
         cols = ["tick", "dt", "ball_x", "ball_y", "ball_vel_x", "ball_vel_y"]
-        cols = cols + ['status','pitch', 'roll']
-    
+        cols = cols + ["status", "pitch", "roll"]
+
         print(cols, file=sys.stderr)
         return
 
     def csv_row(self, observables, response):
+
         cols = ["elapsed_time", "ball_x", "ball_y", "ball_vel_x", "ball_vel_y"]
 
         # state vector...
@@ -248,18 +254,24 @@ class BrainController(IController):
         # action vector...
         a = [response.status_code]
         d = response.json()
+
+        # TODO: I might want the None side effect on an error
         if response.ok is False:
-            a.append(d.get('input_pitch'))
-            a.append(d.get('input_roll'))
-        
+            a.append(d.get("input_pitch"))
+            a.append(d.get("input_roll"))
+
         # combine to log...
-        l = [self.tick]  + s + a
+        l = [self.tick] + s + a
 
         # round floats to 5 digits
         l = [f"{n:.5f}" if type(n) is float else n for n in l]
-        l = ','.join([str(e) for e in l])
+        l = ",".join([str(e) for e in l])
 
-        print(l, file=sys.stderr)
+        counter.start("logfile", WindowedAverageCounter)
+        with open("/tmp/newlog.csv", "a") as fd:
+            print(l, file=fd)
+        counter.stop()
+
         return
 
     def on_menu_down(self, sender: IDevice):
