@@ -160,7 +160,7 @@ def brain_controller(
         if tick == 1:
             csv_header()
 
-        dt = prev_time - time.time()
+        dt = time.time() - prev_time
         prev_time = time.time()
 
         ball_detected, position = state
