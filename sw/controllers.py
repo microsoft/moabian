@@ -120,6 +120,7 @@ def brain_controller(
     prediction_url = f"{end_point}/v1/prediction"
     prev_position = Vector2(0, 0)
     tick = 0
+    prev_time = time.time()
 
     # Logging helper functions
     def csv_header():
@@ -129,7 +130,7 @@ def brain_controller(
         with open("/tmp/log.csv", "w") as fd:
             print(cols, file=fd)
 
-    def csv_row(tick, observables, response):
+    def csv_row(tick, dt, observables, response):
         cols = ["ball_x", "ball_y", "ball_vel_x", "ball_vel_y"]
 
         # state vector
@@ -142,7 +143,7 @@ def brain_controller(
         a.append(d.get("input_roll"))
 
         # combine all to a list for the log
-        l = s + a
+        l = [tick, dt] + s + a
 
         # round floats to 5 digits
         l = [f"{n:.5f}" if type(n) is float else n for n in l]
@@ -153,11 +154,14 @@ def brain_controller(
 
     def next_action(state):
         nonlocal prev_position  # allow prev_position to be updated in inner scope
-        nonlocal tick
+        nonlocal tick, prev_time
 
         tick = tick + 1
         if tick == 1:
             csv_header()
+
+        dt = prev_time - time.time()
+        prev_time = time.time()
 
         ball_detected, position = state
         action = Vector2(0, 0)
@@ -181,7 +185,7 @@ def brain_controller(
                 response = requests.get(prediction_url, json=observables)
                 action = response.json()
 
-                csv_row(tick, observables, response)
+                csv_row(tick, dt, observables, response)
 
                 if response.ok:
                     action = requests.get(prediction_url, json=observables).json()
