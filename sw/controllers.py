@@ -107,7 +107,7 @@ def random_control(low=-1, high=1, **kwargs):
 
 
 def brain_controller(
-    frequency=30, max_angle=22, end_point="http://localhost:5000", **kwargs
+    frequency=30, max_angle=22, end_point="http://localhost:5000", logfile="/tmp/log.csv", **kwargs
 ):
     """
     This class interfaces with an HTTP server running locally.
@@ -127,7 +127,7 @@ def brain_controller(
         cols = ["tick", "dt", "ball_x", "ball_y", "ball_vel_x", "ball_vel_y"]
         cols = cols + ["status", "pitch", "roll"]
 
-        with open("/tmp/log.csv", "w") as fd:
+        with open(logfile, "w") as fd:
             print(cols, file=fd)
 
     def csv_row(tick, dt, observables, response):
@@ -149,7 +149,7 @@ def brain_controller(
         l = [f"{n:.5f}" if type(n) is float else n for n in l]
         l = ",".join([str(e) for e in l])
 
-        with open("/tmp/log.csv", "a") as fd:
+        with open(logfile, "a") as fd:
             print(l, file=fd)
 
     def next_action(state):

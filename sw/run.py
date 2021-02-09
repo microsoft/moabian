@@ -24,7 +24,7 @@ ICONS = {key: val[1] for key, val in CONTROLLER_INFO.items()}
 TEXTS = {key: val[2] for key, val in CONTROLLER_INFO.items()}
 
 
-def main(controller_name, frequency, debug, max_angle, port):
+def main(controller_name, frequency, debug, max_angle, port, logfile):
     # Only manual needs access to the hat outside of the env
     hat = Hat()
 
@@ -37,6 +37,7 @@ def main(controller_name, frequency, debug, max_angle, port):
         hat=hat,
         max_angle=max_angle,
         end_point="http://localhost:" + str(port),
+        logfile=logfile,
     )
 
     with MoabEnv(hat, frequency, debug) as env:
@@ -62,5 +63,6 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--frequency", default="30", type=int)
     parser.add_argument("-ma", "--max_angle", default="16", type=float)
     parser.add_argument("-p", "--port", default=5000, type=int)
+    parser.add_argument("-l", "--logfile", default="/tmp/log.csv", type=str)
     args, _ = parser.parse_known_args()
-    main(args.controller, args.frequency, args.debug, args.max_angle, args.port)
+    main(args.controller, args.frequency, args.debug, args.max_angle, args.port, args.logfile)
