@@ -42,6 +42,7 @@ def pid_controller(
     frequency=30,
     fc=15,  # Cutoff frequency of the high pass filter (10 is overly smooth, 30 is like no filter)
     max_angle=16,
+    logfile="/tmp/log.csv",
     **kwargs,
 ):
     # TODO: The PID controller should probably use matrices instead of 2
@@ -57,16 +58,46 @@ def pid_controller(
 
     sum_x = 0
     sum_y = 0
+    tick = 0
+    prev_time = time.time()
+
+    def csv_header():
+        cols = ["tick", "dt", "ball_x", "ball_y", "ball_vel_x", "ball_vel_y"]
+        cols = cols + ["status", "pitch", "roll"]
+
+        with open(logfile, "w") as fd:
+            print(cols, file=fd)
+
+    def csv_row(tick, dt, state, action):
+
+        # combine all to a list for the log
+        l = [tick, dt] + state + action
+
+        # round floats to 5 digits
+        l = [f"{n:.5f}" if type(n) is float else n for n in l]
+        l = ",".join([str(e) for e in l])
+
+        with open(logfile, "a") as fd:
+            print(l, file=fd)
 
     def next_action(state):
         nonlocal sum_x, sum_y  # allow sum_x and sum_y to be updated in inner scope
+        nonlocal tick, prev_time
+
+        tick = tick + 1
+        if tick == 1:
+            csv_header()
+
+        dt = time.time() - prev_time
+        prev_time = time.time()
 
         ball_detected, position = state
         x, y = position
+        dx, dy = hpf_x(x), hpf_y(y)
 
         if ball_detected:
-            action_x = Kp * x + Ki * sum_x + Kd * hpf_x(x)
-            action_y = Kp * y + Ki * sum_y + Kd * hpf_y(y)
+            action_x = Kp * x + Ki * sum_x + Kd * dx
+            action_y = Kp * y + Ki * sum_y + Kd * dy
             action_x = np.clip(action_x, -max_angle, max_angle)
             action_y = np.clip(action_y, -max_angle, max_angle)
             # Update the integral term
@@ -74,7 +105,10 @@ def pid_controller(
             sum_y += y
 
             # NOTE the flipped X & Y! (and the inverted second term)
+            # TODO: fix this in next firmware rev
             action = Vector2(action_y, -action_x)
+
+            csv_row(tick, dt, [x, y, dx, dy], [200, action_x, action_y])
 
         else:
             # Move plate back to flat
