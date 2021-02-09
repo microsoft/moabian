@@ -1,3 +1,4 @@
+import sys
 import time
 import requests
 import numpy as np
@@ -118,9 +119,15 @@ def brain_controller(
     """
     prediction_url = f"{end_point}/v1/prediction"
     prev_position = Vector2(0, 0)
+    tick = 0
 
     def next_action(state):
         nonlocal prev_position  # allow prev_position to be updated in inner scope
+        nonlocal tick
+
+        tick = tick + 1
+        if tick == 1:
+            csv_header()
 
         ball_detected, position = state
         action = Vector2(0, 0)
@@ -141,19 +148,59 @@ def brain_controller(
             # when it loses the connection.
             try:
                 # Get action from brain
-                action = requests.get(prediction_url, json=observables).json()
-                action_pitch = action["input_pitch"]
-                action_roll = action["input_roll"]
+                response = requests.get(prediction_url, json=observables)
+                action = response.json()
 
-                # Scale and clip
-                action_pitch = np.clip(action_pitch * max_angle, -max_angle, max_angle)
-                action_roll = np.clip(action_roll * max_angle, -max_angle, max_angle)
+                csv_row(tick, observables, response)
 
-                action = Vector2(action_pitch, action_roll)
+                if response.ok:
+                    action = requests.get(prediction_url, json=observables).json()
+                    action_pitch = action["input_pitch"]
+                    action_roll = action["input_roll"]
+
+                    # Scale and clip
+                    action_pitch = np.clip(action_pitch * max_angle, -max_angle, max_angle)
+                    action_roll = np.clip(action_roll * max_angle, -max_angle, max_angle)
+
+                    action = Vector2(action_pitch, action_roll)
 
             except Exception as e:
                 log.exception(f"Exception calling predictor\n{e}")
                 pass
         return action
 
+    def csv_header():
+        cols = ["tick", "dt", "ball_x", "ball_y", "ball_vel_x", "ball_vel_y"]
+        cols = cols + ["status", "pitch", "roll"]
+
+        with open("/tmp/log.csv", "w") as fd:
+            print(cols, file=fd)
+        return
+
+    def csv_row(tick, observables, response):
+        cols = ["ball_x", "ball_y", "ball_vel_x", "ball_vel_y"]
+
+        # state vector...
+        s = [observables[i] for i in cols]
+
+        # action vector...
+        a = [response.status_code]
+        d = response.json()
+        a.append(d.get("input_pitch"))      # might be None which is ok
+        a.append(d.get("input_roll"))
+
+        # combine all to a list for the log...
+        l = s + a
+
+        # round floats to 5 digits
+        l = [f"{n:.5f}" if type(n) is float else n for n in l]
+        l = ",".join([str(e) for e in l])
+
+        with open("/tmp/log.csv", "a") as fd:
+            print(l, file=fd)
+
+        return
+
+
     return next_action
+
