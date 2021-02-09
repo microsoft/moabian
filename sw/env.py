@@ -46,15 +46,13 @@ class MoabEnv:
         ball_detected, cicle_feature = self.detector(frame)
         ball_center, ball_radius = cicle_feature
 
-        # Wait until the next timestep to return state at the prev timestep
-        # TODO: work out how we want to handle timing (delay by 1 timestep, have
-        # asyncronous states/actions, etc)
-
-        # TODO: what is the right move here?
+        ## TODO: Test on more bots whether this sleep is necessary since camera
+        ##       is a blocking call that does the timing too
+        ## Wait until the next timestep to return state at the prev timestep
         # if self.prev_time + self.dt - time.time() < 0:
         #    print("Missed frame")
-        # Sleep until the next timestep
-        time.sleep(max(self.prev_time + self.dt - time.time(), 0))
-        self.prev_time = time.time()
+        ## Sleep until the next timestep
+        # time.sleep(max(self.prev_time + self.dt - time.time(), 0))
+        # self.prev_time = time.time()
 
         return ball_detected, ball_center

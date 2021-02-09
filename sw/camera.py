@@ -39,7 +39,7 @@ class OpenCVCameraSensor:
         if self.source:
             self.source.set(cv2.CAP_PROP_FRAME_WIDTH, 384)
             self.source.set(cv2.CAP_PROP_FRAME_HEIGHT, 288)
-            self.source.set(cv2.CAP_PROP_FPS, self.frequency - 5)
+            self.source.set(cv2.CAP_PROP_FPS, self.frequency)
             self.source.set(cv2.CAP_PROP_MODE, 0)  # Not meant to be configurable
             self.source.set(cv2.CAP_PROP_BRIGHTNESS, self.brightness)
             self.source.set(cv2.CAP_PROP_CONTRAST, self.contrast)
