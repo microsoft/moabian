@@ -254,6 +254,9 @@ class Hat:
                 dtype=np.int8,
             )
         )
+        # Give enough time for the action to be taken
+        # Experimentally found 25ms to be enough but upped to 50ms for safety net
+        time.sleep(0.05)
 
     def set_servos(self, servo1: int, servo2: int, servo3: int):
         # so_1, so_2, so_3 = self.servo_offsets
@@ -264,6 +267,9 @@ class Hat:
                 dtype=np.int8,
             )
         )
+        # Give enough time for the action to be taken
+        # Experimentally found 25ms to be enough but upped to 50ms for safety net
+        time.sleep(0.05)
 
     def set_servo_offsets(self, servo1: int, servo2: int, servo3: int):
         """
