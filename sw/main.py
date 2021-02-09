@@ -33,10 +33,6 @@ from control.perfcounters import PerformanceCounters
 from control.config import calibration_path, config_path
 
 
-def printPerformanceCounters():
-    PerformanceCounters.logAllCounters()
-
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -154,7 +150,8 @@ def main():
     global perf_timer
     if args.perf_interval_sec > 0:
         perf_timer = ThreadedTimer()
-        perf_timer.start(args.perf_interval_sec, printPerformanceCounters)
+        perf_timer.start(args.perf_interval_sec, lambda :
+                PerformanceCounters.logAllCounters())
 
     try:
         devices = config["devices"]
