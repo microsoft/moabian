@@ -166,6 +166,37 @@ def _xy_offsets(x, y, servo_offsets: Tuple[int, int, int]) -> Tuple[int, int]:
     return x_offset, y_offset
 
 
+def plate_angles_to_servo_positions(
+    theta_x: int,
+    theta_y: int,
+    arm_len: float = 55.0,
+    side_len: float = 170.87,
+    pivot_height: float = 80.0,
+    angle_max: int = 160,
+    angle_min: int = 90,
+):
+    servo_angles = [0, 0, 0]
+
+    z1 = pivot_height + np.sin(np.radians(-theta_y)) * (side_len / np.sqrt(3))
+    r = pivot_height - np.sin(np.radians(theta_x)) * (side_len / (2 * np.sqrt(3)))
+    z2 = r + np.sin(np.radians(theta_x)) * (side_len / 2)
+    z3 = r - np.sin(np.radians(theta_x)) * (side_len / 2)
+
+    if z1 > 2 * arm_len:
+        z1 = 2 * arm_len
+    if z2 > 2 * arm_len:
+        z2 = 2 * arm_len
+    if z3 > 2 * arm_len:
+        z3 = 2 * arm_len
+
+    servo_angles[0] = 180 - (np.degrees(np.arcsin(z1 / (2 * arm_len))))
+    servo_angles[1] = 180 - (np.degrees(np.arcsin(z2 / (2 * arm_len))))
+    servo_angles[2] = 180 - (np.degrees(np.arcsin(z3 / (2 * arm_len))))
+
+    servo_angles = np.clip(servo_angles, angle_min, angle_max)
+    return servo_angles
+
+
 class Hat:
     def __init__(
         self,
@@ -260,7 +291,7 @@ class Hat:
             np.array(
                 [SendCommand.SET_SERVOS, servo1, servo2, servo3],
                 # [SendCommand.SET_SERVOS, servo1 + so_1, servo2 + so_2, servo3 + so_3],
-                dtype=np.int8,
+                dtype=np.uint8,
             )
         )
 
