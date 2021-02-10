@@ -4,8 +4,10 @@ from controllers import (
     zero_controller,
     pid_controller,
     brain_controller,
+    random_controller,
     manual_controller,
 )
+from logging_decorators import logging_decorator
 from hat import Icon, Text
 from env import MoabEnv
 from hat import Hat
@@ -15,6 +17,7 @@ CONTROLLER_INFO = {
     "pid": (pid_controller, Icon.DOT, Text.CLASSIC),
     "zero": (zero_controller, Icon.DOT, Text.BLANK),
     "brain": (brain_controller, Icon.DOT, Text.BRAIN),
+    "random": (random_controller, Icon.DOT, Text.BLANK),
     "manual": (manual_controller, Icon.DOT, Text.MANUAL),
 }
 
@@ -24,21 +27,33 @@ ICONS = {key: val[1] for key, val in CONTROLLER_INFO.items()}
 TEXTS = {key: val[2] for key, val in CONTROLLER_INFO.items()}
 
 
-def main(controller_name, frequency, debug, max_angle, port, logfile):
+def main(controller_name, frequency, debug, max_angle, port, enable_logging, logfile):
     # Only manual needs access to the hat outside of the env
     hat = Hat()
 
     icon = ICONS[controller_name]
     text = TEXTS[controller_name]
 
-    # Pass all arguments, if a controller doesn't need it, it will ignore it (**kwargs)
-    controller = CONTROLLERS[controller_name](
-        frequency=frequency,
-        hat=hat,
-        max_angle=max_angle,
-        end_point="http://localhost:" + str(port),
-        logfile=logfile,
-    )
+    if enable_logging:
+        # Pass all arguments, if a controller doesn't need it, it will ignore it (**kwargs)
+        controller = logging_decorator(
+            CONTROLLERS[controller_name](
+                frequency=frequency,
+                hat=hat,
+                max_angle=max_angle,
+                end_point="http://localhost:" + str(port),
+                enable_logging=True,
+            ),
+            logfile=logfile,
+        )
+    else:
+        # Pass all arguments, if a controller doesn't need it, it will ignore it (**kwargs)
+        controller = CONTROLLERS[controller_name](
+            frequency=frequency,
+            hat=hat,
+            max_angle=max_angle,
+            end_point="http://localhost:" + str(port),
+        )
 
     with MoabEnv(hat, frequency, debug) as env:
         state = env.reset(icon, text)
@@ -63,6 +78,15 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--frequency", default="30", type=int)
     parser.add_argument("-ma", "--max_angle", default="16", type=float)
     parser.add_argument("-p", "--port", default=5000, type=int)
-    parser.add_argument("-l", "--logfile", default="/tmp/log.csv", type=str)
+    parser.add_argument("-l", "--enable_logging", action="store_true")
+    parser.add_argument("-lf", "--logfile", default="/tmp/log.csv", type=str)
     args, _ = parser.parse_known_args()
-    main(args.controller, args.frequency, args.debug, args.max_angle, args.port, args.logfile)
+    main(
+        args.controller,
+        args.frequency,
+        args.debug,
+        args.max_angle,
+        args.port,
+        args.enable_logging,
+        args.logfile,
+    )

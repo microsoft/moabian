@@ -2,10 +2,37 @@ import math
 from dataclasses import dataclass, field
 
 
+def high_pass_filter(frequency, fc=50):
+    x_dot_cstate = 0
+    frequency = frequency
+    fc = fc
+
+    def derivate(x):
+        nonlocal x_dot_cstate  # allow x_dot_cstate to be updated in inner scope
+        x_dot = -(fc ** 2) * x_dot_cstate + fc * x
+        x_dot_cstate += (-fc * x_dot_cstate + x) / frequency
+        return x_dot
+
+    return derivate
+
+
+def derivative(frequency, fc=None):
+    prev_x = 0
+    dt = 1 / frequency
+
+    def derivate(x):
+        nonlocal prev_x
+        x_dot = (x - prev_x) * dt
+        prev_x = x
+        return x_dot
+
+    return derivate
+
+
 class Vector2:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+    def __init__(self, x: float, y: float):
+        self.x = float(x)
+        self.y = float(y)
 
     def __str__(self):
         return f"X: {self.x:2.3f}, Y: {self.y:2.3f}"
