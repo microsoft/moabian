@@ -108,7 +108,7 @@ def brain_controller(
                     action = Vector2(pitch, roll)
 
                 if enable_logging:
-                    return action, action_json
+                    return action, response
 
             except Exception as e:
                 log.exception(f"Exception calling predictor\n{e}")
