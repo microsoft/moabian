@@ -93,11 +93,11 @@ def pid_controller(
 
         ball_detected, position = state
         x, y = position
-        dx, dy = hpf_x(x), hpf_y(y)
+        vel_x, vel_y = hpf_x(x), hpf_y(y)
 
         if ball_detected:
-            action_x = Kp * x + Ki * sum_x + Kd * dx
-            action_y = Kp * y + Ki * sum_y + Kd * dy
+            action_x = Kp * x + Ki * sum_x + Kd * vel_x
+            action_y = Kp * y + Ki * sum_y + Kd * vel_y
             action_x = np.clip(action_x, -max_angle, max_angle)
             action_y = np.clip(action_y, -max_angle, max_angle)
             # Update the integral term
@@ -108,7 +108,7 @@ def pid_controller(
             # TODO: fix this in next firmware rev
             action = Vector2(action_y, -action_x)
 
-            csv_row(tick, dt, [x, y, dx, dy], [200, action_x, action_y])
+            csv_row(tick, dt, [x, y, vel_x, vel_y], [200, action_x, action_y])
 
         else:
             # Move plate back to flat
@@ -141,7 +141,11 @@ def random_control(low=-1, high=1, **kwargs):
 
 
 def brain_controller(
-    frequency=30, max_angle=22, end_point="http://localhost:5000", logfile="/tmp/log.csv", **kwargs
+    frequency=30,
+    max_angle=22,
+    end_point="http://localhost:5000",
+    logfile="/tmp/log.csv",
+    **kwargs,
 ):
     """
     This class interfaces with an HTTP server running locally.
