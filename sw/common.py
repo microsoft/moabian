@@ -18,11 +18,10 @@ def high_pass_filter(frequency, fc=50):
 
 def derivative(frequency, fc=None):
     prev_x = 0
-    dt = 1 / frequency
 
     def derivate(x):
         nonlocal prev_x
-        x_dot = (x - prev_x) * dt
+        x_dot = (x - prev_x) * frequency
         prev_x = x
         return x_dot
 

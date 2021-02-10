@@ -2,7 +2,7 @@ import time
 
 from camera import OpenCVCameraSensor as Camera
 from detector import hsv_detector as detector
-from common import high_pass_filter
+from common import high_pass_filter, derivative
 from hat import Hat
 
 
@@ -45,8 +45,8 @@ class MoabEnv:
         # pass filtered signal: fc*s / (s + fc) = fc*s * 1 / (s + fc)
         # For more info: https://en.wikipedia.org/wiki/Differentiator
         # Or: https://www.youtube.com/user/ControlLectures/
-        self.hpf_x = high_pass_filter(self.frequency, fc=15)
-        self.hpf_y = high_pass_filter(self.frequency, fc=15)
+        self.hpf_x = derivative(self.frequency, fc=30)
+        self.hpf_y = derivative(self.frequency, fc=30)
 
         # Reset the integral of the position
         self.sum_x, self.sum_y = 0, 0
