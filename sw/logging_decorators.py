@@ -41,10 +41,12 @@ def logging_decorator(fn, logfile="/tmp/log.csv"):
             status = response.status_code
             resp = response.json()
 
-        # State contains a tuple of (ball_detected, state_tuple)
-        ball_detected, state_tuple = state
+        # Deconstuct the state to get the values we want
+        ball_detected, (x, y, vel_x, vel_y, sum_x, sum_y) = state
+        # Deconstruct action
+        pitch, roll = action
         # combine all to a list for the log
-        l = [tick, dt] + list(state_tuple) + list(action) + [status, resp]
+        l = [tick, dt] + [x, y, vel_x, vel_y] + [pitch, roll] + [status, resp]
 
         # combine all to a list for the log
         # l = [tick, dt] + state + action + [status + resp]
