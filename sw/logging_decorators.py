@@ -26,20 +26,12 @@ def logging_decorator(fn, logfile="/tmp/log.csv"):
         tick += 1
 
         # Run the actual controller
-        action_and_possible_resp = fn(state)
+        action, info = fn(state)
 
-        # If there is an error response it will save the status code and error
-        # response, otherwise staus is 200, and resp is empty string
-        if type(action_and_possible_resp) == Vector2:
-            action = action_and_possible_resp
-            # These two lines match a response for the brain with no errors
-            status = 200
-            resp = ""
-        else:
-            action, response = action_and_possible_resp
-            # For the brain
-            status = response.status_code
-            resp = response.json()
+        # If the status and resp are in the dictionary, save them, otherwise
+        # use default values of 200 and empty string
+        status = info.get("status") or 200
+        resp = info.get("resp") or ""
 
         # Deconstuct the state to get the values we want
         ball_detected, (x, y, vel_x, vel_y, sum_x, sum_y) = state
@@ -60,6 +52,6 @@ def logging_decorator(fn, logfile="/tmp/log.csv"):
         with open(logfile, "a") as fd:
             print(l, file=fd)
 
-        return action
+        return action, info
 
     return decorated_fn

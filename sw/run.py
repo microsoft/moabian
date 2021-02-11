@@ -42,7 +42,6 @@ def main(controller_name, frequency, debug, max_angle, port, enable_logging, log
                 hat=hat,
                 max_angle=max_angle,
                 end_point="http://localhost:" + str(port),
-                enable_logging=True,
             ),
             logfile=logfile,
         )
@@ -58,7 +57,7 @@ def main(controller_name, frequency, debug, max_angle, port, enable_logging, log
     with MoabEnv(hat, frequency, debug) as env:
         state = env.reset(icon, text)
         while True:
-            action = controller(state)
+            action, info = controller(state)
             state = env.step(action)
 
 

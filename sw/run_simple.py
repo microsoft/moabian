@@ -45,7 +45,8 @@ def main(controller_name, frequency, debug, max_angle, port):
     text = TEXTS[controller_name]
 
     # Pass all arguments, if a controller doesn't need it, it will ignore it (**kwargs)
-    controller = CONTROLLERS[controller_name](
+    controller_fn = CONTROLLERS[controller_name]
+    controller = controller_fn(
         frequency=frequency,
         hat=hat,
         max_angle=max_angle,
@@ -55,7 +56,7 @@ def main(controller_name, frequency, debug, max_angle, port):
     with MoabEnv(hat, frequency, debug) as env:
         state = env.reset(icon, text)
         while True:
-            action = controller(state)
+            action, info = controller(state)
             state = env.step(action)
 
 

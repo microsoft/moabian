@@ -36,7 +36,7 @@ def pid_controller(
             # Move plate back to flat
             action = Vector2(0, 0)
 
-        return action
+        return action, {}
 
     return next_action
 
@@ -47,17 +47,17 @@ def manual_controller(hat=None, max_angle=22, **kwargs):
     def next_action(state):
         menu_btn, joy_btn, joy_x, joy_y = hat.poll_buttons()
         action = Vector2(-joy_y, joy_x)
-        return action * max_angle
+        return action * max_angle, {}
 
     return next_action
 
 
 def zero_controller(**kwargs):
-    return lambda state: Vector2(0, 0)
+    return lambda state: Vector2(0, 0), {}
 
 
 def random_controller(low=-16, high=16, **kwargs):
-    return lambda state: Vector2(*np.random.uniform(low, high, size=2))
+    return lambda state: Vector2(*np.random.uniform(low, high, size=2)), {}
 
 
 def brain_controller(
@@ -95,9 +95,11 @@ def brain_controller(
                 # Get action from brain
                 response = requests.get(prediction_url, json=observables)
                 action_json = response.json()
+                print("\n\n1:", response.raw)
 
                 if response.ok:
                     action_json = requests.get(prediction_url, json=observables).json()
+                    print("\n2:", action_json)
                     pitch = action_json["input_pitch"]
                     roll = action_json["input_roll"]
 
@@ -107,11 +109,10 @@ def brain_controller(
 
                     action = Vector2(pitch, roll)
 
-                if enable_logging:
-                    return action, response
-
             except Exception as e:
                 log.exception(f"Exception calling predictor\n{e}")
-        return action
+
+        info = {"status": response.status_code, "resp": response.json()}
+        return action, info
 
     return next_action
