@@ -167,8 +167,8 @@ def _xy_offsets(x, y, servo_offsets: Tuple[int, int, int]) -> Tuple[int, int]:
 
 
 def plate_angles_to_servo_positions(
-    theta_x: int,
-    theta_y: int,
+    theta_x: float,
+    theta_y: float,
     arm_len: float = 55.0,
     side_len: float = 170.87,
     pivot_height: float = 80.0,
@@ -238,7 +238,7 @@ class Hat:
     def __exit__(self, type, value, traceback):
         self.close()
 
-    def trancieve(self, packet: Union[List, np.ndarray]):
+    def transceive(self, packet: Union[List, np.ndarray]):
         """
         Send and receive 9 bytes from hat.
         """
@@ -270,16 +270,16 @@ class Hat:
 
     def enable_servos(self):
         """ Set the plate to track plate angles. """
-        self.trancieve([SendCommand.SERVO_ENABLE])
+        self.transceive([SendCommand.SERVO_ENABLE])
 
     def disable_servos(self):
         """ Disables the power to the servos. """
-        self.trancieve([SendCommand.SERVO_DISABLE])
+        self.transceive([SendCommand.SERVO_DISABLE])
 
     def set_angles(self, plate_x_deg: int, plate_y_deg: int):
         # Take into account offsets when converting from degrees to values sent to hat
         plate_x, plate_y = _xy_offsets(plate_x_deg, plate_y_deg, self.servo_offsets)
-        self.trancieve(
+        self.transceive(
             np.array(
                 [SendCommand.SET_PLATE_ANGLES, plate_x, plate_y],
                 dtype=np.int8,
@@ -287,7 +287,7 @@ class Hat:
         )
 
     def set_servos(self, servo1: int, servo2: int, servo3: int):
-        self.trancieve(
+        self.transceive(
             np.array(
                 [SendCommand.SET_SERVOS, servo1, servo2, servo3],
                 # [SendCommand.SET_SERVOS, servo1 + so_1, servo2 + so_2, servo3 + so_3],
@@ -303,7 +303,7 @@ class Hat:
         self.servo_offsets = (servo1, servo2, servo3)
 
     def set_icon_text(self, icon_idx: Icon, text_idx: Text):
-        self.trancieve([SendCommand.TEXT_ICON_SELECT, icon_idx, text_idx])
+        self.transceive([SendCommand.TEXT_ICON_SELECT, icon_idx, text_idx])
 
     def hover(self):
         """
@@ -342,10 +342,10 @@ class Hat:
         for msg_idx in range(num_msgs):
             # Combine into one list to send
             msg = [SendCommand.ARBITRARY_MESSAGE] + s[8 * msg_idx : 8 * msg_idx + 8]
-            self.trancieve(msg)
+            self.transceive(msg)
 
         # After sending all buffer info, send the command to display the buffer
-        self.trancieve([SendCommand.DISPLAY_BUFFER])
+        self.transceive([SendCommand.DISPLAY_BUFFER])
 
     def print_info_screen(self):
         sw_major, sw_minor, sw_bug = _get_sw_version()
