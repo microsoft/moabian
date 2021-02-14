@@ -27,9 +27,18 @@ ICONS = {key: val[1] for key, val in CONTROLLER_INFO.items()}
 TEXTS = {key: val[2] for key, val in CONTROLLER_INFO.items()}
 
 
-def main(controller_name, frequency, debug, max_angle, port, enable_logging, logfile):
+def main(
+    controller_name,
+    frequency,
+    debug,
+    max_angle,
+    port,
+    enable_logging,
+    logfile,
+    use_plate_angles,
+):
     # Only manual needs access to the hat outside of the env
-    hat = Hat()
+    hat = Hat(use_plate_angles=use_plate_angles)
 
     icon = ICONS[controller_name]
     text = TEXTS[controller_name]
@@ -54,7 +63,7 @@ def main(controller_name, frequency, debug, max_angle, port, enable_logging, log
             end_point="http://localhost:" + str(port),
         )
 
-    with MoabEnv(hat, frequency, debug) as env:
+    with MoabEnv(hat, frequency, debug, use_plate_angles) as env:
         state = env.reset(icon, text)
         while True:
             action, info = controller(state)
@@ -74,11 +83,12 @@ if __name__ == "__main__":
         """,
     )
     parser.add_argument("-d", "--debug", action="store_true")
-    parser.add_argument("-f", "--frequency", default="30", type=int)
-    parser.add_argument("-ma", "--max_angle", default="16", type=float)
+    parser.add_argument("-f", "--frequency", default=30, type=int)
+    parser.add_argument("-ma", "--max_angle", default=16, type=float)
     parser.add_argument("-p", "--port", default=5000, type=int)
     parser.add_argument("-l", "--enable_logging", action="store_true")
     parser.add_argument("-lf", "--logfile", default="/tmp/log.csv", type=str)
+    parser.add_argument("-pa", "--use_plate_angles", action="store_true")
     args, _ = parser.parse_known_args()
     main(
         args.controller,
@@ -88,4 +98,5 @@ if __name__ == "__main__":
         args.port,
         args.enable_logging,
         args.logfile,
+        args.use_plate_angles,
     )

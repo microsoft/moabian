@@ -4,16 +4,28 @@ from dataclasses import dataclass, field
 
 def high_pass_filter(frequency, fc=50):
     x_dot_cstate = 0
-    frequency = frequency
-    fc = fc
 
-    def derivate(x):
+    def hpf(x):
         nonlocal x_dot_cstate  # allow x_dot_cstate to be updated in inner scope
         x_dot = -(fc ** 2) * x_dot_cstate + fc * x
         x_dot_cstate += (-fc * x_dot_cstate + x) / frequency
         return x_dot
 
-    return derivate
+    return hpf
+
+
+def low_pass_filter(frequency, fc=50):
+    x_prev = 0
+    frequency = frequency
+    alpha = 1 / (1 + frequency * fc)
+
+    def lpf(x):
+        nonlocal x_prev  # allow x_dot_cstate to be updated in inner scope
+        x_filtered = alpha * x + (1 - alpha) * x_prev
+        x_prev = x
+        return x_filtered
+
+    return lpf
 
 
 def derivative(frequency, fc=None):

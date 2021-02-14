@@ -211,8 +211,10 @@ class Hat:
         spi_device: int = 0,
         spi_max_speed_hz: int = 10000,
         servo_offsets: Tuple[float, float, float] = (0, 0, 0),
+        use_plate_angles=False,
     ):
         self.servo_offsets: Tuple[float, float, float] = servo_offsets
+        self.use_plate_angles = use_plate_angles
 
         self.menu_btn: bool = False
         self.joy_btn: bool = False
@@ -293,12 +295,29 @@ class Hat:
             )
         )
 
-    def set_angles(self, plate_x_deg: int, plate_y_deg: int):
-        # Take into account offsets when converting from degrees to values sent to hat
-        plate_x, plate_y = _xy_offsets(plate_x_deg, plate_y_deg, self.servo_offsets)
-        self.set_servos(*plate_angles_to_servo_positions(plate_x, plate_y))
+    def set_angles(self, plate_x: float, plate_y: float):
+        # If set_plate_angles flag is set, use the plate to servo conversion on
+        # the hat, otherwise use the one in Python
 
-    def set_servos(self, servo1: int, servo2: int, servo3: int):
+        if self.use_plate_angles:
+            # Take into account offsets when converting from degrees to values sent to hat
+            plate_x, plate_y = _xy_offsets(plate_x, plate_y, self.servo_offsets)
+            plate_x, plate_y = -plate_x, -plate_y
+            self.transceive(
+                np.array(
+                    [SendCommand.SET_PLATE_ANGLES, plate_x, plate_y, 0, 0, 0, 0, 0, 0],
+                    dtype=np.uint8,
+                )
+            )
+
+        else:
+            s1, s2, s3 = plate_angles_to_servo_positions(plate_x, plate_y)
+            s1 += self.servo_offsets[0]
+            s2 += self.servo_offsets[1]
+            s3 += self.servo_offsets[2]
+            self.set_servos(s1, s2, s3)
+
+    def set_servos(self, servo1: float, servo2: float, servo3: float):
         # Note the off by 1 for indexing
         servo1 += self.servo_offsets[0]
         servo2 += self.servo_offsets[1]
@@ -358,8 +377,7 @@ class Hat:
         """
         self.set_servos(150, 150, 150)
         # Give enough time for the action to be taken
-        # Experimentally found 25ms to be enough but upped to 50ms for safety net
-        time.sleep(0.05)
+        time.sleep(0.200)  # Experimentally found
 
     def lower(self):
         """
@@ -368,8 +386,7 @@ class Hat:
         """
         self.set_servos(155, 155, 155)
         # Give enough time for the action to be taken
-        # Experimentally found 25ms to be enough but upped to 50ms for safety net
-        time.sleep(0.05)
+        time.sleep(0.200)  # Experimentally found
 
     def print_arbitrary_string(self, s: str):
         s = s.upper()  # The firware currently only has uppercase fonts
