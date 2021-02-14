@@ -153,18 +153,6 @@ def runtime():
     time.sleep(0.25)  # 250ms
 
 
-def right_pad_array(arr: Union[List, np.ndarray], length, dtype) -> np.ndarray:
-    len_arr = len(arr)
-    if len_arr < 9:
-        padded_arr = np.zeros(length, dtype=dtype)
-        padded_arr[:len_arr] = arr
-        return padded_arr
-    elif len_arr == 9:
-        return np.asarray(arr)
-    else:
-        raise ValueError(f"Given array: `{arr}` is longer than padded len: {length}.")
-
-
 def _xy_offsets(x, y, servo_offsets: Tuple[float, float, float]) -> Tuple[float, float]:
     so_1, so_2, so_3 = servo_offsets
 
@@ -184,10 +172,10 @@ def plate_angles_to_servo_positions(
 ) -> Tuple[float, float, float]:
     servo_angles = [0.0, 0.0, 0.0]
 
-    z1 = pivot_height + np.sin(np.radians(-theta_y)) * (side_len / np.sqrt(3))
-    r = pivot_height - np.sin(np.radians(theta_x)) * (side_len / (2 * np.sqrt(3)))
-    z2 = r + np.sin(np.radians(theta_x)) * (side_len / 2)
-    z3 = r - np.sin(np.radians(theta_x)) * (side_len / 2)
+    z1 = pivot_height + np.sin(np.radians(theta_y)) * (side_len / np.sqrt(3))
+    r = pivot_height - np.sin(np.radians(-theta_x)) * (side_len / (2 * np.sqrt(3)))
+    z2 = r + np.sin(np.radians(-theta_x)) * (side_len / 2)
+    z3 = r - np.sin(np.radians(-theta_x)) * (side_len / 2)
 
     if z1 > 2 * arm_len:
         z1 = 2 * arm_len
@@ -202,6 +190,18 @@ def plate_angles_to_servo_positions(
 
     servo_angles = np.clip(servo_angles, angle_min, angle_max)
     return servo_angles
+
+
+def right_pad_array(arr: Union[List, np.ndarray], length, dtype) -> np.ndarray:
+    len_arr = len(arr)
+    if len_arr < 9:
+        padded_arr = np.zeros(length, dtype=dtype)
+        padded_arr[:len_arr] = arr
+        return padded_arr
+    elif len_arr == 9:
+        return np.asarray(arr)
+    else:
+        raise ValueError(f"Given array: `{arr}` is longer than padded len: {length}.")
 
 
 class Hat:
@@ -249,12 +249,14 @@ class Hat:
         """
         Send and receive 9 bytes from hat.
         """
-        packet = right_pad_array(packet, length=9, dtype=np.int8)
+        # packet = right_pad_array(packet, length=9, dtype=np.int8)
         time.sleep(0.001)
         hat_to_pi = self.spi.xfer(packet.tolist())
         self._save_buttons(hat_to_pi)
 
         print([hex(_int8_to_uint8(b)) for b in packet])
+        print(packet)
+        print(packet.dtype)
 
     def _save_buttons(self, hat_to_pi):
         # Check if buttons are pressed
@@ -279,64 +281,26 @@ class Hat:
 
     def enable_servos(self):
         """ Set the plate to track plate angles. """
-        self.transceive([SendCommand.SERVO_ENABLE, 0, 0, 0, 0, 0, 0, 0, 0])
+        self.transceive(
+            np.array(
+                [SendCommand.SERVO_ENABLE, 0, 0, 0, 0, 0, 0, 0, 0],
+                dtype=np.int8,
+            )
+        )
 
     def disable_servos(self):
         """ Disables the power to the servos. """
-        self.transceive([SendCommand.SERVO_DISABLE, 0, 0, 0, 0, 0, 0, 0, 0])
+        self.transceive(
+            np.array(
+                [SendCommand.SERVO_DISABLE, 0, 0, 0, 0, 0, 0, 0, 0],
+                dtype=np.int8,
+            )
+        )
 
     def set_angles(self, plate_x_deg: int, plate_y_deg: int):
         # Take into account offsets when converting from degrees to values sent to hat
         plate_x, plate_y = _xy_offsets(plate_x_deg, plate_y_deg, self.servo_offsets)
-
-        # Use fixed point 16-bit numbers, with precision of hundredths
-        plate_x_centi_degrees = np.int16(plate_x * 100)
-        plate_y_centi_degrees = np.int16(plate_y * 100)
-
-        # Get the first 8 bits and last 8 bits of every 16-bit integer
-        # (To send it as indivdual bytes)
-        plate_x_centi_degrees_high_byte = plate_x_centi_degrees >> 8
-        plate_x_centi_degrees_low_byte = plate_x_centi_degrees & 0x00FF
-        plate_y_centi_degrees_high_byte = plate_y_centi_degrees >> 8
-        plate_y_centi_degrees_low_byte = plate_y_centi_degrees & 0x00FF
-
-        print(
-            "angles cd",
-            [
-                hex(_int8_to_uint8(b))
-                for b in np.array(
-                    [
-                        SendCommand.SET_PLATE_ANGLES,
-                        plate_x_centi_degrees_high_byte,
-                        plate_x_centi_degrees_low_byte,
-                        plate_y_centi_degrees_high_byte,
-                        plate_y_centi_degrees_low_byte,
-                        0,
-                        0,
-                        0,
-                        0,
-                    ],
-                    dtype=np.int8,
-                )
-            ],
-        )
-
-        self.transceive(
-            np.array(
-                [
-                    SendCommand.SET_PLATE_ANGLES,
-                    plate_x_centi_degrees_high_byte,
-                    plate_x_centi_degrees_low_byte,
-                    plate_y_centi_degrees_high_byte,
-                    plate_y_centi_degrees_low_byte,
-                    0,
-                    0,
-                    0,
-                    0,
-                ],
-                dtype=np.int8,
-            )
-        )
+        self.set_servos(*plate_angles_to_servo_positions(plate_x, plate_y))
 
     def set_servos(self, servo1: int, servo2: int, servo3: int):
         # Note the off by 1 for indexing
@@ -362,12 +326,12 @@ class Hat:
             np.array(
                 [
                     SendCommand.SET_SERVOS,
+                    servo3_centi_degrees_high_byte,
+                    servo3_centi_degrees_low_byte,
                     servo1_centi_degrees_high_byte,
                     servo1_centi_degrees_low_byte,
                     servo2_centi_degrees_high_byte,
                     servo2_centi_degrees_low_byte,
-                    servo3_centi_degrees_high_byte,
-                    servo3_centi_degrees_low_byte,
                     0,
                     0,
                 ],
@@ -384,7 +348,10 @@ class Hat:
 
     def set_icon_text(self, icon_idx: Icon, text_idx: Text):
         self.transceive(
-            [SendCommand.TEXT_ICON_SELECT, icon_idx, text_idx, 0, 0, 0, 0, 0, 0]
+            np.array(
+                [SendCommand.TEXT_ICON_SELECT, icon_idx, text_idx, 0, 0, 0, 0, 0, 0],
+                dtype=np.int8,
+            )
         )
 
     def hover(self):
@@ -427,7 +394,12 @@ class Hat:
             self.transceive(msg)
 
         # After sending all buffer info, send the command to display the buffer
-        self.transceive([SendCommand.DISPLAY_BUFFER])
+        self.transceive(
+            np.array(
+                [SendCommand.DISPLAY_BUFFER],
+                dtype=np.int8,
+            )
+        )
 
     def print_info_screen(self):
         sw_major, sw_minor, sw_bug = _get_sw_version()
