@@ -30,7 +30,7 @@ def pid_controller(
 
             # NOTE the flipped X & Y! (and the inverted second term)
             # TODO: fix this in next firmware rev
-            action = Vector2(action_y, -action_x)
+            action = Vector2(action_x, action_y)
 
         else:
             # Move plate back to flat
@@ -46,18 +46,18 @@ def manual_controller(hat=None, max_angle=22, **kwargs):
 
     def next_action(state):
         menu_btn, joy_btn, joy_x, joy_y = hat.poll_buttons()
-        action = Vector2(-joy_y, joy_x)
+        action = Vector2(joy_x, joy_y)
         return action * max_angle, {}
 
     return next_action
 
 
 def zero_controller(**kwargs):
-    return lambda state: Vector2(0, 0), {}
+    return lambda state: (Vector2(0, 0), {})
 
 
 def random_controller(low=-16, high=16, **kwargs):
-    return lambda state: Vector2(*np.random.uniform(low, high, size=2)), {}
+    return lambda state: (Vector2(*np.random.uniform(low, high, size=2)), {})
 
 
 def brain_controller(
@@ -87,6 +87,7 @@ def brain_controller(
         }
 
         action = Vector2(0, 0)  # Action is 0,0 if not detected or brain didn't work
+        info = {"status": 400, "resp": ""}
         if ball_detected:
             # Trap on GET failures so we can restart the brain without
             # bringing down this run loop. Plate will default to level
@@ -94,12 +95,11 @@ def brain_controller(
             try:
                 # Get action from brain
                 response = requests.get(prediction_url, json=observables)
+                info = {"status": response.status_code, "resp": response.json()}
                 action_json = response.json()
-                print("\n\n1:", response.raw)
 
                 if response.ok:
                     action_json = requests.get(prediction_url, json=observables).json()
-                    print("\n2:", action_json)
                     pitch = action_json["input_pitch"]
                     roll = action_json["input_roll"]
 
@@ -107,12 +107,11 @@ def brain_controller(
                     pitch = np.clip(pitch * max_angle, -max_angle, max_angle)
                     roll = np.clip(roll * max_angle, -max_angle, max_angle)
 
-                    action = Vector2(pitch, roll)
+                    action = Vector2(-roll, pitch)
 
             except Exception as e:
                 log.exception(f"Exception calling predictor\n{e}")
 
-        info = {"status": response.status_code, "resp": response.json()}
         return action, info
 
     return next_action

@@ -254,10 +254,6 @@ class Hat:
         hat_to_pi = self.spi.xfer(packet.tolist())
         self._save_buttons(hat_to_pi)
 
-        print([hex(_int8_to_uint8(b)) for b in packet])
-        print(packet)
-        print(packet.dtype)
-
     def _save_buttons(self, hat_to_pi):
         # Check if buttons are pressed
         self.menu_btn = hat_to_pi[0] == Button.MENU
