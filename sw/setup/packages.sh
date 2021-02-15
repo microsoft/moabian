@@ -6,7 +6,7 @@
 set -euo pipefail
 
 die() { ret=$?; printf "%s\n", "$@" >&2; exit "$ret"; }
-# [[ $EUID -eq 0 ]] || die "Must run $0 as root"
+[[ $EUID -eq 0 ]] || die "Must run $0 as root"
 
 # change directories to the folder hosting this script
 readonly _D="$(dirname "$(readlink -f "$0")")" && cd "$_D"

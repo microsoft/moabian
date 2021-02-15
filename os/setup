@@ -1,21 +1,18 @@
 #!/bin/bash
 # vim:ft=sh ts=4 sw=4 et
 
-# use :set noet when modifying EOF blocks
-
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-##
+# use :set noet when modifying EOF blocks
+# eventually fix with .editorconfig for VS Code <-- 
+
 ## Moabian v3.0 OS Setup
 ##
 ## Pre-flight checklist for developer: 
 ## 
 ## 1) cd ~/moab/sw/huemask && make 
-## 2) compile libmoab
-
-
-# add change et to noet if you need tabs in the TOHERE section
+## 2) ensure correct v3.bin firwmare file is checked in to ~/moab/fw
 
 set -euo pipefail   # unofficial bash strict mode
 
@@ -23,16 +20,17 @@ require() { hash "$@" || exit 127; }
 println() { printf '%s\n' "$*"; }
 die()     { ret=$?; printf "%s\n" "$@" >&2; exit "$ret"; }
 
-
-## This script needs to run as root
-[[ $EUID -eq 0 ]] || die "$0 needs to run as root. Try sudo $0"
+[[ $EUID -eq 0 ]] || die "$0 script needs to run as root. Try sudo $0"
 
 ## Log script output
 exec 1> >(tee "/tmp/stdout.log")
 exec 2> >(tee "/tmp/stderr.log")
 
 ## Set CWD to the location where this script is running
+## $_D -> full path to folder where script is 
+## $_P -> parent path (usually /home/pi/moab)
 readonly _D="$(dirname "$(readlink -f "$0")")" && cd "$_D"
+readonly _P=$(dirname $_D)
 
 function layer-run-first
 {
@@ -218,13 +216,19 @@ function touch-console-setup
 
 function layer-baremetal
 {
-    ../sw/bin/apt.packages
+    # install APT packages as root
+    $_P/sw/setup/packages.sh
 
     sudo -u pi -s <<-'EOF'
 		python3 -m pip install --upgrade pip
-		pip3 install --user ~/moab/sw/huemask
-		pip3 install --user -r ~/moab/sw/requirements.txt
+		pip3 install --user -r $_P/sw/setup/requirements.txt
+		pip3 install --user $_P/moab/sw/huemask
 	EOF
+}
+
+function layer-flash
+{
+    
 }
 
 function layer-mcumgr
@@ -273,6 +277,7 @@ function main
     info "services setup" && layer-moab-services
     info "install go and mcumgr" && layer-mcumgr
     info "baremetal" && layer-baremetal
+    info "flashing Moab HAT to v3 firmware" && layer-flash
     info "cleaning up" && sudo apt autoremove --yes
     info "renaming to moab.local" && layer-rename
 }
