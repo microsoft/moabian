@@ -82,12 +82,6 @@ function layer-classic-moabian
     install -pvm 644 files/profile.d/* /etc/profile.d
     rm -f /etc/motd
     
-    ## This adds $HOME/moab/bin to the global path
-    install -pvm 644 files/etc/* /etc
-
-    ## /usr/local/bin 
-    install -pvm 755 files/bin/* /usr/local/bin
-
     ## /home/pi
     for f in files/home/*; do
         dst="/home/pi/.${f##*/}"

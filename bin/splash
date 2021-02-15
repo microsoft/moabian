@@ -55,4 +55,6 @@ ${h2} · CPU        ${r}${temps}
 ${h2} · URL        ${r}https://aka.ms/moab
 ${h1} ○ Moabian    ${r}${moabian_version}
 
+HELLO
+
 EOF
