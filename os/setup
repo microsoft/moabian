@@ -1,6 +1,8 @@
 #!/bin/bash
 # vim:ft=sh ts=4 sw=4 et
 
+# use :set noet when modifying EOF blocks
+
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
@@ -219,10 +221,10 @@ function layer-baremetal
     ~/moab/sw/bin/apt.packages
 
     sudo -u pi -s <<-'EOF'
-        python3 -m pip install --upgrade pip
-        pip3 install --user ~/moab/sw/huemask
-        pip3 install --user -r ~/moab/sw/requirements.txt
-    EOF
+		python3 -m pip install --upgrade pip
+		pip3 install --user ~/moab/sw/huemask
+		pip3 install --user -r ~/moab/sw/requirements.txt
+	EOF
 }
 
 function layer-mcumgr
