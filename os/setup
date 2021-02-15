@@ -218,7 +218,7 @@ function touch-console-setup
 
 function layer-baremetal
 {
-    ~/moab/sw/bin/apt.packages
+    ../sw/bin/apt.packages
 
     sudo -u pi -s <<-'EOF'
 		python3 -m pip install --upgrade pip
@@ -272,9 +272,9 @@ function main
     info "pip-docker" && layer-pip-docker
     info "services setup" && layer-moab-services
     info "install go and mcumgr" && layer-mcumgr
-    info "renaming to moab.local" && layer-rename
     info "baremetal" && layer-baremetal
     info "cleaning up" && sudo apt autoremove --yes
+    info "renaming to moab.local" && layer-rename
 }
 
 main
