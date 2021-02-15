@@ -42,7 +42,8 @@ gpu_t="$(vcgencmd measure_temp | cut -d '=' -f 2)"
 cpu_t1k=$(cat /sys/class/thermal/thermal_zone0/temp)
 cpu_t=$(printf %.1f "$((10**3 * $cpu_t1k / 1000))e-3")
 temps="$cpu_t° C"
-moabian_version="${MOABIAN:-0.0}"
+moabian_version="3.0.0"
+fw_version="$([ -e ~/moab/bin/fw-version ] && ~/moab/bin/fw-version | awk  '{print $NF}')"
 
 # ☉
 
@@ -53,6 +54,7 @@ ${h2} · Kernel     ${r}${kernel}
 ${h2} · Load       ${r}${load}
 ${h2} · CPU        ${r}${temps}
 ${h2} · URL        ${r}https://aka.ms/moab
+${h2} · FW         ${r}${fw_version}
 ${h1} ○ Moabian    ${r}${moabian_version}
 
 HELLO
