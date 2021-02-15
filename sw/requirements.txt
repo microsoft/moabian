@@ -10,3 +10,4 @@ spidev==3.5
 Flask==1.1.2
 inotify==0.2.10
 gunicorn==20.0.4
+pyserial==3.5
