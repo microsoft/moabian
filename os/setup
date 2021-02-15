@@ -5,10 +5,11 @@
 # Licensed under the MIT License.
 
 ##
-## Moabian v2.5 OS Setup
+## Moabian v3.0 OS Setup
 ##
-## Pre-steps: 
-## 1) compile oled and copy binary to ~/moab/os/files/bin
+## Pre-flight checklist for developer: 
+## 
+## 1) cd ~/moab/sw/huemask && make 
 ## 2) compile libmoab
 
 
@@ -16,8 +17,10 @@
 
 set -euo pipefail   # unofficial bash strict mode
 
-die()     { ret=$?; printf '%s\n' "$@" >&2; exit "$ret"; }
 require() { hash "$@" || exit 127; }
+println() { printf '%s\n' "$*"; }
+die()     { ret=$?; printf "%s\n" "$@" >&2; exit "$ret"; }
+
 
 ## This script needs to run as root
 [[ $EUID -eq 0 ]] || die "$0 needs to run as root. Try sudo $0"
@@ -28,9 +31,6 @@ exec 2> >(tee "/tmp/stderr.log")
 
 ## Set CWD to the location where this script is running
 readonly _D="$(dirname "$(readlink -f "$0")")" && cd "$_D"
-
-## Requirements before continuing
-[[ -d files ]] || die 'Need subfolder "files"'
 
 function layer-run-first
 {
@@ -66,7 +66,6 @@ function layer-classic-moabian
         tmux
         vim
         minicom
-        libffi-dev
     )
     apt-get install --no-install-recommends -y ${packages[*]}
 
@@ -215,9 +214,15 @@ function touch-console-setup
 	EOF
 }
 
-function layer-bcm2835
+function layer-baremetal
 {
-    ../sw/bin/bcm2835
+    ~/moab/sw/bin/apt.packages
+
+    sudo -u pi -s <<-'EOF'
+        python3 -m pip install --upgrade pip
+        pip3 install --user ~/moab/sw/huemask
+        pip3 install --user -r ~/moab/sw/requirements.txt
+    EOF
 }
 
 function layer-mcumgr
@@ -257,6 +262,12 @@ function info {
     fi
 }
 
+function run-as-pi-user {
+    # python3 -m pip install --upgrade pip
+    # pip3 install --user ~/moab/sw/huemask
+    # pip3 install --user -r ~/moab/sw/requirements.txt
+}
+
 function main
 {
     info "layer-run-first" && layer-run-first
@@ -264,12 +275,15 @@ function main
     info "classic-moabian" && layer-classic-moabian
     info "pip-docker" && layer-pip-docker
     info "services setup" && layer-moab-services
-    info "install bcm2835 library" && layer-bcm2835
     info "install go and mcumgr" && layer-mcumgr
     info "renaming to moab.local" && layer-rename
+    info "baremetal" && layer-baremetal
     info "cleaning up" && sudo apt autoremove --yes
 }
 
 main
 
 exit 0
+
+
+
