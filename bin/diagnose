@@ -4,6 +4,10 @@
   ping -c 1 github.com
 }
 
+@test "opencv for python works" {
+  python3 -c "import cv2"
+}
+
 @test "huemask python library installed" {
     pip3 list | grep -i huemask
 }
