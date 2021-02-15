@@ -10,7 +10,7 @@ from typing import List, Optional
 import cv2
 import math
 import numpy as np
-from pymoab import hue_mask
+from huemask import hue_mask
 from common import Vector2, CircleFeature, Calibration
 
 
