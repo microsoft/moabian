@@ -264,12 +264,6 @@ function info {
     fi
 }
 
-function run-as-pi-user {
-    # python3 -m pip install --upgrade pip
-    # pip3 install --user ~/moab/sw/huemask
-    # pip3 install --user -r ~/moab/sw/requirements.txt
-}
-
 function main
 {
     info "layer-run-first" && layer-run-first
