@@ -13,7 +13,7 @@ app = Flask(__name__,
 
 @app.route('/')
 def default():
-    return redirect(url_for('static', filename='index.html'))
+    return redirect(url_for('static', filename='file.html'))
 
 def gen(camera):
     while True:
