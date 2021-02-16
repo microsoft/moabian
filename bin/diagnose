@@ -53,8 +53,7 @@
   docker-compose -v 
 }
 
-@test "docker-compose has containers up" {
-  pgrep -f main.py
+@test "docker-compose has brains running" {
   pgrep -f predict
 }
 
