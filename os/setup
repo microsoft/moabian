@@ -77,9 +77,6 @@ function layer-classic-moabian
     systemctl disable apt-daily-upgrade
     systemctl disable man-db
 
-    ## Set a proper default bash prompt for all users
-    ## and install a Moab specific message-of-the-day "splash" screen
-    install -pvm 644 files/profile.d/* /etc/profile.d
     rm -f /etc/motd
     
     ## /home/pi
@@ -105,6 +102,9 @@ function layer-classic-moabian
     rm -f /usr/local/bin/{testmoab,ufetch,motd}
     ## Remove files from v2.4
     rm -f /usr/local/lib/libmoab*
+    ## Remove files from v2.5 (now in ~/moab/bin
+    rm -f /usr/local/lib/libbcm2835*
+    rm -f /usr/local/bin{splash,diagnose,oled}
 }
 
 

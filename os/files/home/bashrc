@@ -1,15 +1,12 @@
+. $HOME/.set-color-prompt
 export CLICOLOR=1
 export LANG="en_US.UTF-8"
 export GOPATH=$HOME/.go
-export PATH=$HOME/.local/bin:$PATH:/usr/local/go/bin:$GOPATH/bin:.
+export PATH=$HOME/.local/bin:$PATH:$HOME/moab/bin:/usr/local/go/bin:$GOPATH/bin:.
 
 export LESS="--quit-if-one-screen --no-init --ignore-case  --RAW-CONTROL-CHARS --quiet --dumb --LONG-PROMPT"
 export EDITOR="vim"
 export BLOCK_SIZE="'1"  # add commas to file size listings
-
-# Don't process the rest of the file for non-interactive shells
-# as indicated by a PS1 prompt
-[ -z "$PS1" ] && return
 
 # Moab specific
 alias logs="docker logs control -f"
@@ -41,6 +38,7 @@ alias gd="git diff"
 alias vi="vim -o"
 alias path='echo $PATH | tr : "\n" | cat -n'
 alias rg="rg --pretty --smart-case"
+alias p="python3"
 
 shopt -s checkwinsize                       # reset lines & cols after resize
 shopt -s histappend                         # append rather than overwrite history
@@ -59,3 +57,5 @@ function cd {
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
 fi
+
+source "$HOME/.cargo/env"
