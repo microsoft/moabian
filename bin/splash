@@ -57,6 +57,4 @@ ${h2} · URL        ${r}https://aka.ms/moab
 ${h2} · FW         ${r}${fw_version}
 ${h1} ○ Moabian    ${r}${moabian_version}
 
-HELLO
-
 EOF

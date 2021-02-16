@@ -146,9 +146,11 @@ function layer-moab-services
 }
 
 function layer-rename {
-    sed -i -e 's/raspberrypi/moab/' /etc/hosts /etc/hostname
-    echo "raspberrypi.local renamed to moab.local"
-    warn "Please reboot your Moab now by typing: sudo reboot now"
+    if [ grep raspberry /etc/hostname ]; then
+        sed -i -e 's/raspberrypi/moab/' /etc/hosts /etc/hostname
+        echo "raspberrypi.local renamed to moab.local"
+        warn "Please reboot your Moab now by typing: sudo reboot now"
+    fi
 }
 
 function touched { grep -qF "##moabian" "$1"; }
@@ -213,10 +215,11 @@ function layer-baremetal
     # install APT packages as root
     $_P/sw/setup/packages.sh
 
+    info "Installing python packages"
     sudo -u pi -s <<-EOF
 		python3 -m pip install --upgrade pip
 		pip3 install --user -r $_P/sw/setup/requirements.txt
-		pip3 install --user $_P/moab/sw/huemask
+		pip3 install --user $_P/sw/huemask
 	EOF
 }
 
@@ -264,21 +267,18 @@ function info {
 
 function main
 {
-    info "layer-run-first" && layer-run-first
-    info "touch-files" && touch-files
-    info "classic-moabian" && layer-classic-moabian
-    info "pip-docker" && layer-pip-docker
-    info "services setup" && layer-moab-services
-    info "install go and mcumgr" && layer-mcumgr
-    info "baremetal" && layer-baremetal
-    info "flashing Moab HAT to v3 firmware" && layer-flash
-    info "cleaning up" && sudo apt autoremove --yes
-    info "renaming to moab.local" && layer-rename
+    info "01/10: updating system packages" && layer-run-first
+    info "02/10: setting up boot files" && touch-files
+    info "03/10: moabian package install" && layer-classic-moabian
+    info "04/10: installing docker" && layer-pip-docker
+    info "05/10: autorun services setup" && layer-moab-services
+    info "06/10: firmware tooling" && layer-mcumgr
+    info "07/10: pythong packages for moab" && layer-baremetal
+    info "08/10: flashing Moab HAT to v3 firmware" && layer-flash
+    info "09/10: cleaning up" && sudo apt-get autoremove --yes
+    info "10/10: renaming bot to moab" && layer-rename
 }
 
 main
 
 exit 0
-
-
-
