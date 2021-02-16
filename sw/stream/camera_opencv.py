@@ -10,11 +10,24 @@ class CameraOpenCV(BaseCamera):
     def frames():
         camera = cv2.VideoCapture(0)
 
-        s = 512
-        b = 32
+        # Ask opencv to capture in the native aspect ratio of 4:3
+        # AND capture on a 4-bit boundary
+        w = 384
+        h = 288
 
-        camera.set(cv2.CAP_PROP_FRAME_WIDTH, s + b)
-        camera.set(cv2.CAP_PROP_FRAME_HEIGHT, s + b)
+        # Our final "destination" rectangle is 256x256
+        d = 256
+
+        x = int((w / 2 - d / 2))
+        y = int((h / 2 - d / 2))
+
+        # TODO: See if these x/y offsets are universal across Mark 2 & 3
+        x += -12
+        y +=  4
+
+        camera.set(cv2.CAP_PROP_FRAME_WIDTH, w)
+        camera.set(cv2.CAP_PROP_FRAME_HEIGHT, h)
+        camera.set(cv2.CAP_PROP_FPS, 30)
 
         if not camera.isOpened():
             raise RuntimeError('Could not start camera.')
