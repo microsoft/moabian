@@ -4,12 +4,13 @@
 # Licensed under the MIT License.
 import serial       # PySerial
 import time
+import sys
 
 # Interactive TTY shell with Moab Hat:
 # sudo minicom --device=/dev/ttyAMA1
 
 def main():
-    ser = serial.Serial('/dev/ttyAMA1', 115200, timeout = 1)
+    ser = serial.Serial('/dev/ttyAMA1', 115200, timeout = 0.5)
 
     ser.write("version\n".encode())
     out_a = ser.read_until(b'uart')       # read until the "uart" prompt it seen
@@ -20,7 +21,11 @@ def main():
     # 1: Moab version 3.0.1.04321
     # 2: uart
 
-    print(out_u.splitlines()[1])
+    if out_u != '':
+        print(out_u.splitlines()[1])
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
