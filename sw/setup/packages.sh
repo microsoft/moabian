@@ -26,6 +26,7 @@ info "Installing apt-get packages (root)"
 # numpy https://www.piwheels.org/project/numpy/
 numpy=(
     libatlas3-base
+    libgfortran5
 )
 echo "• installing: numpy"
 apt-get install -qq --no-install-recommends ${numpy[*]}
