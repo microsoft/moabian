@@ -267,16 +267,16 @@ function info {
 
 function main
 {
-    # info "01/10: updating system packages" && layer-run-first
-    # info "02/10: setting up boot files" && touch-files
+    info "01/10: updating system packages" && layer-run-first
+    info "02/10: setting up boot files" && touch-files
     info "03/10: moabian package install" && layer-classic-moabian
-    # info "04/10: installing docker" && layer-pip-docker
-    # info "05/10: autorun services setup" && layer-moab-services
-    # info "06/10: firmware tooling" && layer-mcumgr
-    # info "07/10: python packages for moab" && layer-baremetal
-    # info "08/10: flashing Moab HAT to v3 firmware" && layer-flash
-    # info "09/10: cleaning up" && sudo apt-get autoremove --yes
-    # info "10/10: renaming bot to moab" && layer-rename
+    info "04/10: installing docker" && layer-pip-docker
+    info "05/10: autorun services setup" && layer-moab-services
+    info "06/10: firmware tooling" && layer-mcumgr
+    info "07/10: python packages for moab" && layer-baremetal
+    info "08/10: flashing Moab HAT to v3 firmware" && layer-flash
+    info "09/10: cleaning up" && sudo apt-get autoremove --yes
+    info "10/10: renaming bot to moab" && layer-rename
 }
 
 main
