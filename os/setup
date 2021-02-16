@@ -213,7 +213,7 @@ function layer-baremetal
     # install APT packages as root
     $_P/sw/setup/packages.sh
 
-    sudo -u pi -s <<-'EOF'
+    sudo -u pi -s <<-EOF
 		python3 -m pip install --upgrade pip
 		pip3 install --user -r $_P/sw/setup/requirements.txt
 		pip3 install --user $_P/moab/sw/huemask
