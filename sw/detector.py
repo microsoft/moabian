@@ -5,13 +5,13 @@
 HSV filtering ball detector
 """
 
-from typing import List, Optional
-
 import cv2
 import math
 import numpy as np
 from huemask import hue_mask
 from common import Vector2, CircleFeature, Calibration
+
+from typing import List, Optional
 
 
 def pixels_to_meters(vec, frame_size=256, feild_of_view=1.05):

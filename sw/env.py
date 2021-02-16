@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 import time
 
 from camera import OpenCVCameraSensor as Camera
@@ -7,7 +10,7 @@ from hat import Hat
 
 
 class MoabEnv:
-    def __init__(self, hat=None, frequency=30, debug=False, use_plate_angles=False):
+    def __init__(self, hat=None, frequency=30, debug=False, use_plate_angles=False, derivative_fn=derivative):
         if hat:
             # For cases like manual control where the hat needs to be shared
             self.hat = hat
@@ -20,7 +23,9 @@ class MoabEnv:
         self.frequency = frequency
         self.dt = 1 / frequency
         self.prev_time = time.time()
-        self.derivative_x, self.derivative_y = None, None
+
+        self.derivative_fn = derivative
+        self.vel_x, self.vel_y = None, None
         self.sum_x, self.sum_y = 0, 0
 
     def __enter__(self):
@@ -44,8 +49,8 @@ class MoabEnv:
         # pass filtered signal: fc*s / (s + fc) = fc*s * 1 / (s + fc)
         # For more info: https://en.wikipedia.org/wiki/Differentiator
         # Or: https://www.youtube.com/user/ControlLectures/
-        self.derivative_x = derivative(self.frequency)
-        self.derivative_y = derivative(self.frequency)
+        self.vel_x = self.derivative_fn(self.frequency)
+        self.vel_y = self.derivative_fn(self.frequency)
 
         # Reset the integral of the position
         self.sum_x, self.sum_y = 0, 0
@@ -63,7 +68,7 @@ class MoabEnv:
 
         x, y = ball_center
         # Update derivate calulation
-        vel_x, vel_y = self.derivative_x(x), self.derivative_y(y)
+        vel_x, vel_y = self.vel_x(x), self.vel_y(y)
         # Update the summation (integral calculation)
         self.sum_x += x
         self.sum_y += y

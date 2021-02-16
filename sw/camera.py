@@ -5,9 +5,9 @@
 A sensor that uses OpenCV for capture
 """
 
-import numpy as np
-import threading
 import cv2
+import threading
+import numpy as np
 
 from time import time
 

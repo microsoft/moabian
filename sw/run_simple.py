@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 import argparse
 
 from controllers import (
@@ -7,9 +10,9 @@ from controllers import (
     random_controller,
     manual_controller,
 )
-from hat import Icon, Text
-from env import MoabEnv
 from hat import Hat
+from env import MoabEnv
+from hat import Icon, Text
 
 
 CONTROLLERS = {
