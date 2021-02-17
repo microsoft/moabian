@@ -252,10 +252,19 @@ class Hat:
         """
         Send and receive 9 bytes from hat.
         """
+        assert len(packet) == 9
         # packet = right_pad_array(packet, length=9, dtype=np.int8)
         time.sleep(0.001)
         hat_to_pi = self.spi.xfer(packet.tolist())
-        print(packet, hat_to_pi)
+
+        if packet[0] == -128:
+            print(
+                [packet[0]] + [chr(c) for c in packet[1:]],
+                [_uint8_to_int8(b) for b in hat_to_pi],
+            )
+        else:
+            print(packet, [_uint8_to_int8(b) for b in hat_to_pi])
+
         self._save_buttons(hat_to_pi)
 
     def _save_buttons(self, hat_to_pi):
