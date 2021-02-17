@@ -15,8 +15,8 @@ from common import Vector2
 # Controllers ------------------------------------------------------------------
 def pid_controller(
     Kp=75,  # Proportional coefficient
-    Ki=0.5,  # Integral coefficient
-    Kd=45,  # Derivative coefficient
+    Ki=1.5,  # Integral coefficient
+    Kd=65,  # Derivative coefficient
     max_angle=16,
     **kwargs,
 ):

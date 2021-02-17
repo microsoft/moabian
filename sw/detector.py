@@ -66,7 +66,7 @@ def hsv_detector(
         hue = calibration.ball_hue
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, tuple(kernel_size))
 
-    def detect_features(img):
+    def detect_features(img, hue=hue):
         # covert to HSV space
         color = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 

@@ -255,6 +255,7 @@ class Hat:
         # packet = right_pad_array(packet, length=9, dtype=np.int8)
         time.sleep(0.001)
         hat_to_pi = self.spi.xfer(packet.tolist())
+        print(packet, hat_to_pi)
         self._save_buttons(hat_to_pi)
 
     def _save_buttons(self, hat_to_pi):
@@ -277,6 +278,15 @@ class Hat:
             - joy_y   : Float normalized from -1 to +1
         """
         return self.menu_btn, self.joy_btn, self.joy_x, self.joy_y
+
+    def noop(self):
+        """Send a NOOP. Useful for if you just want to read buttons."""
+        self.transceive(
+            np.array(
+                [SendCommand.NOOP, 0, 0, 0, 0, 0, 0, 0, 0],
+                dtype=np.int8,
+            )
+        )
 
     def enable_servos(self):
         """ Set the plate to track plate angles. """
@@ -404,13 +414,15 @@ class Hat:
 
         for msg_idx in range(num_msgs):
             # Combine into one list to send
-            msg = [SendCommand.ARBITRARY_MESSAGE] + s[8 * msg_idx : 8 * msg_idx + 8]
-            self.transceive(msg)
+            msg = [SendCommand.ARBITRARY_MESSAGE] + list(
+                s[8 * msg_idx : 8 * msg_idx + 8]
+            )
+            self.transceive(np.array(msg, dtype=np.int8))
 
         # After sending all buffer info, send the command to display the buffer
         self.transceive(
             np.array(
-                [SendCommand.DISPLAY_BUFFER],
+                [SendCommand.DISPLAY_BUFFER, 0, 0, 0, 0, 0, 0, 0, 0],
                 dtype=np.int8,
             )
         )
