@@ -14,10 +14,10 @@ from huemask import hue_mask
 from common import Vector2, CircleFeature, Calibration
 
 
-def pixels_to_meters(vec, frame_size=256, feild_of_view=1.05):
+def pixels_to_meters(vec, frame_size=256, field_of_view=1.05):
     # The plate is default roughly 105% of the field of view
     plate_diameter_meters = 0.225
-    plate_diameter_pixels = frame_size * feild_of_view
+    plate_diameter_pixels = frame_size * field_of_view
     conversion = plate_diameter_meters / plate_diameter_pixels
 
     return vec * conversion
