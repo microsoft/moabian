@@ -37,4 +37,5 @@ class CameraOpenCV(BaseCamera):
             _, img = camera.read()
 
             # encode as a jpeg image and return it
-            yield cv2.imencode('.jpg', img)[1].tobytes()
+            cropped = img[y:y+d, x:x+d]
+            yield cv2.imencode('.jpg', cropped)[1].tobytes()
