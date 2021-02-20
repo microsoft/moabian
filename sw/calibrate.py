@@ -150,6 +150,9 @@ def run_calibration(env, pid_fn):
     print(f"offsets: (x={x_offset}, y={y_offset}), success={success_pos}.")
     input("Press enter...")
 
+    # TODO: you can trigger a massive fw freakout by calling this (so don't):
+    # hat.set_icon_text(Icon.X, Text.CAL_INSTR)
+
     hue, success_hue = calibrate_hue(camera_fn, detector_fn)
     print(f"(hue={hue}, success_hue={success_hue}.")
     input("Press enter...")
@@ -162,6 +165,10 @@ def run_calibration(env, pid_fn):
         "Then press the\n"
         "Joystick button.\n"
     )
+
+    # TODO: major bug: for some reason, print_arbitrary_string *breaks ability to read the
+    # joysticks which is why temporarily we have "input"
+
     servos_offsets, success_offsets = calibrate_servo_offsets(pid_fn, env)
     print(f"(offsets={servos_offsets}, success={success_offsets}.")
 
@@ -206,7 +213,7 @@ def main(frequency=30, debug=True):
     pid_fn = pid_controller(frequency=frequency)
 
     with MoabEnv(frequency=frequency, debug=debug) as env:
-        state = env.reset(Icon.DOT, Text.CAL_INSTR)
+        state = env.reset(Icon.DOT, Text.BLANK)
         run_calibration(env, pid_fn)
 
 
