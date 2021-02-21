@@ -254,6 +254,7 @@ class Hat:
         """
         Send and receive 9 bytes from hat.
         """
+        assert len(packet) == 9
         # packet = right_pad_array(packet, length=9, dtype=np.int8)
         time.sleep(0.001)
         hat_to_pi = self.spi.xfer(packet.tolist())

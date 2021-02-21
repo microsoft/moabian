@@ -134,43 +134,57 @@ def run_calibration(env, pid_fn):
     camera_fn = env.camera
     detector_fn = env.detector
 
-    # TODO: debug this, there was a regression in firmware
-    # # Wait until the user presses the joystick
-    # while True:
-    #     hat.noop()
-    #     menu_btn, joy_btn, joy_x, joy_y = hat.poll_buttons()
-    #     time.sleep(1 / 30)
-    #     print(f"menu_btn:{menu_btn}, joy_btn:{joy_btn}, joy_x:{joy_x}, joy_y:{joy_y}")
-    #     if joy_btn:
-    #         break
+    # hat.print_info_screen()
+    # hat.print_arbitrary_string(
+    #     "Place ball\n"
+    #     "in center\n"
+    #     "using clearr\n"
+    #     "ball stand.\n"
+    #     "Then click\n"
+    #     "joystick\n"
+    #     "to confirm."
+    # )
+    input(
+        "Place ball in center using clear ball stand. Then press joystick to confirm."
+    )
 
-    hat.print_info_screen()
+    # TODO: debug this, there was a regression in firmware
+    # Wait until the user presses the joystick
+    while True:
+        hat.noop()
+        menu_btn, joy_btn, joy_x, joy_y = hat.poll_buttons()
+        time.sleep(1 / 30)
+        # print(f"menu_btn:{menu_btn}, joy_btn:{joy_btn}, joy_x:{joy_x}, joy_y:{joy_y}")
+        if joy_btn:
+            break
 
     (x_offset, y_offset), success_pos = calibrate_pos(camera_fn, detector_fn)
     print(f"offsets: (x={x_offset}, y={y_offset}), success={success_pos}.")
-    input("Press enter...")
 
     # TODO: you can trigger a massive fw freakout by calling this (so don't):
     # hat.set_icon_text(Icon.X, Text.CAL_INSTR)
 
     hue, success_hue = calibrate_hue(camera_fn, detector_fn)
     print(f"(hue={hue}, success_hue={success_hue}.")
-    input("Press enter...")
 
-    hat.print_arbitrary_string(
-        "Remove the\n"
-        "ball stand and\n"
-        "place the ball\n"
-        "in the middle.\n"
-        "Then press the\n"
-        "Joystick button.\n"
+    # hat.print_arbitrary_string(
+    #     "Remove the\n"
+    #     "ball stand and\n"
+    #     "place the ball\n"
+    #     "in the center.\n"
+    #     "Then click the\n"
+    #     "Joystick button\n"
+    #     "to confirm."
+    # )
+    input(
+        "Place ball in center and remove the clear ball stand. Then press joystick to confirm."
     )
 
     # TODO: major bug: for some reason, print_arbitrary_string *breaks ability to read the
     # joysticks which is why temporarily we have "input"
-
     servos_offsets, success_offsets = calibrate_servo_offsets(pid_fn, env)
     print(f"(offsets={servos_offsets}, success={success_offsets}.")
+    input("Press enter...")
 
     if success_hue and success_pos and success_offsets:
         # If all succeeded
@@ -198,6 +212,7 @@ def run_calibration(env, pid_fn):
         "servo_offsets": servos_offsets,
     }
 
+    input("Press enter...")
     write_calibration(calibration_dict)
 
 
