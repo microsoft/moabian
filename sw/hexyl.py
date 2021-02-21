@@ -2,6 +2,8 @@
 
 import time
 import numpy as np
+import itertools
+from operator import add
 from typing import Union, List, Tuple, Dict
 
 class color:
@@ -30,8 +32,19 @@ def hexyl():
             yield wrap(c.get(i), v)
 
     def tx_list(l):
-        c = {0: color.red, 4: color.yellow}
+        if np.uint8(l[0]) == 0x80:
+            c = {0: color.green}
+            c.update({k: color.yellow for k in range(1,9)})
+        else:
+            c = {0: color.red}
+
         return ' '.join(enumerate_bytes(l, c))
+
+    def tx_80(l):
+        if np.uint8(l[0]) == 0x80:
+            return(" ┊ " + color.yellow + ''.join([chr(c) for c in l[1:]]) + color.end)
+        else:
+            return('')
 
     def rx_list(l):
         c = {0: color.green, 1: color.cyan, 2: color.cyan}
@@ -48,20 +61,28 @@ def hexyl():
         print(" ┊ ", end='')
 
         print(rx_list(rx), end='')
-        print('')
+
+        print(tx_80(tx))
 
     return hfn
 
 
 def main():
-    tx = np.random.randint(255, size=8)
-    rx = np.random.randint(255, size=8)
+    tx1 = [0x80,  0x4c, 0x6f, 0x61, 0x64,  0x2d, 0x62, 0x65, 0x61]
+    tx2 = [0x80,  0x72, 0x69, 0x6e, 0x67,  0x20, 0x50, 0x6f, 0x73]
+    tx3 = [0x80,  0x74, 0x65, 0x72, 0x00,  0x00, 0x00, 0x00, 0x00]
 
     t = hexyl()
+    t(tx1, np.random.randint(255, size=9))
+    t(tx2, np.random.randint(255, size=9))
+    t(tx3, np.random.randint(255, size=9))
+
+    tx = np.random.randint(255, size=9)
+    rx = np.random.randint(255, size=9)
     t(tx, rx)
 
-    tx = np.random.randint(255, size=8)
-    rx = np.random.randint(255, size=8)
+    tx = np.random.randint(255, size=9)
+    rx = np.random.randint(255, size=9)
     t(tx, rx)
 
 if __name__ == "__main__":
