@@ -10,8 +10,8 @@ import logging as log
 import RPi.GPIO as gpio
 
 from enum import IntEnum
+from hexyl import hexyl
 from typing import Union, List, Tuple
-
 
 # fmt: off
 # Define which bytes represent which commands
@@ -222,6 +222,8 @@ class Hat:
         self.joy_x: float = 0
         self.joy_y: float = 0
 
+        self.hex_printer = hexyl()
+
         # Attempt to open the spidev bus
         try:
             self.spi = spidev.SpiDev()
@@ -248,14 +250,17 @@ class Hat:
     def __exit__(self, type, value, traceback):
         self.close()
 
-    def transceive(self, packet: Union[List, np.ndarray]):
+    def transceive(self, packet: np.ndarray):
         """
         Send and receive 9 bytes from hat.
         """
         # packet = right_pad_array(packet, length=9, dtype=np.int8)
         time.sleep(0.001)
         hat_to_pi = self.spi.xfer(packet.tolist())
-        print(packet, hat_to_pi)
+
+        # TODO: flag to enable/disable this "logic analyzer"
+        self.hex_printer(packet.tolist(), hat_to_pi)
+
         self._save_buttons(hat_to_pi)
 
     def _save_buttons(self, hat_to_pi):
