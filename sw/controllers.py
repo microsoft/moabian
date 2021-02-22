@@ -58,8 +58,11 @@ def zero_controller(**kwargs):
     return lambda state: (Vector2(0, 0), {})
 
 
-def random_controller(low=-16, high=16, **kwargs):
-    return lambda state: (Vector2(*np.random.uniform(low, high, size=2)), {})
+def random_controller(max_angle, **kwargs):
+    return lambda state: (
+        Vector2(*np.random.uniform(-max_angle, max_angle, size=2)),
+        {},
+    )
 
 
 def brain_controller(
@@ -109,6 +112,9 @@ def brain_controller(
                     # Scale and clip
                     pitch = np.clip(pitch * max_angle, -max_angle, max_angle)
                     roll = np.clip(roll * max_angle, -max_angle, max_angle)
+
+                    # To match how the old brain works (only integer plate angles)
+                    pitch, roll = int(pitch), int(roll)
 
                     action = Vector2(-roll, pitch)
 
