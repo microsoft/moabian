@@ -63,6 +63,9 @@ def hexyl():
         nonlocal tick
         tick = tick + 1
 
+        if np.uint8(tx[0]) == 0x00:
+            return
+
         print(f'{color.gray}{tick:05d}{color.end}', end='')
         print(" ┊ ", end='')
 
