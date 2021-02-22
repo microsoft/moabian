@@ -311,7 +311,7 @@ class Hat:
             )
 
         else:
-            s1, s2, s3 = plate_angles_to_servo_positions(plate_x, plate_y)
+            s1, s2, s3 = plate_angles_to_servo_positions(-plate_x, -plate_y)
             s1 += self.servo_offsets[0]
             s2 += self.servo_offsets[1]
             s3 += self.servo_offsets[2]

@@ -46,7 +46,7 @@ def manual_controller(hat=None, max_angle=22, **kwargs):
 
     def next_action(state):
         menu_btn, joy_btn, joy_x, joy_y = hat.poll_buttons()
-        action = Vector2(joy_x, joy_y)
+        action = Vector2(-joy_x, -joy_y)
         return action * max_angle, {}
 
     return next_action
