@@ -61,7 +61,7 @@ def main(
             end_point="http://localhost:" + str(port),
         )
 
-    with MoabEnv(hat, frequency, debug, use_plate_angles) as env:
+    with MoabEnv(frequency, debug, use_plate_angles) as env:
         state = env.reset(icon, text)
         while True:
             action, info = controller(state)
