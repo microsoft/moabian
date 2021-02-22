@@ -21,7 +21,8 @@ def pid_controller(
     **kwargs,
 ):
     def next_action(state):
-        ball_detected, (x, y, vel_x, vel_y, sum_x, sum_y) = state
+        env_state, ball_detected, buttons = state
+        x, y, vel_x, vel_y, sum_x, sum_y = env_state
 
         if ball_detected:
             # TODO: The PID controller should probably use matrices instead of 2
@@ -44,12 +45,10 @@ def pid_controller(
     return next_action
 
 
-def manual_controller(hat=None, max_angle=22, **kwargs):
-    assert hat is not None
-
+def manual_controller(max_angle=22, **kwargs):
     def next_action(state):
-        menu_btn, joy_btn, joy_x, joy_y = hat.poll_buttons()
-        action = Vector2(joy_x, joy_y)
+        env_state, ball_detected, buttons = state
+        action = Vector2(buttons.joy_x, buttons.joy_y)
         return action * max_angle, {}
 
     return next_action
@@ -80,7 +79,8 @@ def brain_controller(
     prediction_url = f"{end_point}/v1/prediction"
 
     def next_action(state):
-        ball_detected, (x, y, vel_x, vel_y, sum_x, sum_y) = state
+        env_state, ball_detected, buttons = state
+        x, y, vel_x, vel_y, sum_x, sum_y = env_state
 
         observables = {
             "ball_x": x,

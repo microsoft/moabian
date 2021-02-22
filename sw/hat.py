@@ -9,8 +9,9 @@ import numpy as np
 import logging as log
 import RPi.GPIO as gpio
 
-from enum import IntEnum
 from hexyl import hexyl
+from enum import IntEnum
+from common import Buttons
 from typing import Union, List, Tuple
 
 # fmt: off
@@ -217,10 +218,7 @@ class Hat:
         self.servo_offsets: Tuple[float, float, float] = servo_offsets
         self.use_plate_angles = use_plate_angles
 
-        self.menu_btn: bool = False
-        self.joy_btn: bool = False
-        self.joy_x: float = 0
-        self.joy_y: float = 0
+        self.buttons = Buttons(False, False, 0.0, 0.0)
 
         self.hex_printer = hexyl()
 
@@ -266,11 +264,11 @@ class Hat:
 
     def _save_buttons(self, hat_to_pi):
         # Check if buttons are pressed
-        self.menu_btn = hat_to_pi[0] == Button.MENU
-        self.joy_btn = hat_to_pi[0] == Button.JOYSTICK
+        self.buttons.menu_button = hat_to_pi[0] == Button.MENU
+        self.buttons.joy_button = hat_to_pi[0] == Button.JOYSTICK
         # Get x & y coordinates of joystick normalized to [-1, +1]
-        self.joy_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X]) / 100
-        self.joy_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y]) / 100
+        self.buttons.joy_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X]) / 100
+        self.buttons.joy_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y]) / 100
 
     def poll_buttons(self):
         """
@@ -278,12 +276,14 @@ class Hat:
         response.
 
         Return:
-            - menu_btn: Bool
-            - joy_btn : Bool
-            - joy_x   : Float normalized from -1 to +1
-            - joy_y   : Float normalized from -1 to +1
+            Buttons
+            Which is a dataclass with:
+                - menu_button: bool
+                - joy_button : bool
+                - joy_x   : float normalized from -1 to +1
+                - joy_y   : float normalized from -1 to +1
         """
-        return self.menu_btn, self.joy_btn, self.joy_x, self.joy_y
+        return self.buttons
 
     def noop(self):
         """Send a NOOP. Useful for if you just want to read buttons."""

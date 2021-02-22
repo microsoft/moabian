@@ -37,7 +37,8 @@ def logging_decorator(fn, logfile="/tmp/log.csv"):
         resp = info.get("resp") or ""
 
         # Deconstuct the state to get the values we want
-        ball_detected, (x, y, vel_x, vel_y, sum_x, sum_y) = state
+        env_state, ball_detected, buttons = state
+        x, y, vel_x, vel_y, sum_x, sum_y = env_state
         # Deconstruct action
         pitch, roll = action
         # combine all to a list for the log
