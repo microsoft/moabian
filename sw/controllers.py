@@ -48,7 +48,7 @@ def pid_controller(
 def manual_controller(max_angle=22, **kwargs):
     def next_action(state):
         env_state, ball_detected, buttons = state
-        action = Vector2(buttons.joy_x, buttons.joy_y)
+        action = Vector2(-buttons.joy_x, -buttons.joy_y)
         return action * max_angle, {}
 
     return next_action

@@ -13,7 +13,7 @@ app = Flask(__name__,
 
 @app.route('/')
 def default():
-    return redirect(url_for('static', filename='index.html'))
+    return redirect(url_for('static', filename='file.html'))
 
 def gen(camera):
     while True:
@@ -44,7 +44,8 @@ if __name__ == '__main__':
     hostname = socket.gethostname()
 
     ip = getHostIP()
-    print(f" • Camera View      http://{ip}:{port}/")
+    print(f" • Moab View      http://{ip}:{port}/file.html")
+    print(f" • OpenCV View    http://{ip}:{port}/opencv.html")
     app.run(host=ip, port=port, threaded=True)
 
 
