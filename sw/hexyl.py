@@ -40,9 +40,18 @@ def hexyl():
 
         return ' '.join(enumerate_bytes(l, c))
 
+    def printable(c):
+        if c > 0x1F & c < 0x7F:
+            return chr(c)
+        if c == 0x0A:
+            return '¶'
+        else:
+            return '·'
+
     def tx_80(l):
         if np.uint8(l[0]) == 0x80:
-            return(" ┊ " + color.yellow + ''.join([chr(c) for c in l[1:]]) + color.end)
+            clean = l[1:]
+            return(" ┊ " + color.yellow + ''.join(map(printable, clean)) + color.end)
         else:
             return('')
 
@@ -69,7 +78,7 @@ def hexyl():
 
 def main():
     tx1 = [0x80,  0x4c, 0x6f, 0x61, 0x64,  0x2d, 0x62, 0x65, 0x61]
-    tx2 = [0x80,  0x72, 0x69, 0x6e, 0x67,  0x20, 0x50, 0x6f, 0x73]
+    tx2 = [0x80,  0x72, 0x69, 0x6e, 0x67,  0x0a, 0x50, 0x6f, 0x73]
     tx3 = [0x80,  0x74, 0x65, 0x72, 0x00,  0x00, 0x00, 0x00, 0x00]
 
     t = hexyl()
