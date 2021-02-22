@@ -40,9 +40,6 @@ def main(
     logfile,
     use_plate_angles,
 ):
-    # Only manual needs access to the hat outside of the env
-    hat = Hat(use_plate_angles=use_plate_angles)
-
     icon = ICONS[controller_name]
     text = TEXTS[controller_name]
 
@@ -51,7 +48,6 @@ def main(
         controller = logging_decorator(
             CONTROLLERS[controller_name](
                 frequency=frequency,
-                hat=hat,
                 max_angle=max_angle,
                 end_point="http://localhost:" + str(port),
             ),
@@ -61,7 +57,6 @@ def main(
         # Pass all arguments, if a controller doesn't need it, it will ignore it (**kwargs)
         controller = CONTROLLERS[controller_name](
             frequency=frequency,
-            hat=hat,
             max_angle=max_angle,
             end_point="http://localhost:" + str(port),
         )

@@ -41,9 +41,6 @@ TEXTS = {
 
 
 def main(controller_name, frequency, debug, max_angle, port):
-    # Only manual needs access to the hat outside of the env
-    hat = Hat()
-
     icon = ICONS[controller_name]
     text = TEXTS[controller_name]
 
@@ -51,7 +48,6 @@ def main(controller_name, frequency, debug, max_angle, port):
     controller_fn = CONTROLLERS[controller_name]
     controller = controller_fn(
         frequency=frequency,
-        hat=hat,
         max_angle=max_angle,
         end_point="http://localhost:" + str(port),
     )

@@ -16,7 +16,6 @@ from common import high_pass_filter, low_pass_filter, derivative
 class MoabEnv:
     def __init__(
         self,
-        hat=None,
         frequency=30,
         debug=False,
         use_plate_angles=False,
