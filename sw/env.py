@@ -4,10 +4,28 @@
 import time
 
 from hat import Hat
+from typing import List, Bool
+from dataclasses import dataclass
 from detector import hsv_detector as detector
 from camera import OpenCVCameraSensor as Camera
 from common import high_pass_filter, low_pass_filter, derivative
 
+@dataclass
+class Info:
+    ball_detected: bool
+    menu_button: bool
+    joy_button: bool
+    joy_x: float
+    joy_y: float
+
+@dataclass
+class State:
+    x: float
+    y: float
+    vel_x: float
+    vel_y: float
+    sum_x: float
+    sum_y: float
 
 class MoabEnv:
     def __init__(
@@ -82,13 +100,11 @@ class MoabEnv:
         self.sum_x += x
         self.sum_y += y
 
-        ## TODO: Test on more bots whether this sleep is necessary since camera
-        ##       is a blocking call that does the timing too
-        ## Wait until the next timestep to return state at the prev timestep
-        # if self.prev_time + self.dt - time.time() < 0:
-        #    print("Missed frame")
-        ## Sleep until the next timestep
-        # time.sleep(max(self.prev_time + self.dt - time.time(), 0))
-        # self.prev_time = time.time()
+        buttons = self.hat.poll_buttons()
 
-        return ball_detected, (x, y, vel_x, vel_y, self.sum_x, self.sum_y)
+        return ball_detected, (x, y, vel_x, vel_y, self.sum_x, self.sum_y), buttons
+
+
+
+
+
