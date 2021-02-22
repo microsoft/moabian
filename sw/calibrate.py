@@ -133,7 +133,7 @@ def read_calibration(calibration_file="bot.json"):
     log.info("Reading previous calibration.")
 
     if os.path.isfile(calibration_file):
-        with open(file, "r") as f:
+        with open(calibration_file, "r") as f:
             calibration_dict = json.load(f)
     else:  # Use defaults
         calibration_dict = {
@@ -197,7 +197,7 @@ def run_calibrate_pos(env, pid_fn, calibration_file):
     if success_pos:
         wait_for_joystick(
             hat,
-            f"Offsets =\n{x_offset:.2f, y_offset:.2f}",
+            f"Offsets =\n({x_offset:.2f}, {y_offset:.2f})",
             "Click joystick\nto quit...",
         )
     else:

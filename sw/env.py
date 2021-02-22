@@ -25,7 +25,7 @@ class MoabEnv:
         # Get calibration settings
         with open(calibration_file, "r") as f:
             calib = json.load(f)
-        plate_offsets = calib["plate_x_offset"], calib["plate_y_offset"]  # TODO!!
+        self.plate_offsets = calib["plate_x_offset"], calib["plate_y_offset"]
 
         self.hat = Hat(use_plate_angles=use_plate_angles)
         self.hat.set_servo_offsets(*calib["servo_offsets"])
@@ -38,11 +38,14 @@ class MoabEnv:
         self.dt = 1 / frequency
         self.prev_time = time.time()
 
-        # self.derivative_fn = derivative
-        self.derivative_fn = lambda freq: high_pass_filter(freq, fc=15)
+        self.derivative_fn = derivative
+        # self.derivative_fn = lambda freq: high_pass_filter(freq, fc=15)
 
         self.vel_x, self.vel_y = None, None
         self.sum_x, self.sum_y = 0, 0
+
+        self.action_x_lpf = low_pass_filter(frequency, 1 / 50)
+        self.action_y_lpf = low_pass_filter(frequency, 1 / 50)
 
     def __enter__(self):
         self.hat.enable_servos()
@@ -76,13 +79,19 @@ class MoabEnv:
 
     def step(self, action) -> Tuple[EnvState, bool, Buttons]:
         plate_x, plate_y = action
-        self.hat.set_angles(plate_x, plate_y)
+        self.hat.set_angles(self.action_x_lpf(plate_x), self.action_y_lpf(plate_y))
 
         frame, elapsed_time = self.camera()
         ball_detected, cicle_feature = self.detector(frame)
         ball_center, ball_radius = cicle_feature
 
         x, y = ball_center
+
+        # TODO: this is temporary solution to centering the ball. This should
+        #       really be used to figure out the correct camera cropping!!!
+        x -= self.plate_offsets[0]
+        y -= self.plate_offsets[1]
+
         # Update derivate calulation
         vel_x, vel_y = self.vel_x(x), self.vel_y(y)
         # Update the summation (integral calculation)
