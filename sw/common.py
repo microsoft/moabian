@@ -17,16 +17,16 @@ def high_pass_filter(frequency, fc=50):
     return hpf
 
 
-def low_pass_filter(frequency, fc=50):
-    x_prev = 0
-    frequency = frequency
-    alpha = 1 / (1 + frequency * fc)
+def low_pass_filter(frequency, tau=50):
+    y_prev = 0
+    dt = 1 / frequency
+    alpha = dt / (tau + dt)
 
     def lpf(x):
-        nonlocal x_prev  # allow x_dot_cstate to be updated in inner scope
-        x_filtered = alpha * x + (1 - alpha) * x_prev
-        x_prev = x
-        return x_filtered
+        nonlocal y_prev  # allow y_prev to be updated in inner scope
+        y = alpha * x + (1 - alpha) * y_prev
+        y_prev = y
+        return y
 
     return lpf
 
