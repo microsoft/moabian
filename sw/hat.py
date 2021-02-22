@@ -172,10 +172,10 @@ def plate_angles_to_servo_positions(
 ) -> Tuple[float, float, float]:
     servo_angles = [0.0, 0.0, 0.0]
 
-    z1 = pivot_height + np.sin(np.radians(theta_y)) * (side_len / np.sqrt(3))
-    r = pivot_height - np.sin(np.radians(-theta_x)) * (side_len / (2 * np.sqrt(3)))
-    z2 = r + np.sin(np.radians(-theta_x)) * (side_len / 2)
-    z3 = r - np.sin(np.radians(-theta_x)) * (side_len / 2)
+    z1 = pivot_height + np.sin(np.radians(-theta_y)) * (side_len / np.sqrt(3))
+    r = pivot_height - np.sin(np.radians(-theta_y)) * (side_len / (2 * np.sqrt(3)))
+    z2 = r + np.sin(np.radians(theta_x)) * (side_len / 2)
+    z3 = r - np.sin(np.radians(theta_x)) * (side_len / 2)
 
     if z1 > 2 * arm_len:
         z1 = 2 * arm_len
