@@ -21,7 +21,7 @@ class MoabEnv:
         debug=False,
         use_plate_angles=False,
         derivative_fn=derivative,
-        calibration_file="calibration.json",
+        calibration_file="bot.json",
     ):
         # Get calibration settings
         with open(calibration_file, "r") as f:

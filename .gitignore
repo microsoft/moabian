@@ -75,5 +75,5 @@ pythonenv*
 
 **/*.csv
 
-**/calibration.json
+**/bot.json
 **/tags
