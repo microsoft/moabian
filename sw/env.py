@@ -23,22 +23,14 @@ class MoabEnv:
         derivative_fn=derivative,
         calibration_file="calibration.json",
     ):
-<<<<<<< Updated upstream
-        self.hat = Hat(use_plate_angles=use_plate_angles)
-=======
         # Get calibration settings
         with open(calibration_file, "r") as f:
             calib = json.load(f)
         plate_offsets = calib["plate_x_offset"], calib["plate_y_offset"]  # TODO!!
 
-        if hat:
-            # For cases like manual control where the hat needs to be shared
-            self.hat = hat
-        else:
-            self.hat = Hat(use_plate_angles=use_plate_angles)
+        self.hat = Hat(use_plate_angles=use_plate_angles)
         self.hat.set_servo_offsets(*calib["servo_offsets"])
 
->>>>>>> Stashed changes
         self.camera = Camera(frequency=frequency)
         self.detector = detector(debug=debug, hue=calib["ball_hue"])
         self.debug = debug
