@@ -225,7 +225,7 @@ function layer-baremetal
 
 function layer-flash
 {
-    $_P/bin/flash $_P/fw/fw-3.bin
+    $_P/bin/flash $_P/fw/v3.bin
 }
 
 function layer-mcumgr
