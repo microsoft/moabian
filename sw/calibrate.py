@@ -29,17 +29,13 @@ def ball_close_enough(x, y, radius, max_ball_dist=0.2, min_ball_dist=0.05):
     )
 
 
-def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=255, hue_steps=20):
-    img_frame, elapsed_time = camera_fn()
+def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=180, hue_steps=20):
     hue_options = list(np.linspace(hue_low, hue_high, hue_steps))
 
     detected_hues = []
     for hue in hue_options:
+        img_frame, elapsed_time = camera_fn()
         ball_detected, ((x, y), radius) = detector_fn(img_frame, hue=hue)
-        print(
-            f"hue={hue}, ball_detected={ball_detected}, "
-            f"(x, y)={(x, y)}, radius={radius}"
-        )
 
         # If we found a ball roughly in the center that is large enough
         if ball_detected and ball_close_enough(x, y, radius):
@@ -133,6 +129,22 @@ def write_calibration(calibration_dict, calibration_file="bot.json"):
         json.dump(calibration_dict, outfile, indent=4, sort_keys=True)
 
 
+def read_calibration(calibration_file="bot.json"):
+    log.info("Reading previous calibration.")
+
+    if os.path.isfile(calibration_file):
+        with open(file, "r") as f:
+            calibration_dict = json.load(f)
+    else:  # Use defaults
+        calibration_dict = {
+            "ball_hue": 27,
+            "plate_x_offset": 0.0,
+            "plate_y_offset": 0.0,
+            "servo_offsets": [0.0, 0.0, 0.0],
+        }
+    return calibration_dict
+
+
 def wait_for_joystick(
     hat,
     text_1="Put ball in\ncenter using\nclear stand.",
@@ -164,7 +176,7 @@ def wait_for_joystick(
             return
 
 
-def run_calibrate_pos(env, pid_fn):
+def run_calibrate_pos(env, pid_fn, calibration_file):
     # Get some hidden things from env
     hat = env.hat
     camera_fn = env.camera
@@ -176,8 +188,7 @@ def run_calibrate_pos(env, pid_fn):
     print(f"offsets: (x={x_offset}, y={y_offset}), success={success_pos}.")
 
     # Save calibration
-    with open("bot.json", "r") as f:
-        calibration_dict = json.load(f)
+    calibration_dict = read_calibration(calibration_file)
     calibration_dict["plate_x_offset"] = x_offset
     calibration_dict["plate_y_offset"] = y_offset
     write_calibration(calibration_dict)
@@ -197,7 +208,7 @@ def run_calibrate_pos(env, pid_fn):
         )
 
 
-def run_calibrate_hue(env, pid_fn):
+def run_calibrate_hue(env, pid_fn, calibration_file):
     # Get some hidden things from env
     hat = env.hat
     camera_fn = env.camera
@@ -208,8 +219,7 @@ def run_calibrate_hue(env, pid_fn):
     hue, success_hue = calibrate_hue(camera_fn, detector_fn)
 
     # Save calibration
-    with open("bot.json", "r") as f:
-        calibration_dict = json.load(f)
+    calibration_dict = read_calibration(calibration_file)
     calibration_dict["ball_hue"] = hue
     write_calibration(calibration_dict)
 
@@ -228,7 +238,7 @@ def run_calibrate_hue(env, pid_fn):
         )
 
 
-def run_calibrate_servos(env, pid_fn):
+def run_calibrate_servos(env, pid_fn, calibration_file):
     # Get some hidden things from env
     hat = env.hat
     camera_fn = env.camera
@@ -240,8 +250,7 @@ def run_calibrate_servos(env, pid_fn):
     servo_offsets, success_offsets = calibrate_servo_offsets(pid_fn, env)
 
     # Save calibration
-    with open("bot.json", "r") as f:
-        calibration_dict = json.load(f)
+    calibration_dict = read_calibration(calibration_file)
     calibration_dict["servo_offsets"] = servo_offsets
     write_calibration(calibration_dict)
 
@@ -261,12 +270,12 @@ def run_calibrate_servos(env, pid_fn):
         )
 
 
-def main(calibrate_fn, frequency=30, debug=True):
+def main(calibrate_fn, calibration_file, frequency=30, debug=True):
     pid_fn = pid_controller(frequency=frequency)
 
     with MoabEnv(frequency=frequency, debug=debug) as env:
         state = env.reset(Icon.DOT, Text.CAL)
-        calibrate_fn(env, pid_fn)
+        calibrate_fn(env, pid_fn, calibration_file)
 
 
 if __name__ == "__main__":  # Parse command line args
@@ -285,5 +294,7 @@ if __name__ == "__main__":  # Parse command line args
         Options are: {opts.keys()}
         """,
     )
+    parser.add_argument("-f", "--file", default="bot.json", type=str)
+
     args, _ = parser.parse_known_args()
-    main(opts[args.calibration_type])
+    main(opts[args.calibration_type], args.file)
