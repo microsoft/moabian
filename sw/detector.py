@@ -103,6 +103,7 @@ def hsv_detector(
                     img = draw_ball(img, ball_center_pixels, radius)
                     save_img("/tmp/camera/frame.jpg", img, rotated=False, quality=80)
 
+                # Rotate the x, y coordinates by -30 degrees
                 center = Vector2(x, y).rotate(np.radians(-30))
                 center = pixels_to_meters(center, frame_size)
                 return ball_detected, (center, radius)

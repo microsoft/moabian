@@ -259,7 +259,6 @@ class Hat:
 
         # TODO: flag to enable/disable this "logic analyzer"
         self.hex_printer(packet.tolist(), hat_to_pi)
-
         self._save_buttons(hat_to_pi)
 
     def _save_buttons(self, hat_to_pi):
