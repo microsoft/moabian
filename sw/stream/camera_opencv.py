@@ -29,6 +29,9 @@ class CameraOpenCV(BaseCamera):
         camera.set(cv2.CAP_PROP_FRAME_HEIGHT, h)
         camera.set(cv2.CAP_PROP_FPS, 30)
 
+        camera.set(cv2.CAP_PROP_BRIGHTNESS, 60)
+        camera.set(cv2.CAP_PROP_CONTRAST, 100)
+
         if not camera.isOpened():
             raise RuntimeError('Could not start camera.')
 
