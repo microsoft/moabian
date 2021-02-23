@@ -10,6 +10,7 @@ Performs calibration for hue, center of camera position, and servo offsets
 import os
 import time
 import json
+import cv2
 import argparse
 import numpy as np
 import logging as log
@@ -20,7 +21,7 @@ from controllers import pid_controller
 from hat import Hat, Icon, Text, plate_angles_to_servo_positions
 
 
-def ball_close_enough(x, y, radius, max_ball_dist=0.2, min_ball_dist=0.05):
+def ball_close_enough(x, y, radius, max_ball_dist=0.2 / 256, min_ball_dist=0.05 / 256):
     # reject balls which are too far from the center and too small
     return (
         np.abs(x) < max_ball_dist
@@ -30,25 +31,32 @@ def ball_close_enough(x, y, radius, max_ball_dist=0.2, min_ball_dist=0.05):
 
 
 def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=180, hue_steps=20):
+    img_frame, elapsed_time = camera_fn()
     hue_options = list(np.linspace(hue_low, hue_high, hue_steps))
 
     detected_hues = []
     for hue in hue_options:
+        print(hue)
         img_frame, elapsed_time = camera_fn()
         ball_detected, ((x, y), radius) = detector_fn(img_frame, hue=hue)
 
         # If we found a ball roughly in the center that is large enough
         if ball_detected and ball_close_enough(x, y, radius):
+            print(
+                f"hue={hue:0.3f}, ball_detected={ball_detected}, "
+                f"(x, y)={x:0.3f} {y:0.3f}, radius={radius:0.3f}"
+            )
             detected_hues.append(hue)
 
+    print(detected_hues)
     if len(detected_hues) > 0:
         max_hue = max(detected_hues)
         min_hue = min(detected_hues)
         avg_hue = int((max_hue + min_hue) / 2)
 
-        log.info(f"Hue range: [{min_hue} .. {max_hue}]")
+        print(f"Hue range: [{min_hue:0.3f} .. {max_hue:0.3f}]")
         print(f"Hues are: {detected_hues}")
-        log.info(f"Hue calibrated: {avg_hue}")
+        print(f"Hue calibrated: {avg_hue:0.3f}")
 
         success = True
         return avg_hue, success
@@ -217,6 +225,8 @@ def run_calibrate_hue(env, pid_fn, calibration_file):
     # Calibrate hue
     wait_for_joystick(hat, "Put ball in center\nusing clear stand.")
     hue, success_hue = calibrate_hue(camera_fn, detector_fn)
+
+    return
 
     # Save calibration
     calibration_dict = read_calibration(calibration_file)
