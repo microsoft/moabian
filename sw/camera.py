@@ -20,7 +20,7 @@ class OpenCVCameraSensor:
         device_id=0,
         rotation=0,
         brightness=60,
-        contrast=0,
+        contrast=100,
         frequency=30,
     ):
         self.device_id = device_id
