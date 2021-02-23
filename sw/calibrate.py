@@ -17,6 +17,7 @@ import logging as log
 
 from env import MoabEnv
 from common import Vector2
+from detector import hsv_detector
 from controllers import pid_controller
 from hat import Hat, Icon, Text, plate_angles_to_servo_positions
 
@@ -278,6 +279,44 @@ def run_calibrate_servos(env, pid_fn, calibration_file):
             "Calibrate servos failed.",
             "Click joystick\nto quit...",
         )
+
+
+def calibrate_all(env, pid_fn, calibration_file):
+    # Get some hidden things from env
+    hat = env.hat
+    camera_fn = env.camera
+    detector_fn = env.detector
+
+    # Calibrate position and hue
+    wait_for_joystick(hat, "Put ball in center\nusing clear stand.")
+    (x_offset, y_offset), success_pos = calibrate_pos(camera_fn, detector_fn)
+    hue, success_hue = calibrate_hue(camera_fn, detector_fn)
+
+    # Calibrate servo offsets
+    wait_for_joystick(hat, "Put ball in center\nwithout clear stand.")
+    hat.print_arbitrary_string("Running auto-\ncalibrate servos...")
+    servo_offsets, success_offsets = calibrate_servo_offsets(pid_fn, env)
+
+    # Save calibration
+    calibration_dict = read_calibration(calibration_file)
+    calibration_dict["plate_x_offset"] = x_offset
+    calibration_dict["plate_y_offset"] = y_offset
+    calibration_dict["ball_hue"] = hue
+    calibration_dict["servo_offsets"] = servo_offsets
+    write_calibration(calibration_dict)
+
+    # Update the environment to use the new calibration
+    # Warning! This mutates the state!
+    env.reset_calibration(calibration_file=calibration_file)
+
+    if success_pos and success_hue and success_offsets:
+        hat.set_icon_text(Icon.CHECK, Text.CAL_COMPLETE)
+    if not (success_pos or success_hue or success_offsets):
+        hat.set_icon_text(Icon.X, Text.CAL_FAILED)
+    else:
+        hat.print_arbitrary_string("Calib partially\nfailed, press menu...")
+
+    return None, {}
 
 
 def main(calibrate_fn, calibration_file, frequency=30, debug=True):

@@ -26,26 +26,19 @@ class MoabEnv:
         with open(calibration_file, "r") as f:
             calib = json.load(f)
         self.plate_offsets = calib["plate_x_offset"], calib["plate_y_offset"]
+        self.servo_offsets = calib["servo_offsets"]
+        self.hue = calib["ball_hue"]
 
         self.hat = Hat(use_plate_angles=use_plate_angles)
-        self.hat.set_servo_offsets(*calib["servo_offsets"])
-
+        self.hat.set_servo_offsets(*self.servo_offsets)
         self.camera = Camera(frequency=frequency)
-        self.detector = detector(debug=debug, hue=calib["ball_hue"])
+        self.detector = detector(debug=debug, hue=self.hue)
         self.debug = debug
 
         self.frequency = frequency
-        self.dt = 1 / frequency
-        self.prev_time = time.time()
-
         self.derivative_fn = derivative
-        # self.derivative_fn = lambda freq: high_pass_filter(freq, fc=15)
-
         self.vel_x, self.vel_y = None, None
         self.sum_x, self.sum_y = 0, 0
-
-        self.action_x_lpf = low_pass_filter(frequency, 1 / 50)
-        self.action_y_lpf = low_pass_filter(frequency, 1 / 50)
 
     def __enter__(self):
         self.hat.enable_servos()
@@ -57,6 +50,16 @@ class MoabEnv:
         self.hat.disable_servos()
         self.hat.close()
         self.camera.stop()
+
+    def reset_calibration(self, calibration_file="bot.json"):
+        # Get calibration settings
+        with open(calibration_file, "r") as f:
+            calib = json.load(f)
+        self.plate_offsets = calib["plate_x_offset"], calib["plate_y_offset"]
+        self.servo_offsets = calib["servo_offsets"]
+        self.hue = calib["ball_hue"]
+        # Set the servo offsets (self.hue & self.plate_offsets are used in step)
+        self.hat.set_servo_offsets(*self.servo_offsets)
 
     def reset(self, control_icon=None, control_name=None):
         if control_icon and control_name:
@@ -70,7 +73,6 @@ class MoabEnv:
         # Or: https://www.youtube.com/user/ControlLectures/
         self.vel_x = self.derivative_fn(self.frequency)
         self.vel_y = self.derivative_fn(self.frequency)
-
         # Reset the integral of the position
         self.sum_x, self.sum_y = 0, 0
 
@@ -79,10 +81,10 @@ class MoabEnv:
 
     def step(self, action) -> Tuple[EnvState, bool, Buttons]:
         plate_x, plate_y = action
-        self.hat.set_angles(self.action_x_lpf(plate_x), self.action_y_lpf(plate_y))
+        self.hat.set_angles(plate_x, plate_y)
 
         frame, elapsed_time = self.camera()
-        ball_detected, cicle_feature = self.detector(frame)
+        ball_detected, cicle_feature = self.detector(frame, hue=self.hue)
         ball_center, ball_radius = cicle_feature
 
         x, y = ball_center
