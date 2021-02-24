@@ -13,7 +13,7 @@ from controllers import (
 from hat import Hat
 from env import MoabEnv
 from hat import Icon, Text
-from log_decorators import log_decorator
+from log_csv import log_decorator
 
 
 CONTROLLER_INFO = {
