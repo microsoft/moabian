@@ -7,7 +7,7 @@ import logging as log
 from common import Vector2
 
 
-def logging_decorator(fn, logfile="/tmp/log.csv"):
+def log_decorator(fn, logfile="/tmp/log.csv"):
     # Add the header line
     cols = ["tick", "dt"]  # Timing
     cols += ["x", "y", "vel_x", "vel_y"]  # State
