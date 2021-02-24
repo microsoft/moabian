@@ -74,6 +74,6 @@ pythonenv*
 # End of https://www.toptal.com/developers/gitignore/api/c,macos,python
 
 **/*.csv
-
 **/bot.json
 **/tags
+**/.ipynb_checkpoints/
