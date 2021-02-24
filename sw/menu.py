@@ -11,12 +11,11 @@ from controllers import (
     random_controller,
     manual_controller,
 )
-from hat import Hat
 from enum import Enum
 from env import MoabEnv
-from hat import Icon, Text
+from log_csv import log_decorator
 from calibrate import calibrate_all
-from log_decorators import logging_decorator
+from hat import Hat, Icon, Text, _get_host_ip, _get_sw_version
 
 
 class StateMachine(Enum):
@@ -34,8 +33,9 @@ def calibrate_controller(**kwargs):
     return lambda state: ((0, 0), {})
 
 
-def info_screen_controller(**kwargs):
-    env.hat.print_info_screen()
+def info_screen_controller(env=None, **kwargs):
+    ip1, ip2, ip3, ip4 = _get_host_ip()
+    env.hat.print_arbitrary_string(f"IP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}")
     return lambda state: ((0, 0), {})
 
 
@@ -49,35 +49,37 @@ def main(debug):
             (manual_controller, Icon.DOWN, Text.MANUAL, {}),
             (pid_controller, Icon.UP_DOWN, Text.CLASSIC, {}),
             (brain_controller, Icon.UP_DOWN, Text.BRAIN, {"port": 5000}),
-            (
-                calibrate_controller,
-                Icon.UP_DOWN,
-                Text.CAL,
-                {
-                    "env": env,
-                    "pid_fn": pid_controller(),
-                    "calibration_file": "bot.json",
-                },
-            ),
-            (info_screen_controller, Icon.UP, Text.INFO, {"env": env}),
+            # (
+            #     calibrate_controller,
+            #     Icon.UP_DOWN,
+            #     Text.CAL,
+            #     {
+            #         "env": env,
+            #         "pid_fn": pid_controller(),
+            #         "calibration_file": "bot.json",
+            #     },
+            # ),
+            # (info_screen_controller, Icon.UP, Text.INFO, {"env": env}),
         ]
 
-        state, detected, buttons = env.reset(Icon.BLANK, Text.BLANK)
+        env.hat.hover()
+        buttons = env.hat.poll_buttons()
         while True:
+            # time.sleep(1 / 30)
             if current == StateMachine.Menu:
-                while True:
-                    _, _, buttons = env.step((0, 0))  # Set/keep plate level
-                    env.hat.set_icon_text(opts_list[index][1], opts_list[index][2])
+                # Set icon and text, and get buttons
+                env.hat.set_icon_text(opts_list[index][1], opts_list[index][2])
+                env.hat.noop()
+                buttons = env.hat.poll_buttons()
 
-                    if buttons.joy_button:  # Select controller
-                        current = StateMachine.Controller
-                        break  # Go into the controller loop now
-                    elif buttons.joy_y < -0.8:  # Flick joystick down
-                        index = min(index + 1, len(opts_list) - 1)
-                        time.sleep(0.1)
-                    elif buttons.joy_y > 0.8:  # Flick joystick up
-                        index = max(index - 1, 0)
-                        time.sleep(0.1)
+                if buttons.joy_button:  # Selected controller
+                    current = StateMachine.Controller
+                elif buttons.joy_y < -0.9:  # Flicked joystick down
+                    index = min(index + 1, len(opts_list) - 1)
+                    time.sleep(0.2)
+                elif buttons.joy_y > 0.9:  # Flicked joystick up
+                    index = max(index - 1, 0)
+                    time.sleep(0.2)
 
             else:
                 state, detected, buttons = env.reset(Icon.DOT, opts_list[index][2])
@@ -91,8 +93,9 @@ def main(debug):
                     action, info = controller((state, detected, buttons))
                     state, detected, buttons = env.step(action)
 
-                # Loop breaks after menu pressed
+                # Loop breaks after menu pressed and puts the plate back to hover
                 current = StateMachine.Menu
+                env.hat.hover()
 
 
 if __name__ == "__main__":
