@@ -138,21 +138,28 @@ def _get_sw_version():
 def setupGPIO():
     gpio.setwarnings(False)
     gpio.setmode(gpio.BCM)
+    # gpio.setup(
+    #     [GpioPin.BOOT_EN, GpioPin.HAT_EN, GpioPin.HAT_RESET],
+    #     gpio.OUT,
+    # )
     gpio.setup(
-        [GpioPin.BOOT_EN, GpioPin.HAT_EN, GpioPin.HAT_RESET],
+        [GpioPin.HAT_EN, GpioPin.HAT_RESET],
         gpio.OUT,
     )
-    gpio.setup(GpioPin.HAT_PWR_N, gpio.IN)
+    time.sleep(0.75)
 
 
 def runtime():
     """ Set mode to runtime mode (not bootloader mode). """
-    gpio.output(GpioPin.HAT_EN, gpio.LOW)
-    time.sleep(0.02)  # 20ms
-    gpio.output(GpioPin.HAT_EN, gpio.HIGH)
-    gpio.output(GpioPin.HAT_RESET, gpio.LOW)
-    gpio.output(GpioPin.BOOT_EN, gpio.LOW)
-    time.sleep(0.25)  # 250ms
+    # gpio.output(GpioPin.HAT_EN, gpio.LOW)
+    # time.sleep(0.02)  # 20ms
+    # gpio.output(GpioPin.HAT_EN, gpio.HIGH)
+    #gpio.output(GpioPin.HAT_RESET, gpio.LOW)
+    # gpio.output(GpioPin.BOOT_EN, gpio.LOW)
+
+    # Load-bearing poster here. It's b/c we just asked the hat to power off/on
+    # Consider just signaling hat to reset state, not reboot
+    #time.sleep(0.25)  # 250ms
 
 
 def _xy_offsets(x, y, servo_offsets: Tuple[float, float, float]) -> Tuple[float, float]:
@@ -229,6 +236,9 @@ class Hat:
             self.spi.max_speed_hz = spi_max_speed_hz
         except:
             raise IOError(f"Could not open `/dev/spidev{spi_bus}.{spi_device}`.")
+
+        # TODO: move setupGPIO and runtime() into a required init() function
+        # otherwise you can't call Hat() without these side effects
 
         # Attempt to setup the GPIO pins and initialize the runtime
         try:
