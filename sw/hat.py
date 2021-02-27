@@ -146,7 +146,7 @@ def setupGPIO():
         [GpioPin.HAT_EN, GpioPin.HAT_RESET],
         gpio.OUT,
     )
-    time.sleep(0.75)
+    time.sleep(1.0)
 
 
 def runtime():
@@ -443,9 +443,9 @@ class Hat:
         )
 
     def print_info_screen(self):
-        raise NotImplementedError(
-            "Due to a bug in firware, info screen is currently non-functional."
-        )
+        # raise NotImplementedError(
+        #     "Due to a bug in firware, info screen is currently non-functional."
+        # )
         sw_major, sw_minor, sw_bug = _get_sw_version()
         ip1, ip2, ip3, ip4 = _get_host_ip()
         self.print_arbitrary_string(

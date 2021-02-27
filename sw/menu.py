@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
@@ -35,7 +37,8 @@ def calibrate_controller(**kwargs):
 
 def info_screen_controller(env=None, **kwargs):
     ip1, ip2, ip3, ip4 = _get_host_ip()
-    env.hat.print_arbitrary_string(f"IP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}")
+    #env.hat.print_arbitrary_string(f"IP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}")
+    env.hat.print_info_screen()
     return lambda state: ((0, 0), {})
 
 
@@ -46,26 +49,26 @@ def main(debug):
 
         # Structure is (controller_closure, icon_inactive, text, kwargs to controller_closure)
         opts_list = [
+            (info_screen_controller, Icon.UP, Text.INFO, {"env": env}),
             (manual_controller, Icon.DOWN, Text.MANUAL, {}),
             (pid_controller, Icon.UP_DOWN, Text.CLASSIC, {}),
             (brain_controller, Icon.UP_DOWN, Text.BRAIN, {"port": 5000}),
-            # (
-            #     calibrate_controller,
-            #     Icon.UP_DOWN,
-            #     Text.CAL,
-            #     {
-            #         "env": env,
-            #         "pid_fn": pid_controller(),
-            #         "calibration_file": "bot.json",
-            #     },
-            # ),
-            # (info_screen_controller, Icon.UP, Text.INFO, {"env": env}),
+            (
+                calibrate_controller,
+                Icon.UP_DOWN,
+                Text.CAL,
+                {
+                    "env": env,
+                    "pid_fn": pid_controller(),
+                    "calibration_file": "bot.json",
+                },
+            ),
         ]
 
         env.hat.hover()
         buttons = env.hat.poll_buttons()
         while True:
-            # time.sleep(1 / 30)
+            time.sleep(1 / env.frequency)
             if current == StateMachine.Menu:
                 # Set icon and text, and get buttons
                 env.hat.set_icon_text(opts_list[index][1], opts_list[index][2])
@@ -82,7 +85,13 @@ def main(debug):
                     time.sleep(0.2)
 
             else:
-                state, detected, buttons = env.reset(Icon.DOT, opts_list[index][2])
+                # Set the icon DOT (ready) for brain/calibrate
+                if index == 0 or index == 4:
+                    state, detected, buttons = env.reset(
+                        opts_list[index][1], opts_list[index][2]
+                    )
+                else:
+                    state, detected, buttons = env.reset(Icon.DOT, opts_list[index][2])
 
                 # Initialize the controller
                 controller_closure = opts_list[index][0]

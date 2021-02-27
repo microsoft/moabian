@@ -12,6 +12,7 @@ class color:
     red = '\033[31m'
     yellow = '\033[33m'
     gray = '\033[38;5;242m'
+    darkgray = '\033[38;5;238m'
     end = '\033[0m'
 
 # TODO: use pythonic map/reduce itertools
@@ -19,9 +20,17 @@ class color:
 def hexyl():
     tick = 0
 
+    def wrapstr(c : Union[str, None], s):
+        if c is None:
+            return s
+        else:
+            return c + s + color.end
+
     def wrap(c : Union[str, None], s):
         # first byte like 31 to string 0x1F
         byte = f'{np.uint8(s):02x}'
+        if byte == '00':
+            c = color.darkgray
         if c is None:
             return byte
         else:
@@ -49,9 +58,22 @@ def hexyl():
             return '·'
 
     def tx_80(l):
-        if np.uint8(l[0]) == 0x80:
-            clean = l[1:]
-            return(" ┊ " + color.yellow + ''.join(map(printable, clean)) + color.end)
+        b1 = np.uint8(l[0]);
+        if b1 == 0x80:
+            remainder = l[1:]
+            return(" ┊ " + color.yellow + ''.join(map(printable, remainder)) + color.end)
+        elif b1 == 0x01:
+           return(" ┊ " + wrapstr(color.red, 'servo: enable'))
+        elif b1 == 0x02:
+           return(" ┊ " + wrapstr(color.red, 'servo: disable'))
+        elif b1 == 0x03:
+           return(" ┊ " + wrapstr(color.green, 'control info'))
+        elif b1 == 0x04:
+           return(" ┊ " + wrapstr(color.red, 'servo: plate angles'))
+        elif b1 == 0x06:
+           return(" ┊ " + wrapstr(color.green, 'text/icon'))
+        elif b1 == 0x07:
+           return(" ┊ " + wrapstr(color.red, 'display buffer'))
         else:
             return('')
 
