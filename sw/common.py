@@ -5,6 +5,30 @@ import math
 from dataclasses import dataclass, field, astuple
 
 
+@dataclass
+class Buttons:
+    menu_button: bool = False
+    joy_button: bool = False
+    joy_x: float = 0
+    joy_y: float = 0
+
+    def __iter__(self):
+        return iter(astuple(self))
+
+
+@dataclass
+class EnvState:
+    x: float
+    y: float
+    vel_x: float
+    vel_y: float
+    sum_x: float
+    sum_y: float
+
+    def __iter__(self):
+        return iter(astuple(self))
+
+
 def high_pass_filter(frequency, fc=50):
     x_dot_cstate = 0
 
@@ -96,30 +120,6 @@ class Vector2:
 
     def to_int_tuple(self):
         return (int(self.x), int(self.y))
-
-
-@dataclass
-class Buttons:
-    menu_button: bool = False
-    joy_button: bool = False
-    joy_x: float = 0
-    joy_y: float = 0
-
-    def __iter__(self):
-        return iter(astuple(self))
-
-
-@dataclass
-class EnvState:
-    x: float
-    y: float
-    vel_x: float
-    vel_y: float
-    sum_x: float
-    sum_y: float
-
-    def __iter__(self):
-        return iter(astuple(self))
 
 
 def polar(x, y, degrees=True):

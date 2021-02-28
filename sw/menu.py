@@ -74,7 +74,7 @@ def main(frequency=30, debug=True):
                 env.hat.noop()
                 buttons = env.hat.poll_buttons()
 
-                if buttons.menu_button:  # Selected controller
+                if buttons.joy_button:  # Selected controller
                     current = StateMachine.Controller
                 elif buttons.joy_y < -0.8:  # Flicked joystick down
                     index = min(index + 1, len(opts_list) - 1)

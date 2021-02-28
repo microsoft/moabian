@@ -41,7 +41,7 @@ def hexyl():
             yield wrap(c.get(i), v)
 
     def tx_list(l):
-        if np.uint8(l[0]) == 0x80:
+        if np.uint8(l[0]) == 0x23:
             c = {0: color.green}
             c.update({k: color.yellow for k in range(1,9)})
         else:
@@ -59,7 +59,7 @@ def hexyl():
 
     def tx_80(l):
         b1 = np.uint8(l[0]);
-        if b1 == 0x80:
+        if b1 == 0x23:
             remainder = l[1:]
             return(" ┊ " + color.yellow + ''.join(map(printable, remainder)) + color.end)
         elif b1 == 0x01:
@@ -72,7 +72,7 @@ def hexyl():
            return(" ┊ " + wrapstr(color.red, 'servo: plate angles'))
         elif b1 == 0x06:
            return(" ┊ " + wrapstr(color.green, 'text/icon'))
-        elif b1 == 0x81:
+        elif b1 == 0x24:
            return(" ┊ " + wrapstr(color.red, 'display buffer'))
         else:
             return('')
@@ -102,21 +102,21 @@ def hexyl():
 
 
 def main():
-    tx1 = [0x80,  0x4c, 0x6f, 0x61, 0x64,  0x2d, 0x62, 0x65, 0x61]
-    tx2 = [0x80,  0x72, 0x69, 0x6e, 0x67,  0x0a, 0x50, 0x6f, 0x73]
-    tx3 = [0x80,  0x74, 0x65, 0x72, 0x00,  0x00, 0x00, 0x00, 0x00]
+    tx1 = [0x80,  0x4c, 0x6f, 0x61, 0x64,  0x2d, 0x62, 0x65]
+    tx2 = [0x80,  0x72, 0x69, 0x6e, 0x67,  0x0a, 0x50, 0x6f]
+    tx3 = [0x80,  0x74, 0x65, 0x72, 0x00,  0x00, 0x00, 0x00]
 
     t = hexyl()
-    t(tx1, np.random.randint(255, size=9))
-    t(tx2, np.random.randint(255, size=9))
-    t(tx3, np.random.randint(255, size=9))
+    t(tx1, np.random.randint(255, size=8))
+    t(tx2, np.random.randint(255, size=8))
+    t(tx3, np.random.randint(255, size=8))
 
-    tx = np.random.randint(255, size=9)
-    rx = np.random.randint(255, size=9)
+    tx = np.random.randint(255, size=8)
+    rx = np.random.randint(255, size=8)
     t(tx, rx)
 
-    tx = np.random.randint(255, size=9)
-    rx = np.random.randint(255, size=9)
+    tx = np.random.randint(255, size=8)
+    rx = np.random.randint(255, size=8)
     t(tx, rx)
 
 if __name__ == "__main__":

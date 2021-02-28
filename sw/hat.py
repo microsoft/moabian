@@ -26,19 +26,8 @@ class SendCommand(IntEnum):
     SET_PLATE_ANGLES        = 0x04  # Set the plate angles (x and y angles)
     SET_SERVOS              = 0x05  # Set the servo positions manually
     TEXT_ICON_SELECT        = 0x06  # This packet contains the text and icon to be selected and displays both
-    SET_DEBUGGING_OFF       = 0x40  # (Log level 0) Print nothing
-    SET_DEBUGGING_EMERG     = 0x40  # (Log level 0) Print only emergencies
-    SET_DEBUGGING_ALERT     = 0x41  # (Log level 1) Print only actions that must be taken immediately and above
-    SET_DEBUGGING_CRIT      = 0x42  # (Log level 2) Print only critical conditions and above
-    SET_DEBUGGING_ERR       = 0x43  # (Log level 3) Print only errors and above
-    SET_DEBUGGING_WARNING   = 0x44  # (Log level 4) Print warnings and above
-    SET_DEBUGGING_NOTICE    = 0x45  # (Log level 5) Print notices and above
-    SET_DEBUGGING_INFO      = 0x46  # (Log level 6) Print info and above
-    SET_DEBUGGING_DEBUG     = 0x47  # (Log level 7) Print everything possible
-    REQUEST_STATE_INFO      = 0x4E  # Return the state info (all the information in the main loop of the firmware)
-    REQUEST_FW_VERSION      = 0x4F  # Ask the hat to reply back the firmware version, fw version < 2.5 will not reply
-    ARBITRARY_MESSAGE       = 0x80  # There is a arbitrary length message being transmitted (max len 256 bytes)
-    DISPLAY_BUFFER          = 0x81  # The LED screen displays what is currently in the buffer
+    ARBITRARY_MESSAGE       = 0x23  # There is a arbitrary length message being transmitted (max len 256 bytes)
+    DISPLAY_BUFFER          = 0x24  # The LED screen displays what is currently in the buffer
 
 # Messaging from the hat to the Pi
 class ReceiveCommand(IntEnum):
@@ -200,18 +189,6 @@ def plate_angles_to_servo_positions(
     return servo_angles
 
 
-def right_pad_array(arr: Union[List, np.ndarray], length, dtype) -> np.ndarray:
-    len_arr = len(arr)
-    if len_arr < 9:
-        padded_arr = np.zeros(length, dtype=dtype)
-        padded_arr[:len_arr] = arr
-        return padded_arr
-    elif len_arr == 9:
-        return np.asarray(arr)
-    else:
-        raise ValueError(f"Given array: `{arr}` is longer than padded len: {length}.")
-
-
 class Hat:
     def __init__(
         self,
@@ -262,10 +239,9 @@ class Hat:
 
     def transceive(self, packet: np.ndarray):
         """
-        Send and receive 9 bytes from hat.
+        Send and receive 8 bytes from hat.
         """
-        assert len(packet) == 9
-        # packet = right_pad_array(packet, length=9, dtype=np.int8)
+        assert len(packet) == 8
         time.sleep(0.001)
         hat_to_pi = self.spi.xfer(packet.tolist())
 
@@ -300,7 +276,7 @@ class Hat:
         """Send a NOOP. Useful for if you just want to read buttons."""
         self.transceive(
             np.array(
-                [SendCommand.NOOP, 0, 0, 0, 0, 0, 0, 0, 0],
+                [SendCommand.NOOP, 0, 0, 0, 0, 0, 0, 0],
                 dtype=np.int8,
             )
         )
@@ -309,7 +285,7 @@ class Hat:
         """ Set the plate to track plate angles. """
         self.transceive(
             np.array(
-                [SendCommand.SERVO_ENABLE, 0, 0, 0, 0, 0, 0, 0, 0],
+                [SendCommand.SERVO_ENABLE, 0, 0, 0, 0, 0, 0, 0],
                 dtype=np.int8,
             )
         )
@@ -318,7 +294,7 @@ class Hat:
         """ Disables the power to the servos. """
         self.transceive(
             np.array(
-                [SendCommand.SERVO_DISABLE, 0, 0, 0, 0, 0, 0, 0, 0],
+                [SendCommand.SERVO_DISABLE, 0, 0, 0, 0, 0, 0, 0],
                 dtype=np.int8,
             )
         )
@@ -333,7 +309,7 @@ class Hat:
             plate_x, plate_y = -plate_x, -plate_y
             self.transceive(
                 np.array(
-                    [SendCommand.SET_PLATE_ANGLES, plate_x, plate_y, 0, 0, 0, 0, 0, 0],
+                    [SendCommand.SET_PLATE_ANGLES, plate_x, plate_y, 0, 0, 0, 0, 0],
                     dtype=np.uint8,
                 )
             )
@@ -376,7 +352,6 @@ class Hat:
                     servo2_centi_degrees_high_byte,
                     servo2_centi_degrees_low_byte,
                     0,
-                    0,
                 ],
                 dtype=np.uint8,
             )
@@ -399,7 +374,7 @@ class Hat:
 
         self.transceive(
             np.array(
-                [SendCommand.TEXT_ICON_SELECT, icon_idx, text_idx, 0, 0, 0, 0, 0, 0],
+                [SendCommand.TEXT_ICON_SELECT, icon_idx, text_idx, 0, 0, 0, 0, 0],
                 dtype=np.int8,
             )
         )
@@ -435,23 +410,23 @@ class Hat:
         assert len(s) <= 256
 
         # Calculate the number of messages required to send the text
-        num_msgs = int(np.ceil(len(s) / 8))
+        num_msgs = int(np.ceil(len(s) / 7))
 
         # Pad the message with trailing termination chars to so we always
-        # send in 9 bytes increments (1 byte control, 8 bytes data)
-        s += (num_msgs * 8 - len(s)) * b"\0"
+        # send in 8 bytes increments (1 byte control, 7 bytes data)
+        s += (num_msgs * 7 - len(s)) * b"\0"
 
         for msg_idx in range(num_msgs):
             # Combine into one list to send
             msg = [SendCommand.ARBITRARY_MESSAGE] + list(
-                s[8 * msg_idx : 8 * msg_idx + 8]
+                s[7 * msg_idx : 7 * msg_idx + 7]
             )
             self.transceive(np.array(msg, dtype=np.int8))
 
         # After sending all buffer info, send the command to display the buffer
         self.transceive(
             np.array(
-                [SendCommand.DISPLAY_BUFFER, 0, 0, 0, 0, 0, 0, 0, 0],
+                [SendCommand.DISPLAY_BUFFER, 42, 0, 0, 0, 0, 0, 0],
                 dtype=np.int8,
             )
         )

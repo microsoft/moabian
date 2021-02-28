@@ -6,7 +6,7 @@ import time
 from hat import Hat, Icon, Text, plate_angles_to_servo_positions
 
 menus = {
-    0: "aa2 AAA\nBBB 123\n12 cc CCC\n12 ddd DDD",
+    0: "Brookln\nSavannah\nAustin",
     1: "aa2 AAA\nBBB 123\n12 ccc CCC\n12 ddd DDD",
     2: "aa23 AAA\nBBB 123\n12 ccc CCC\n12 ddd DDD",
     3: "aaa23 AAA\nBBB 123\n12 ccc CCC\n12 ddd DDD",
