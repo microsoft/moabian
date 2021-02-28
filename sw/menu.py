@@ -17,6 +17,7 @@ from enum import Enum
 from env import MoabEnv
 from log_csv import log_decorator
 from calibrate import calibrate_all
+from common import EnvState, Buttons
 from hat import Hat, Icon, Text, _get_host_ip, _get_sw_version
 
 
@@ -36,26 +37,24 @@ def calibrate_controller(**kwargs):
 
 
 def info_screen_controller(env=None, **kwargs):
-    ip1, ip2, ip3, ip4 = _get_host_ip()
-    #env.hat.print_arbitrary_string(f"IP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}")
     env.hat.print_info_screen()
     return lambda state: ((0, 0), {})
 
+def main(frequency=30, debug=True):
 
-def main(debug):
-    with MoabEnv(frequency=30, debug=debug) as env:
+    with MoabEnv(frequency, debug) as env:
         current = StateMachine.Menu
         index = 0
 
         # Structure is (controller_closure, icon_inactive, text, kwargs to controller_closure)
         opts_list = [
-            (info_screen_controller, Icon.UP, Text.INFO, {"env": env}),
-            (manual_controller, Icon.DOWN, Text.MANUAL, {}),
+            (info_screen_controller, Icon.DOWN, Text.INFO, {"env": env}),
+            (manual_controller, Icon.UP_DOWN, Text.MANUAL, {}),
             (pid_controller, Icon.UP_DOWN, Text.CLASSIC, {}),
             (brain_controller, Icon.UP_DOWN, Text.BRAIN, {"port": 5000}),
             (
                 calibrate_controller,
-                Icon.UP_DOWN,
+                Icon.UP,
                 Text.CAL,
                 {
                     "env": env,
@@ -70,26 +69,26 @@ def main(debug):
         while True:
             time.sleep(1 / env.frequency)
             if current == StateMachine.Menu:
-                # Set icon and text, and get buttons
+                # TOP LEVEL
                 env.hat.set_icon_text(opts_list[index][1], opts_list[index][2])
                 env.hat.noop()
                 buttons = env.hat.poll_buttons()
 
-                if buttons.joy_button:  # Selected controller
+                if buttons.menu_button:  # Selected controller
                     current = StateMachine.Controller
-                elif buttons.joy_y < -0.9:  # Flicked joystick down
+                elif buttons.joy_y < -0.8:  # Flicked joystick down
                     index = min(index + 1, len(opts_list) - 1)
-                    time.sleep(0.2)
-                elif buttons.joy_y > 0.9:  # Flicked joystick up
+                elif buttons.joy_y > 0.8:  # Flicked joystick up
                     index = max(index - 1, 0)
-                    time.sleep(0.2)
 
             else:
+                # SECOND LEVEL
                 # Set the icon DOT (ready) for brain/calibrate
+                print(f"MENU: {index}")
                 if index == 0 or index == 4:
-                    state, detected, buttons = env.reset(
-                        opts_list[index][1], opts_list[index][2]
-                    )
+                    state = (0,0,0,0,0,0)
+                    detected = False
+                    buttons = Buttons()
                 else:
                     state, detected, buttons = env.reset(Icon.DOT, opts_list[index][2])
 
@@ -100,6 +99,7 @@ def main(debug):
 
                 while not buttons.menu_button:
                     action, info = controller((state, detected, buttons))
+                    time.sleep(1 / env.frequency)
                     state, detected, buttons = env.step(action)
 
                 # Loop breaks after menu pressed and puts the plate back to hover
@@ -111,5 +111,6 @@ if __name__ == "__main__":
     # Parse command line args
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--debug", action="store_true")
+    parser.add_argument("-f", "--frequency", default="5", type=int)
     args, _ = parser.parse_known_args()
-    main(args.debug)
+    main(args.frequency, args.debug)

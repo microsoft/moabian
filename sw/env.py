@@ -37,7 +37,8 @@ class MoabEnv:
 
         self.frequency = frequency
         self.derivative_fn = derivative
-        self.vel_x, self.vel_y = None, None
+        self.vel_x = self.derivative_fn(frequency)
+        self.vel_y = self.derivative_fn(frequency)
         self.sum_x, self.sum_y = 0, 0
 
     def __enter__(self):

@@ -26,7 +26,6 @@ class SendCommand(IntEnum):
     SET_PLATE_ANGLES        = 0x04  # Set the plate angles (x and y angles)
     SET_SERVOS              = 0x05  # Set the servo positions manually
     TEXT_ICON_SELECT        = 0x06  # This packet contains the text and icon to be selected and displays both
-    DISPLAY_BUFFER          = 0x07  # The LED screen displays what is currently in the buffer
     SET_DEBUGGING_OFF       = 0x40  # (Log level 0) Print nothing
     SET_DEBUGGING_EMERG     = 0x40  # (Log level 0) Print only emergencies
     SET_DEBUGGING_ALERT     = 0x41  # (Log level 1) Print only actions that must be taken immediately and above
@@ -39,7 +38,7 @@ class SendCommand(IntEnum):
     REQUEST_STATE_INFO      = 0x4E  # Return the state info (all the information in the main loop of the firmware)
     REQUEST_FW_VERSION      = 0x4F  # Ask the hat to reply back the firmware version, fw version < 2.5 will not reply
     ARBITRARY_MESSAGE       = 0x80  # There is a arbitrary length message being transmitted (max len 256 bytes)
-                                    # and put into the text buffer
+    DISPLAY_BUFFER          = 0x81  # The LED screen displays what is currently in the buffer
 
 # Messaging from the hat to the Pi
 class ReceiveCommand(IntEnum):
@@ -228,6 +227,9 @@ class Hat:
         self.buttons = Buttons(False, False, 0.0, 0.0)
 
         self.hex_printer = hexyl()
+        self.last_icon = -1
+        self.last_text = -1
+
 
         # Attempt to open the spidev bus
         try:
@@ -388,6 +390,13 @@ class Hat:
         self.servo_offsets = (servo1, servo2, servo3)
 
     def set_icon_text(self, icon_idx: Icon, text_idx: Text):
+        # don't needlessly update display if icon AND text haven't changed
+        if icon_idx == self.last_icon and text_idx == self.last_text:
+            return
+
+        self.last_icon = icon_idx
+        self.last_text = text_idx
+
         self.transceive(
             np.array(
                 [SendCommand.TEXT_ICON_SELECT, icon_idx, text_idx, 0, 0, 0, 0, 0, 0],
@@ -416,6 +425,11 @@ class Hat:
 
     def print_arbitrary_string(self, s: str):
         s = s.upper()  # The firware currently only has uppercase fonts
+
+        # reset the text/icon index optimization hack
+        self.last_icon = -1
+        self.last_text = -1
+
         s = bytes(s, "utf-8")
         s += b"\0"  # Ensure a trailing termination character
         assert len(s) <= 256
@@ -443,13 +457,10 @@ class Hat:
         )
 
     def print_info_screen(self):
-        # raise NotImplementedError(
-        #     "Due to a bug in firware, info screen is currently non-functional."
-        # )
         sw_major, sw_minor, sw_bug = _get_sw_version()
         ip1, ip2, ip3, ip4 = _get_host_ip()
         self.print_arbitrary_string(
             f"PROJECT MOAB\n"
             f"SW VERSION\n{sw_major}.{sw_minor}.{sw_bug}\n"
-            f"IP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}\n"
+            f"IP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}"
         )

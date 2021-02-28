@@ -100,10 +100,10 @@ class Vector2:
 
 @dataclass
 class Buttons:
-    menu_button: bool
-    joy_button: bool
-    joy_x: float
-    joy_y: float
+    menu_button: bool = False
+    joy_button: bool = False
+    joy_x: float = 0
+    joy_y: float = 0
 
     def __iter__(self):
         return iter(astuple(self))

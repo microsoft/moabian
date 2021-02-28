@@ -72,7 +72,7 @@ def hexyl():
            return(" ┊ " + wrapstr(color.red, 'servo: plate angles'))
         elif b1 == 0x06:
            return(" ┊ " + wrapstr(color.green, 'text/icon'))
-        elif b1 == 0x07:
+        elif b1 == 0x81:
            return(" ┊ " + wrapstr(color.red, 'display buffer'))
         else:
             return('')
