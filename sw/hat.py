@@ -232,7 +232,7 @@ class Hat:
         """
         assert len(packet) == 8
         hat_to_pi = self.spi.xfer(packet.tolist())
-        time.sleep(0.001)
+        time.sleep(0.005)
 
         # TODO: flag to enable/disable this "logic analyzer"
         self.hex_printer(packet.tolist(), hat_to_pi)
@@ -411,7 +411,7 @@ class Hat:
                 s[7 * msg_idx : 7 * msg_idx + 7]
             )
             self.transceive(np.array(msg, dtype=np.int8))
-            time.sleep(0.030)
+            time.sleep(0.090)
 
         # After sending all buffer info, send the command to display the buffer
         self.transceive(

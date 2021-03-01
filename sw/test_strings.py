@@ -8,7 +8,7 @@ from hat import Hat, Icon, Text, plate_angles_to_servo_positions
 menus = {
     0: "Sacramento\nVacaville\nBerkeley CA",
     1: "Sacramento\nVacaville\nBerkeley\nSan Luis Obispo CA",
-
+    2: "Sacramento Vacaville Berkeley San Luis Obispo CA",
 }
 
 def main(menu=0, frequency=10, debug=True):
