@@ -22,9 +22,8 @@ class SendCommand(IntEnum):
     NOOP                    = 0x00
     SERVO_ENABLE            = 0x01  # The servos should be turned off
     SERVO_DISABLE           = 0x02  # The servos should be turned on
-    CONTROL_INFO            = 0x03  # This packet contains control info
-    SET_PLATE_ANGLES        = 0x04  # Set the plate angles (x and y angles)
-    SET_SERVOS              = 0x05  # Set the servo positions manually
+    SET_PLATE_ANGLES        = 0x04  # Set the plate angles (pitch and roll)
+    SET_SERVOS              = 0x05  # Set the servo positions manually (s1, s2, s3)
     TEXT_ICON_SELECT        = 0x06  # This packet contains the text and icon to be selected and displays both
     ARBITRARY_MESSAGE       = 0x80  # There is a arbitrary length message being transmitted (max len 256 bytes)
     DISPLAY_BUFFER          = 0x81  # The LED screen displays what is currently in the buffer

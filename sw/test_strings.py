@@ -6,9 +6,9 @@ import time
 from hat import Hat, Icon, Text, plate_angles_to_servo_positions
 
 menus = {
-    0: "Sacramento\nVacaville\nBerkeley CA",
+    0: "Berkeley\nCalifornia",
     1: "Sacramento\nVacaville\nBerkeley\nSan Luis Obispo CA",
-    2: "Sacramento Vacaville Berkeley San Luis Obispo CA",
+    2: "Sacramento Vacaville\nKansas City\nBerkeley San Luis Obispo CA",
 }
 
 def main(menu=0, frequency=30, debug=True):
@@ -22,12 +22,8 @@ def main(menu=0, frequency=30, debug=True):
             menu_btn, joy_btn, joy_x, joy_y = hat.poll_buttons()
             time.sleep(1 / frequency)
 
-            # if menu_btn:
-            #     break;
-
-            # if joy_btn:
-            #     break
-
+            if menu_btn:
+                break;
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
