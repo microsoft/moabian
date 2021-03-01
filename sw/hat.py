@@ -183,7 +183,7 @@ class Hat:
         self,
         spi_bus: int = 0,
         spi_device: int = 0,
-        spi_max_speed_hz: int = 10000,
+        spi_max_speed_hz: int = 100000,
         servo_offsets: Tuple[float, float, float] = (0, 0, 0),
         use_plate_angles=False,
     ):
