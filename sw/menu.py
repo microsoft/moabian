@@ -111,6 +111,6 @@ if __name__ == "__main__":
     # Parse command line args
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--debug", action="store_true")
-    parser.add_argument("-f", "--frequency", default="5", type=int)
+    parser.add_argument("-f", "--frequency", default="30", type=int)
     args, _ = parser.parse_known_args()
     main(args.frequency, args.debug)
