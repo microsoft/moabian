@@ -7,12 +7,13 @@ from operator import add
 from typing import Union, List, Tuple, Dict
 
 class color:
-    green = '\033[38;5;112m'
-    cyan = '\033[38;5;165m'
+    green = '\033[38;5;40m'
+    cyan = '\033[38;5;111m'
     red = '\033[31m'
     yellow = '\033[33m'
     gray = '\033[38;5;242m'
     darkgray = '\033[38;5;238m'
+    danger = '\033[38;5;196m'
     end = '\033[0m'
 
 # TODO: use pythonic map/reduce itertools
@@ -26,7 +27,7 @@ def hexyl():
         else:
             return c + s + color.end
 
-    def wrap(c : Union[str, None], s):
+    def wrap_tx(c : Union[str, None], s):
         # first byte like 31 to string 0x1F
         byte = f'{np.uint8(s):02x}'
         if byte == '00':
@@ -36,9 +37,38 @@ def hexyl():
         else:
             return c + byte + color.end
 
-    def enumerate_bytes(bytelist, c : Dict):
+    def enum_bytes_tx(bytelist, c : Dict):
         for i, v in enumerate(bytelist):
-            yield wrap(c.get(i), v)
+            yield wrap_tx(c.get(i), v)
+
+    def wrap_rx(clr : Union[str, None], the_byte, position):
+        # first byte like 31 to string 0x1F
+        byte_str = f'{np.uint8(the_byte):02x}'
+
+        # first two bytes are buttons
+        # second two bytes are joystick
+        # last four bytes should always be zero
+
+        # unused bytes
+        if position > 3:
+            if byte_str == '00':        # nominal
+                clr = color.darkgray
+            else:
+                clr = color.danger
+
+        if position <= 1:
+            if byte_str == '00':        # nominal
+                clr = color.darkgray
+
+        if clr is None:
+            clr = color.darkgray
+
+        return clr + byte_str + color.end
+
+
+    def enum_bytes_rx(bytelist, c : Dict):
+        for i, v in enumerate(bytelist):
+            yield wrap_rx(c.get(i), v, i)
 
     def tx_list(l):
         if np.uint8(l[0]) == 0x80:
@@ -47,7 +77,7 @@ def hexyl():
         else:
             c = {0: color.red}
 
-        return ' '.join(enumerate_bytes(l, c))
+        return ' '.join(enum_bytes_tx(l, c))
 
     def printable(c):
         if c > 0x1F & c < 0x7F:
@@ -79,7 +109,7 @@ def hexyl():
 
     def rx_list(l):
         c = {0: color.green, 1: color.green, 2: color.cyan, 3: color.cyan}
-        return ' '.join(enumerate_bytes(l, c))
+        return ' '.join(enum_bytes_rx(l, c))
 
     def hfn(tx, rx):
         nonlocal tick
@@ -116,7 +146,7 @@ def main():
     t(tx, rx)
 
     tx = np.random.randint(255, size=8)
-    rx = np.random.randint(255, size=8)
+    rx = np.random.randint(10, size=8)
     t(tx, rx)
 
 if __name__ == "__main__":

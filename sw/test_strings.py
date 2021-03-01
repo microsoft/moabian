@@ -11,7 +11,7 @@ menus = {
     2: "Sacramento Vacaville Berkeley San Luis Obispo CA",
 }
 
-def main(menu=0, frequency=10, debug=True):
+def main(menu=0, frequency=30, debug=True):
     idx = menu
 
     with Hat() as hat:
@@ -40,5 +40,6 @@ if __name__ == "__main__":
         help=f"""Select what type of action to take.
         """,
     )
+    parser.add_argument("-f", "--frequency", default="30", type=int)
     args, _ = parser.parse_known_args()
-    main(args.menu)
+    main(args.menu, args.frequency)
