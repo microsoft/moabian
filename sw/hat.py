@@ -26,8 +26,8 @@ class SendCommand(IntEnum):
     SET_PLATE_ANGLES        = 0x04  # Set the plate angles (x and y angles)
     SET_SERVOS              = 0x05  # Set the servo positions manually
     TEXT_ICON_SELECT        = 0x06  # This packet contains the text and icon to be selected and displays both
-    ARBITRARY_MESSAGE       = 0x23  # There is a arbitrary length message being transmitted (max len 256 bytes)
-    DISPLAY_BUFFER          = 0x24  # The LED screen displays what is currently in the buffer
+    ARBITRARY_MESSAGE       = 0x80  # There is a arbitrary length message being transmitted (max len 256 bytes)
+    DISPLAY_BUFFER          = 0x81  # The LED screen displays what is currently in the buffer
 
 # Messaging from the hat to the Pi
 class ReceiveCommand(IntEnum):
@@ -231,8 +231,8 @@ class Hat:
         Send and receive 8 bytes from hat.
         """
         assert len(packet) == 8
-        time.sleep(0.001)
         hat_to_pi = self.spi.xfer(packet.tolist())
+        time.sleep(0.001)
 
         # TODO: flag to enable/disable this "logic analyzer"
         self.hex_printer(packet.tolist(), hat_to_pi)
@@ -411,11 +411,12 @@ class Hat:
                 s[7 * msg_idx : 7 * msg_idx + 7]
             )
             self.transceive(np.array(msg, dtype=np.int8))
+            time.sleep(0.030)
 
         # After sending all buffer info, send the command to display the buffer
         self.transceive(
             np.array(
-                [SendCommand.DISPLAY_BUFFER, 42, 43, 44, 45, 46, 47, 48],
+                [SendCommand.DISPLAY_BUFFER, 0, 0, 0, 0, 0, 0, 0],
                 dtype=np.int8,
             )
         )

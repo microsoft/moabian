@@ -41,7 +41,7 @@ def hexyl():
             yield wrap(c.get(i), v)
 
     def tx_list(l):
-        if np.uint8(l[0]) == 0x23:
+        if np.uint8(l[0]) == 0x80:
             c = {0: color.green}
             c.update({k: color.yellow for k in range(1,9)})
         else:
@@ -59,7 +59,7 @@ def hexyl():
 
     def tx_80(l):
         b1 = np.uint8(l[0]);
-        if b1 == 0x23:
+        if b1 == 0x80:
             remainder = l[1:]
             return(" ┊ " + color.yellow + ''.join(map(printable, remainder)) + color.end)
         elif b1 == 0x01:
@@ -72,7 +72,7 @@ def hexyl():
            return(" ┊ " + wrapstr(color.red, 'servo: plate angles'))
         elif b1 == 0x06:
            return(" ┊ " + wrapstr(color.green, 'text/icon'))
-        elif b1 == 0x24:
+        elif b1 == 0x81:
            return(" ┊ " + wrapstr(color.red, 'display buffer'))
         else:
             return('')
