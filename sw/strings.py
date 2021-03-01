@@ -6,7 +6,8 @@ import time
 from hat import Hat, Icon, Text, plate_angles_to_servo_positions
 
 menus = {
-    0: "Brookln\nSavannah\nAustin",
+    0: "Sacramento",
+    -1: "Brookln\nSavannah\nAustin\nSacramento",
     1: "aa2 AAA\nBBB 123\n12 ccc CCC\n12 ddd DDD",
     2: "aa23 AAA\nBBB 123\n12 ccc CCC\n12 ddd DDD",
     3: "aaa23 AAA\nBBB 123\n12 ccc CCC\n12 ddd DDD",
@@ -24,12 +25,12 @@ def main(menu=0, frequency=10, debug=True):
             hat.noop()
             menu_btn, joy_btn, joy_x, joy_y = hat.poll_buttons()
             time.sleep(1 / frequency)
-            if menu_btn:
-                idx += 1
-                hat.print_arbitrary_string(menus[idx % len(menus)])
 
-            if joy_btn:
-                break
+            # if menu_btn:
+            #     break;
+
+            # if joy_btn:
+            #     break
 
 
 if __name__ == "__main__":
@@ -43,7 +44,5 @@ if __name__ == "__main__":
         help=f"""Select what type of action to take.
         """,
     )
-    parser.add_argument("-f", "--frequency", default="5", type=int)
-    parser.add_argument("-d", "--debug", action="store_true")
     args, _ = parser.parse_known_args()
-    main(args.menu, args.frequency, args.debug)
+    main(args.menu)

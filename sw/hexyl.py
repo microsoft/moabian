@@ -78,7 +78,7 @@ def hexyl():
             return('')
 
     def rx_list(l):
-        c = {0: color.green, 1: color.cyan, 2: color.cyan}
+        c = {0: color.green, 1: color.green, 2: color.cyan, 3: color.cyan}
         return ' '.join(enumerate_bytes(l, c))
 
     def hfn(tx, rx):

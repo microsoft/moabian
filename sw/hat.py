@@ -66,17 +66,6 @@ class Text(IntEnum):
     UPDATE_BRAIN = 16
     UPDATE_SYSTEM = 17
 
-
-class Button(IntEnum):
-    MENU = 1
-    JOYSTICK = 2
-
-
-class JoystickByteIndex(IntEnum):
-    X = 1
-    Y = 2
-
-
 # GPIO pins
 class GpioPin(IntEnum):
     BOOT_EN   = 5   # Bcm 5  - RPi pin 29 - RPI_BPLUS_GPIO_J8_29
@@ -251,11 +240,11 @@ class Hat:
 
     def _save_buttons(self, hat_to_pi):
         # Check if buttons are pressed
-        self.buttons.menu_button = hat_to_pi[0] == Button.MENU
-        self.buttons.joy_button = hat_to_pi[0] == Button.JOYSTICK
+        self.buttons.menu_button = hat_to_pi[0] == 1
+        self.buttons.joy_button = hat_to_pi[1] == 1
         # Get x & y coordinates of joystick normalized to [-1, +1]
-        self.buttons.joy_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X]) / 100
-        self.buttons.joy_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y]) / 100
+        self.buttons.joy_x = _uint8_to_int8(hat_to_pi[2]) / 100
+        self.buttons.joy_y = _uint8_to_int8(hat_to_pi[3]) / 100
 
     def poll_buttons(self):
         """
@@ -426,7 +415,7 @@ class Hat:
         # After sending all buffer info, send the command to display the buffer
         self.transceive(
             np.array(
-                [SendCommand.DISPLAY_BUFFER, 42, 0, 0, 0, 0, 0, 0],
+                [SendCommand.DISPLAY_BUFFER, 42, 43, 44, 45, 46, 47, 48],
                 dtype=np.int8,
             )
         )
