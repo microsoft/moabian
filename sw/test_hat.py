@@ -6,7 +6,6 @@ from time import sleep
 
 
 def test_display():
-    init()
 
     # display all the icons
     print("cycling icons")
