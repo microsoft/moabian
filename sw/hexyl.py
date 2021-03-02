@@ -7,11 +7,13 @@ from operator import add
 from typing import Union, List, Tuple, Dict
 
 class color:
-    green = '\033[38;5;112m'
-    cyan = '\033[38;5;165m'
+    green = '\033[38;5;40m'
+    cyan = '\033[38;5;111m'
     red = '\033[31m'
     yellow = '\033[33m'
     gray = '\033[38;5;242m'
+    darkgray = '\033[38;5;238m'
+    danger = '\033[38;5;196m'
     end = '\033[0m'
 
 # TODO: use pythonic map/reduce itertools
@@ -19,17 +21,54 @@ class color:
 def hexyl():
     tick = 0
 
-    def wrap(c : Union[str, None], s):
+    def wrapstr(c : Union[str, None], s):
+        if c is None:
+            return s
+        else:
+            return c + s + color.end
+
+    def wrap_tx(c : Union[str, None], s):
         # first byte like 31 to string 0x1F
         byte = f'{np.uint8(s):02x}'
+        if byte == '00':
+            c = color.darkgray
         if c is None:
             return byte
         else:
             return c + byte + color.end
 
-    def enumerate_bytes(bytelist, c : Dict):
+    def enum_bytes_tx(bytelist, c : Dict):
         for i, v in enumerate(bytelist):
-            yield wrap(c.get(i), v)
+            yield wrap_tx(c.get(i), v)
+
+    def wrap_rx(clr : Union[str, None], the_byte, position):
+        # first byte like 31 to string 0x1F
+        byte_str = f'{np.uint8(the_byte):02x}'
+
+        # first two bytes are buttons
+        # second two bytes are joystick
+        # last four bytes should always be zero
+
+        # unused bytes
+        if position > 3:
+            if byte_str == '00':        # nominal
+                clr = color.darkgray
+            else:
+                clr = color.danger
+
+        if position <= 1:
+            if byte_str == '00':        # nominal
+                clr = color.darkgray
+
+        if clr is None:
+            clr = color.darkgray
+
+        return clr + byte_str + color.end
+
+
+    def enum_bytes_rx(bytelist, c : Dict):
+        for i, v in enumerate(bytelist):
+            yield wrap_rx(c.get(i), v, i)
 
     def tx_list(l):
         if np.uint8(l[0]) == 0x80:
@@ -38,7 +77,7 @@ def hexyl():
         else:
             c = {0: color.red}
 
-        return ' '.join(enumerate_bytes(l, c))
+        return ' '.join(enum_bytes_tx(l, c))
 
     def printable(c):
         if c > 0x1F & c < 0x7F:
@@ -49,22 +88,35 @@ def hexyl():
             return '·'
 
     def tx_80(l):
-        if np.uint8(l[0]) == 0x80:
-            clean = l[1:]
-            return(" ┊ " + color.yellow + ''.join(map(printable, clean)) + color.end)
+        b1 = np.uint8(l[0]);
+        if b1 == 0x80:
+            remainder = l[1:]
+            return(" ┊ " + color.yellow + ''.join(map(printable, remainder)) + color.end)
+        elif b1 == 0x01:
+           return(" ┊ " + wrapstr(color.red, 'servo: enable'))
+        elif b1 == 0x02:
+           return(" ┊ " + wrapstr(color.red, 'servo: disable'))
+        elif b1 == 0x03:
+           return(" ┊ " + wrapstr(color.green, 'control info'))
+        elif b1 == 0x04:
+           return(" ┊ " + wrapstr(color.red, 'servo: plate angles'))
+        elif b1 == 0x06:
+           return(" ┊ " + wrapstr(color.green, 'text/icon'))
+        elif b1 == 0x81:
+           return(" ┊ " + wrapstr(color.red, 'display buffer'))
         else:
             return('')
 
     def rx_list(l):
-        c = {0: color.green, 1: color.cyan, 2: color.cyan}
-        return ' '.join(enumerate_bytes(l, c))
+        c = {0: color.green, 1: color.green, 2: color.cyan, 3: color.cyan}
+        return ' '.join(enum_bytes_rx(l, c))
 
     def hfn(tx, rx):
         nonlocal tick
         tick = tick + 1
 
-        if np.uint8(tx[0]) == 0x00:
-            return
+        # if np.uint8(tx[0]) == 0x00:
+        #     return
 
         print(f'{color.gray}{tick:05d}{color.end}', end='')
         print(" ┊ ", end='')
@@ -80,21 +132,21 @@ def hexyl():
 
 
 def main():
-    tx1 = [0x80,  0x4c, 0x6f, 0x61, 0x64,  0x2d, 0x62, 0x65, 0x61]
-    tx2 = [0x80,  0x72, 0x69, 0x6e, 0x67,  0x0a, 0x50, 0x6f, 0x73]
-    tx3 = [0x80,  0x74, 0x65, 0x72, 0x00,  0x00, 0x00, 0x00, 0x00]
+    tx1 = [0x80,  0x4c, 0x6f, 0x61, 0x64,  0x2d, 0x62, 0x65]
+    tx2 = [0x80,  0x72, 0x69, 0x6e, 0x67,  0x0a, 0x50, 0x6f]
+    tx3 = [0x80,  0x74, 0x65, 0x72, 0x00,  0x00, 0x00, 0x00]
 
     t = hexyl()
-    t(tx1, np.random.randint(255, size=9))
-    t(tx2, np.random.randint(255, size=9))
-    t(tx3, np.random.randint(255, size=9))
+    t(tx1, np.random.randint(255, size=8))
+    t(tx2, np.random.randint(255, size=8))
+    t(tx3, np.random.randint(255, size=8))
 
-    tx = np.random.randint(255, size=9)
-    rx = np.random.randint(255, size=9)
+    tx = np.random.randint(255, size=8)
+    rx = np.random.randint(255, size=8)
     t(tx, rx)
 
-    tx = np.random.randint(255, size=9)
-    rx = np.random.randint(255, size=9)
+    tx = np.random.randint(255, size=8)
+    rx = np.random.randint(10, size=8)
     t(tx, rx)
 
 if __name__ == "__main__":
