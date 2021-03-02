@@ -22,24 +22,11 @@ class SendCommand(IntEnum):
     NOOP                    = 0x00
     SERVO_ENABLE            = 0x01  # The servos should be turned off
     SERVO_DISABLE           = 0x02  # The servos should be turned on
-    CONTROL_INFO            = 0x03  # This packet contains control info
-    SET_PLATE_ANGLES        = 0x04  # Set the plate angles (x and y angles)
-    SET_SERVOS              = 0x05  # Set the servo positions manually
+    SET_PLATE_ANGLES        = 0x04  # Set the plate angles (pitch and roll)
+    SET_SERVOS              = 0x05  # Set the servo positions manually (s1, s2, s3)
     TEXT_ICON_SELECT        = 0x06  # This packet contains the text and icon to be selected and displays both
-    DISPLAY_BUFFER          = 0x07  # The LED screen displays what is currently in the buffer
-    SET_DEBUGGING_OFF       = 0x40  # (Log level 0) Print nothing
-    SET_DEBUGGING_EMERG     = 0x40  # (Log level 0) Print only emergencies
-    SET_DEBUGGING_ALERT     = 0x41  # (Log level 1) Print only actions that must be taken immediately and above
-    SET_DEBUGGING_CRIT      = 0x42  # (Log level 2) Print only critical conditions and above
-    SET_DEBUGGING_ERR       = 0x43  # (Log level 3) Print only errors and above
-    SET_DEBUGGING_WARNING   = 0x44  # (Log level 4) Print warnings and above
-    SET_DEBUGGING_NOTICE    = 0x45  # (Log level 5) Print notices and above
-    SET_DEBUGGING_INFO      = 0x46  # (Log level 6) Print info and above
-    SET_DEBUGGING_DEBUG     = 0x47  # (Log level 7) Print everything possible
-    REQUEST_STATE_INFO      = 0x4E  # Return the state info (all the information in the main loop of the firmware)
-    REQUEST_FW_VERSION      = 0x4F  # Ask the hat to reply back the firmware version, fw version < 2.5 will not reply
     ARBITRARY_MESSAGE       = 0x80  # There is a arbitrary length message being transmitted (max len 256 bytes)
-                                    # and put into the text buffer
+    DISPLAY_BUFFER          = 0x81  # The LED screen displays what is currently in the buffer
 
 # Messaging from the hat to the Pi
 class ReceiveCommand(IntEnum):
@@ -77,17 +64,6 @@ class Text(IntEnum):
     VERS_IP_SN = 15
     UPDATE_BRAIN = 16
     UPDATE_SYSTEM = 17
-
-
-class Button(IntEnum):
-    MENU = 1
-    JOYSTICK = 2
-
-
-class JoystickByteIndex(IntEnum):
-    X = 1
-    Y = 2
-
 
 # GPIO pins
 class GpioPin(IntEnum):
@@ -138,21 +114,28 @@ def _get_sw_version():
 def setupGPIO():
     gpio.setwarnings(False)
     gpio.setmode(gpio.BCM)
+    # gpio.setup(
+    #     [GpioPin.BOOT_EN, GpioPin.HAT_EN, GpioPin.HAT_RESET],
+    #     gpio.OUT,
+    # )
     gpio.setup(
-        [GpioPin.BOOT_EN, GpioPin.HAT_EN, GpioPin.HAT_RESET],
+        [GpioPin.HAT_EN, GpioPin.HAT_RESET],
         gpio.OUT,
     )
-    gpio.setup(GpioPin.HAT_PWR_N, gpio.IN)
+    time.sleep(1.0)
 
 
 def runtime():
     """ Set mode to runtime mode (not bootloader mode). """
-    gpio.output(GpioPin.HAT_EN, gpio.LOW)
-    time.sleep(0.02)  # 20ms
-    gpio.output(GpioPin.HAT_EN, gpio.HIGH)
-    gpio.output(GpioPin.HAT_RESET, gpio.LOW)
-    gpio.output(GpioPin.BOOT_EN, gpio.LOW)
-    time.sleep(0.25)  # 250ms
+    # gpio.output(GpioPin.HAT_EN, gpio.LOW)
+    # time.sleep(0.02)  # 20ms
+    # gpio.output(GpioPin.HAT_EN, gpio.HIGH)
+    #gpio.output(GpioPin.HAT_RESET, gpio.LOW)
+    # gpio.output(GpioPin.BOOT_EN, gpio.LOW)
+
+    # Load-bearing poster here. It's b/c we just asked the hat to power off/on
+    # Consider just signaling hat to reset state, not reboot
+    #time.sleep(0.25)  # 250ms
 
 
 def _xy_offsets(x, y, servo_offsets: Tuple[float, float, float]) -> Tuple[float, float]:
@@ -194,24 +177,12 @@ def plate_angles_to_servo_positions(
     return servo_angles
 
 
-def right_pad_array(arr: Union[List, np.ndarray], length, dtype) -> np.ndarray:
-    len_arr = len(arr)
-    if len_arr < 9:
-        padded_arr = np.zeros(length, dtype=dtype)
-        padded_arr[:len_arr] = arr
-        return padded_arr
-    elif len_arr == 9:
-        return np.asarray(arr)
-    else:
-        raise ValueError(f"Given array: `{arr}` is longer than padded len: {length}.")
-
-
 class Hat:
     def __init__(
         self,
         spi_bus: int = 0,
         spi_device: int = 0,
-        spi_max_speed_hz: int = 10000,
+        spi_max_speed_hz: int = 100000,
         servo_offsets: Tuple[float, float, float] = (0, 0, 0),
         use_plate_angles=False,
     ):
@@ -221,6 +192,9 @@ class Hat:
         self.buttons = Buttons(False, False, 0.0, 0.0)
 
         self.hex_printer = hexyl()
+        self.last_icon = -1
+        self.last_text = -1
+
 
         # Attempt to open the spidev bus
         try:
@@ -229,6 +203,9 @@ class Hat:
             self.spi.max_speed_hz = spi_max_speed_hz
         except:
             raise IOError(f"Could not open `/dev/spidev{spi_bus}.{spi_device}`.")
+
+        # TODO: move setupGPIO and runtime() into a required init() function
+        # otherwise you can't call Hat() without these side effects
 
         # Attempt to setup the GPIO pins and initialize the runtime
         try:
@@ -250,12 +227,11 @@ class Hat:
 
     def transceive(self, packet: np.ndarray):
         """
-        Send and receive 9 bytes from hat.
+        Send and receive 8 bytes from hat.
         """
-        assert len(packet) == 9
-        # packet = right_pad_array(packet, length=9, dtype=np.int8)
-        time.sleep(0.001)
+        assert len(packet) == 8
         hat_to_pi = self.spi.xfer(packet.tolist())
+        time.sleep(0.005)
 
         # TODO: flag to enable/disable this "logic analyzer"
         self.hex_printer(packet.tolist(), hat_to_pi)
@@ -263,11 +239,11 @@ class Hat:
 
     def _save_buttons(self, hat_to_pi):
         # Check if buttons are pressed
-        self.buttons.menu_button = hat_to_pi[0] == Button.MENU
-        self.buttons.joy_button = hat_to_pi[0] == Button.JOYSTICK
+        self.buttons.menu_button = hat_to_pi[0] == 1
+        self.buttons.joy_button = hat_to_pi[1] == 1
         # Get x & y coordinates of joystick normalized to [-1, +1]
-        self.buttons.joy_x = _uint8_to_int8(hat_to_pi[JoystickByteIndex.X]) / 100
-        self.buttons.joy_y = _uint8_to_int8(hat_to_pi[JoystickByteIndex.Y]) / 100
+        self.buttons.joy_x = _uint8_to_int8(hat_to_pi[2]) / 100
+        self.buttons.joy_y = _uint8_to_int8(hat_to_pi[3]) / 100
 
     def poll_buttons(self):
         """
@@ -288,7 +264,7 @@ class Hat:
         """Send a NOOP. Useful for if you just want to read buttons."""
         self.transceive(
             np.array(
-                [SendCommand.NOOP, 0, 0, 0, 0, 0, 0, 0, 0],
+                [SendCommand.NOOP, 0, 0, 0, 0, 0, 0, 0],
                 dtype=np.int8,
             )
         )
@@ -297,7 +273,7 @@ class Hat:
         """ Set the plate to track plate angles. """
         self.transceive(
             np.array(
-                [SendCommand.SERVO_ENABLE, 0, 0, 0, 0, 0, 0, 0, 0],
+                [SendCommand.SERVO_ENABLE, 0, 0, 0, 0, 0, 0, 0],
                 dtype=np.int8,
             )
         )
@@ -306,7 +282,7 @@ class Hat:
         """ Disables the power to the servos. """
         self.transceive(
             np.array(
-                [SendCommand.SERVO_DISABLE, 0, 0, 0, 0, 0, 0, 0, 0],
+                [SendCommand.SERVO_DISABLE, 0, 0, 0, 0, 0, 0, 0],
                 dtype=np.int8,
             )
         )
@@ -321,7 +297,7 @@ class Hat:
             plate_x, plate_y = -plate_x, -plate_y
             self.transceive(
                 np.array(
-                    [SendCommand.SET_PLATE_ANGLES, plate_x, plate_y, 0, 0, 0, 0, 0, 0],
+                    [SendCommand.SET_PLATE_ANGLES, plate_x, plate_y, 0, 0, 0, 0, 0],
                     dtype=np.uint8,
                 )
             )
@@ -364,7 +340,6 @@ class Hat:
                     servo2_centi_degrees_high_byte,
                     servo2_centi_degrees_low_byte,
                     0,
-                    0,
                 ],
                 dtype=np.uint8,
             )
@@ -378,9 +353,16 @@ class Hat:
         self.servo_offsets = (servo1, servo2, servo3)
 
     def set_icon_text(self, icon_idx: Icon, text_idx: Text):
+        # don't needlessly update display if icon AND text haven't changed
+        if icon_idx == self.last_icon and text_idx == self.last_text:
+            return
+
+        self.last_icon = icon_idx
+        self.last_text = text_idx
+
         self.transceive(
             np.array(
-                [SendCommand.TEXT_ICON_SELECT, icon_idx, text_idx, 0, 0, 0, 0, 0, 0],
+                [SendCommand.TEXT_ICON_SELECT, icon_idx, text_idx, 0, 0, 0, 0, 0],
                 dtype=np.int8,
             )
         )
@@ -406,40 +388,43 @@ class Hat:
 
     def print_arbitrary_string(self, s: str):
         s = s.upper()  # The firware currently only has uppercase fonts
+
+        # reset the text/icon index optimization hack
+        self.last_icon = -1
+        self.last_text = -1
+
         s = bytes(s, "utf-8")
         s += b"\0"  # Ensure a trailing termination character
         assert len(s) <= 256
 
         # Calculate the number of messages required to send the text
-        num_msgs = int(np.ceil(len(s) / 8))
+        num_msgs = int(np.ceil(len(s) / 7))
 
         # Pad the message with trailing termination chars to so we always
-        # send in 9 bytes increments (1 byte control, 8 bytes data)
-        s += (num_msgs * 8 - len(s)) * b"\0"
+        # send in 8 bytes increments (1 byte control, 7 bytes data)
+        s += (num_msgs * 7 - len(s)) * b"\0"
 
         for msg_idx in range(num_msgs):
             # Combine into one list to send
             msg = [SendCommand.ARBITRARY_MESSAGE] + list(
-                s[8 * msg_idx : 8 * msg_idx + 8]
+                s[7 * msg_idx : 7 * msg_idx + 7]
             )
             self.transceive(np.array(msg, dtype=np.int8))
+            time.sleep(0.090)
 
         # After sending all buffer info, send the command to display the buffer
         self.transceive(
             np.array(
-                [SendCommand.DISPLAY_BUFFER, 0, 0, 0, 0, 0, 0, 0, 0],
+                [SendCommand.DISPLAY_BUFFER, 0, 0, 0, 0, 0, 0, 0],
                 dtype=np.int8,
             )
         )
 
     def print_info_screen(self):
-        raise NotImplementedError(
-            "Due to a bug in firware, info screen is currently non-functional."
-        )
         sw_major, sw_minor, sw_bug = _get_sw_version()
         ip1, ip2, ip3, ip4 = _get_host_ip()
         self.print_arbitrary_string(
             f"PROJECT MOAB\n"
             f"SW VERSION\n{sw_major}.{sw_minor}.{sw_bug}\n"
-            f"IP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}\n"
+            f"IP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}"
         )

@@ -45,7 +45,7 @@ def main(
 
     if enable_logging:
         # Pass all arguments, if a controller doesn't need it, it will ignore it (**kwargs)
-        controller = logging_decorator(
+        controller = log_decorator(
             CONTROLLERS[controller_name](
                 frequency=frequency,
                 max_angle=max_angle,

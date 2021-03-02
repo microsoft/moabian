@@ -60,7 +60,6 @@ def main(controller_name, frequency, debug, max_angle, port):
 
 
 if __name__ == "__main__":
-    # Parse command line args
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-c",
