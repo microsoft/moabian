@@ -11,11 +11,12 @@ menus = {
     2: "Sacramento Vacaville\nKansas City\nBerkeley San Luis Obispo CA",
 }
 
+
 def main(menu=0, frequency=30, debug=True):
     idx = menu
 
     with Hat() as hat:
-        hat.print_arbitrary_string(menus[idx])
+        hat.display_long_string(menus[idx])
 
         while True:
             hat.noop()
@@ -23,7 +24,8 @@ def main(menu=0, frequency=30, debug=True):
             time.sleep(1 / frequency)
 
             if menu_btn:
-                break;
+                break
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

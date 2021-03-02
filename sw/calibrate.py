@@ -171,9 +171,9 @@ def wait_for_joystick(
         nonlocal tick
         every = int(every_seconds * 30)
         if (tick % (2 * every)) / (2 * every) == 0:
-            hat.print_arbitrary_string(text_1)
+            hat.display_long_string(text_1)
         if (tick % (2 * every)) / (2 * every) == 0.5:
-            hat.print_arbitrary_string(text_2)
+            hat.display_long_string(text_2)
         tick += 1
 
     while True:
@@ -257,7 +257,7 @@ def run_calibrate_servos(env, pid_fn, calibration_file):
 
     # Calibrate servo offsets
     wait_for_joystick(hat, "Put ball in center\nwithout clear stand.")
-    hat.print_arbitrary_string("Running auto-\ncalibrate servos...")
+    hat.display_long_string("Running auto-\ncalibrate servos...")
     servo_offsets, success_offsets = calibrate_servo_offsets(pid_fn, env)
 
     # Save calibration
@@ -294,7 +294,7 @@ def calibrate_all(env, pid_fn, calibration_file):
 
     # Calibrate servo offsets
     wait_for_joystick(hat, "Put ball in center\nwithout clear stand.")
-    hat.print_arbitrary_string("Running auto-\ncalibrate servos...")
+    hat.display_long_string("Running auto-\ncalibrate servos...")
     servo_offsets, success_offsets = calibrate_servo_offsets(pid_fn, env)
 
     # Save calibration
@@ -314,7 +314,7 @@ def calibrate_all(env, pid_fn, calibration_file):
     if not (success_pos or success_hue or success_offsets):
         hat.set_icon_text(Icon.X, Text.CAL_FAILED)
     else:
-        hat.print_arbitrary_string("Calib partially\nfailed, press menu...")
+        hat.display_long_string("Calib partially\nfailed, press menu...")
 
     return None, {}
 
