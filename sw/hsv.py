@@ -17,7 +17,7 @@ def hue_to_bgr(hue):
 
     v = hsv_to_rgb(hue/360., 1., 1.)
     y = [int(s*255) for s in v]
-    return rgb_to_bgr(y)
+    return y
 
 def test_code(t, l):
     v = hsv_to_rgb(*t)
