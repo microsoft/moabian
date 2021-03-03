@@ -81,9 +81,11 @@ def hsv_detector(
         # expand b&w image with a dialation filter
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
 
-        contours = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[
-            -2
-        ]
+        contours = cv2.findContours(
+            mask,
+            cv2.RETR_EXTERNAL,
+            cv2.CHAIN_APPROX_SIMPLE,
+        )[-2]
 
         if len(contours) > 0:
             contour_peak = max(contours, key=cv2.contourArea)
