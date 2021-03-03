@@ -20,7 +20,7 @@ def main(menu=0, frequency=30, debug=True):
 
         while True:
             hat.noop()
-            menu_btn, joy_btn, joy_x, joy_y = hat.poll_buttons()
+            menu_btn, joy_btn, joy_x, joy_y = hat.get_buttons()
             time.sleep(1 / frequency)
 
             if menu_btn:

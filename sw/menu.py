@@ -65,14 +65,14 @@ def main(frequency=30, debug=True):
         ]
 
         env.hat.hover()
-        buttons = env.hat.poll_buttons()
+        buttons = env.hat.get_buttons()
         while True:
             time.sleep(1 / env.frequency)
             if current == StateMachine.Menu:
                 # TOP LEVEL
                 env.hat.set_icon_text(opts_list[index][1], opts_list[index][2])
                 env.hat.noop()
-                buttons = env.hat.poll_buttons()
+                buttons = env.hat.get_buttons()
 
                 if buttons.joy_button:  # Selected controller
                     current = StateMachine.Controller

@@ -157,7 +157,7 @@ def read_calibration(calibration_file="bot.json"):
 def wait_for_joystick(hat, sleep_time=1 / 30):
     while True:
         hat.noop()  # Force new transfer to have up to date button reading
-        menu_btn, joy_btn, joy_x, joy_y = hat.poll_buttons()
+        menu_btn, joy_btn, joy_x, joy_y = hat.get_buttons()
         time.sleep(sleep_time)
         if joy_btn:
             return

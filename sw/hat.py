@@ -180,10 +180,6 @@ class Hat:
         except:
             raise IOError(f"Could not open `/dev/spidev{spi_bus}.{spi_device}`.")
 
-        # TODO: move setupGPIO into a required init() function otherwise you
-        # can't call Hat() without these side effects
-
-        # Attempt to setup the GPIO pins
         try:
             setupGPIO()
         except:
@@ -199,15 +195,22 @@ class Hat:
     def __exit__(self, type, value, traceback):
         self.close()
 
+    # Return an exact 8 byte numpy array
+    def xfer(*args, **kwargs):
+        l = [*args][:8]
+        p = (8 - len(l)) * [0]
+        dtype = kwargs.pop("dtype", np.int8)
+        return np.array(l + p, dtype)
+
     def transceive(self, packet: np.ndarray):
         """
         Send and receive 8 bytes from hat.
         """
+        assert self.spi is not None  # did you call hat.open() first ?
         assert len(packet) == 8
         hat_to_pi = self.spi.xfer(packet.tolist())
         time.sleep(0.005)
 
-        # TODO: flag to enable/disable this "logic analyzer"
         self.hex_printer(packet.tolist(), hat_to_pi)
         self._save_buttons(hat_to_pi)
 
@@ -219,7 +222,7 @@ class Hat:
         self.buttons.joy_x = _uint8_to_int8(hat_to_pi[2]) / 100
         self.buttons.joy_y = _uint8_to_int8(hat_to_pi[3]) / 100
 
-    def poll_buttons(self):
+    def get_buttons(self):
         """
         Check whether buttons are pressed and the joystick x & y values in the
         response.

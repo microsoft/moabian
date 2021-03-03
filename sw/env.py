@@ -101,7 +101,7 @@ class MoabEnv:
         self.sum_x += x
         self.sum_y += y
 
-        buttons = self.hat.poll_buttons()
+        buttons = self.hat.get_buttons()
         state = EnvState(x, y, vel_x, vel_y, self.sum_x, self.sum_y)
 
         return state, ball_detected, buttons
