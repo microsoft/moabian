@@ -259,7 +259,8 @@ def main(calibration_file, frequency=30, debug=True):
 
 if __name__ == "__main__":  # Parse command line args
     parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--debug", action="store_true")
     parser.add_argument("-f", "--file", default="bot.json", type=str)
 
     args, _ = parser.parse_known_args()
-    main(args.file)
+    main(args.file, debug=args.debug)

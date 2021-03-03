@@ -155,18 +155,31 @@ def plate_angles_to_servo_positions(
     return servo_angles
 
 
+# Return an exact 8 byte numpy array
+def pad_message(*args, **kwargs):
+    l = [*args][:8]
+    p = (8 - len(l)) * [0]
+    dtype = kwargs.pop("dtype", np.int8)
+    return np.array(l + p, dtype)
+
+
 class Hat:
     def __init__(
         self,
         servo_offsets: Tuple[float, float, float] = (0, 0, 0),
         use_plate_angles=False,
+        use_hexyl=False,
     ):
         self.servo_offsets: Tuple[float, float, float] = servo_offsets
-        self.use_plate_angles = use_plate_angles
         self.buttons = Buttons(False, False, 0.0, 0.0)
-        self.hex_printer = hexyl()
         self.last_icon = -1
         self.last_text = -1
+
+        self.use_plate_angles = use_plate_angles
+        self.use_hexyl = use_hexyl
+        if use_hexyl:
+            self.hex_printer = hexyl()
+
         self.spi = None
 
     def open(self):
@@ -196,13 +209,6 @@ class Hat:
     def __exit__(self, type, value, traceback):
         self.close()
 
-    # Return an exact 8 byte numpy array
-    def xfer(*args, **kwargs):
-        l = [*args][:8]
-        p = (8 - len(l)) * [0]
-        dtype = kwargs.pop("dtype", np.int8)
-        return np.array(l + p, dtype)
-
     def transceive(self, packet: np.ndarray):
         """
         Send and receive 8 bytes from hat.
@@ -213,7 +219,8 @@ class Hat:
         hat_to_pi = self.spi.xfer(packet.tolist())
         time.sleep(0.005)
 
-        self.hex_printer(packet.tolist(), hat_to_pi)
+        if self.use_hexyl:
+            self.hex_printer(packet.tolist(), hat_to_pi)
 
         # Check if buttons are pressed
         self.buttons.menu_button = hat_to_pi[0] == 1
@@ -223,7 +230,7 @@ class Hat:
         self.buttons.joy_x = _uint8_to_int8(hat_to_pi[2]) / 100
         self.buttons.joy_y = _uint8_to_int8(hat_to_pi[3]) / 100
 
-    def get_buttons(self):
+    def get_buttons(self) -> Tuple[bool, bool, float, float]:
         """
         Check whether buttons are pressed and the joystick x & y values in the
         response.
@@ -372,10 +379,6 @@ class Hat:
             time.sleep(0.090)
 
     def set_icon_text(self, icon_idx: Icon, text_idx: Text):
-        # Don't needlessly update display if icon AND text haven't changed
-        if icon_idx == self.last_icon and text_idx == self.last_text:
-            return
-
         texts = {
             0: ("BLANK", True),
             1: ("INITIALIZING", False),
@@ -392,7 +395,6 @@ class Hat:
             13: ("CALIBRATION\nCANCELED", False),
             14: ("FAILED", False),
         }
-
         text = texts[text_idx][0]
         uses_icon = texts[text_idx][1]
         if uses_icon:
