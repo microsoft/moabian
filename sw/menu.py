@@ -16,7 +16,7 @@ from controllers import (
 from enum import Enum
 from env import MoabEnv
 from log_csv import log_decorator
-from calibrate import calibrate_all
+from calibrate import run_calibration
 from common import EnvState, Buttons
 from hat import Hat, Icon, Text, _get_host_ip, _get_sw_version
 
@@ -28,7 +28,7 @@ class StateMachine(Enum):
 
 # These make the respective functions 'act' like controllers
 def calibrate_controller(**kwargs):
-    calibrate_all(
+    run_calibration(
         kwargs["env"],
         kwargs["pid_fn"],
         kwargs["calibration_file"],
