@@ -55,7 +55,7 @@ def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=360, hue_steps=41)
         sines, cosines = np.sin(detected_hues_rad), np.cos(detected_hues_rad)
         sin_mean, cos_mean = np.mean(sines), np.mean(cosines)
         avg_hue_rad = np.arctan2(sin_mean, cos_mean)
-        avg_hue = np.degrees(avg_hue_rad)
+        avg_hue = np.degrees(avg_hue_rad) % 360  # Convert back to [0, 360]
 
         print(f"Hues are: {detected_hues}")
         print(f"Hue calibrated: {avg_hue:0.3f}")
