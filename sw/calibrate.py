@@ -49,7 +49,6 @@ def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=180, hue_steps=41)
             )
             detected_hues.append(hue)
 
-    print(detected_hues)
     if len(detected_hues) > 0:
         max_hue = max(detected_hues)
         min_hue = min(detected_hues)
@@ -83,6 +82,7 @@ def calibrate_pos(camera_fn, detector_fn):
             y_offset = round(y, 3)
 
             log.info(f"Offset calibrated: [{x_offset:.3f}, {y_offset:.3f}]")
+            print(f"Offset calibrated: [{x_offset:.3f}, {y_offset:.3f}]")
             return (x_offset, y_offset), success
 
     log.warning(f"Offset calibration failed.")
@@ -90,6 +90,7 @@ def calibrate_pos(camera_fn, detector_fn):
     return (0.0, 0.0), success
 
 
+# TODO: optimize this calibration
 def calibrate_servo_offsets(pid_fn, env, stationary_vel=0.001, time_limit=20):
     start_time = time.time()
     action = Vector2(0, 0)
@@ -163,6 +164,15 @@ def wait_for_joystick(hat, sleep_time=1 / 30):
             return
 
 
+def wait_for_menu(hat, sleep_time=1 / 30):
+    while True:
+        hat.noop()  # Force new transfer to have up to date button reading
+        menu_btn, joy_btn, joy_x, joy_y = hat.get_buttons()
+        time.sleep(sleep_time)
+        if menu_btn:
+            return
+
+
 def run_calibration(env, pid_fn, calibration_file):
     # Get some hidden things from env
     hat = env.hat
@@ -207,23 +217,33 @@ def run_calibration(env, pid_fn, calibration_file):
     # Warning! This mutates the state!
     env.reset_calibration(calibration_file=calibration_file)
 
-    if success_pos and success_hue and success_offsets:
+    if success_pos and success_hue:  # and success_offsets:
         hat.display_long_string(
-            "Calibration\nsuceeded\n\n"
+            "Calibration\nsuccessful\n\n"
             f"Ball hue = {hue}\n\n"
-            f"(x, y) offsets = \n({x_offset:.2f}, {y_offset:.2f})\n\n"
+            f"Position = \n({100*x_offset:.1f}, {100*y_offset:.1f}) cm\n\n"
             # f"servo offsets = ({o1:.2f}, {o2:.2f}, {o3:.2f})\n\n"
-            "Click joystick\nto quit...\n"
+            "Click menu\nto return...\n"
         )
-    elif not (success_pos or success_hue or success_offsets):
-        hat.display_long_string("Calibration\nfailed\n\nClick joystick\nto quit...")
+    elif not (success_pos or success_hue):  # or success_offsets):
+        hat.display_long_string("Calibration\nfailed\n\nClick menu\nto return...")
     else:
+        hue_str = (
+            f"Hue calib:\nsuccessful\nBall hue = {hue}\n\n"
+            if success_hue
+            else "Hue calib:\nfailed\n\n"
+        )
+        pos_str = (
+            f"center pos calib:\nsuccessful\n(x, y) = \n({x_offset:.2f}, {y_offset:.2f})\n\n"
+            if success_hue
+            else "(X, Y) calib:\nfailed\n\n"
+        )
         hat.display_long_string(
             "Calibration\npartially succeeded\n\n"
-            "Calibration\npartially succeeded\n\n"
-            "Click joystick\nto quit...\n"
+            + hue_str
+            + pos_str
+            + "Click menu\nto return..."
         )
-    wait_for_joystick(hat)
 
     return None, {}
 
@@ -234,6 +254,7 @@ def main(calibration_file, frequency=30, debug=True):
     with MoabEnv(frequency=frequency, debug=debug) as env:
         env.step((0, 0))
         run_calibration(env, pid_fn, calibration_file)
+        wait_for_menu(env.hat)
 
 
 if __name__ == "__main__":  # Parse command line args

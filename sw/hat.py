@@ -200,7 +200,7 @@ class Hat:
     def xfer(*args, **kwargs):
         l = [*args][:8]
         p = (8 - len(l)) * [0]
-        dtype = kwargs.pop('dtype', np.int8)
+        dtype = kwargs.pop("dtype", np.int8)
         return np.array(l + p, dtype)
 
     def transceive(self, packet: np.ndarray):
@@ -301,11 +301,11 @@ class Hat:
         # Get the first 8 bits and last 8 bits of every 16-bit integer
         # (To send it as indivdual bytes)
         servo1_centi_degrees_high_byte = servo1_centi_degrees >> 8
-        servo1_centi_degrees_low_byte = servo1_centi_degrees & 0x00ff
+        servo1_centi_degrees_low_byte = servo1_centi_degrees & 0x00FF
         servo2_centi_degrees_high_byte = servo2_centi_degrees >> 8
-        servo2_centi_degrees_low_byte = servo2_centi_degrees & 0x00ff
+        servo2_centi_degrees_low_byte = servo2_centi_degrees & 0x00FF
         servo3_centi_degrees_high_byte = servo3_centi_degrees >> 8
-        servo3_centi_degrees_low_byte = servo3_centi_degrees & 0x00ff
+        servo3_centi_degrees_low_byte = servo3_centi_degrees & 0x00FF
 
         self.transceive(
             np.array(
@@ -384,7 +384,7 @@ class Hat:
             4: ("CALIBRATE", True),
             5: ("MANUAL", True),
             6: ("CLASSIC", True),
-            7: ("BRAIN :)", True),
+            7: ("BRAIN", True),
             8: ("CUSTOM 1", True),
             9: ("CUSTOM 2", True),
             10: ("BOT INFO", True),
