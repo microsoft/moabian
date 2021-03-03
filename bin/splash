@@ -43,7 +43,7 @@ cpu_t1k=$(cat /sys/class/thermal/thermal_zone0/temp)
 cpu_t=$(printf %.1f "$((10**3 * $cpu_t1k / 1000))e-3")
 temps="$cpu_t° C"
 moabian_version="3.0.0"
-fw_version="$([ -e ~/moab/bin/fw-version ] && ~/moab/bin/fw-version | awk  '{print $NF}')"
+fw_version="$([ -e ~/moab/bin/fwversion ] && ~/moab/bin/fwversion | awk  '{print $NF}')"
 
 # ☉
 
