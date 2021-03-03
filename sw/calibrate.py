@@ -50,11 +50,13 @@ def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=360, hue_steps=41)
             detected_hues.append(hue)
 
     if len(detected_hues) > 0:
-        max_hue = max(detected_hues)
-        min_hue = min(detected_hues)
-        avg_hue = int((max_hue + min_hue) / 2)
+        # https://en.wikipedia.org/wiki/Mean_of_circular_quantities
+        detected_hues_rad = np.radians(detected_hues)
+        sines, cosines = np.sin(detected_hues_rad), np.cos(detected_hues_rad)
+        sin_mean, cos_mean = np.mean(sines), np.mean(cosines)
+        avg_hue_rad = np.arctan2(sin_mean, cos_mean)
+        avg_hue = np.degrees(avg_hue_rad)
 
-        print(f"Hue range: [{min_hue:0.3f} .. {max_hue:0.3f}]")
         print(f"Hues are: {detected_hues}")
         print(f"Hue calibrated: {avg_hue:0.3f}")
 
