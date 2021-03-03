@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 import os
 import socket
 from flask import Flask, render_template, Response, url_for, redirect
