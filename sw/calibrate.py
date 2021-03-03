@@ -22,7 +22,7 @@ from controllers import pid_controller
 from hat import Hat, Icon, Text, plate_angles_to_servo_positions
 
 
-def ball_close_enough(x, y, radius, max_ball_dist=0.2 / 256, min_ball_dist=0.05 / 256):
+def ball_close_enough(x, y, radius, max_ball_dist=0.045, min_ball_dist=0.01):
     # reject balls which are too far from the center and too small
     return (
         np.abs(x) < max_ball_dist
@@ -31,7 +31,7 @@ def ball_close_enough(x, y, radius, max_ball_dist=0.2 / 256, min_ball_dist=0.05 
     )
 
 
-def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=180, hue_steps=20):
+def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=180, hue_steps=41):
     img_frame, elapsed_time = camera_fn()
     hue_options = list(np.linspace(hue_low, hue_high, hue_steps))
 
@@ -154,155 +154,53 @@ def read_calibration(calibration_file="bot.json"):
     return calibration_dict
 
 
-def wait_for_joystick(
-    hat,
-    text_1="Put ball in\ncenter using\nclear stand.",
-    text_2="Click joystick\nto continue.",
-):
-    tick = 0
-
-    # Hacky solution to the bug with too long strings
-    def next_text(every_seconds=1):
-        """
-        This function switches between printing 2 texts to hat after `every`
-        timesteps. This is a hacky solution to problems with a memory leak in
-        scrolling text in the firmware.
-        """
-        nonlocal tick
-        every = int(every_seconds * 30)
-        if (tick % (2 * every)) / (2 * every) == 0:
-            hat.print_arbitrary_string(text_1)
-        if (tick % (2 * every)) / (2 * every) == 0.5:
-            hat.print_arbitrary_string(text_2)
-        tick += 1
-
+def wait_for_joystick(hat, sleep_time=1 / 30):
     while True:
         hat.noop()  # Force new transfer to have up to date button reading
-        menu_btn, joy_btn, joy_x, joy_y = hat.poll_buttons()
-        next_text()
-        time.sleep(1 / 30)
+        menu_btn, joy_btn, joy_x, joy_y = hat.get_buttons()
+        time.sleep(sleep_time)
         if joy_btn:
             return
 
 
-def run_calibrate_pos(env, pid_fn, calibration_file):
+def run_calibration(env, pid_fn, calibration_file):
     # Get some hidden things from env
     hat = env.hat
     camera_fn = env.camera
     detector_fn = env.detector
 
-    # Calibrate position
-    wait_for_joystick(hat, "Put ball in center\nusing clear stand.")
-    (x_offset, y_offset), success_pos = calibrate_pos(camera_fn, detector_fn)
-    print(f"offsets: (x={x_offset}, y={y_offset}), success={success_pos}.")
-
-    # Save calibration
-    calibration_dict = read_calibration(calibration_file)
-    calibration_dict["plate_x_offset"] = x_offset
-    calibration_dict["plate_y_offset"] = y_offset
-    write_calibration(calibration_dict)
-
-    # Print to display
-    if success_pos:
-        wait_for_joystick(
-            hat,
-            f"Offsets =\n({x_offset:.2f}, {y_offset:.2f})",
-            "Click joystick\nto quit...",
-        )
-    else:
-        wait_for_joystick(
-            hat,
-            "Calibration failed.",
-            "Click joystick\nto quit...",
-        )
-
-
-def run_calibrate_hue(env, pid_fn, calibration_file):
-    # Get some hidden things from env
-    hat = env.hat
-    camera_fn = env.camera
-    detector_fn = env.detector
-
-    # Calibrate hue
-    wait_for_joystick(hat, "Put ball in center\nusing clear stand.")
-    hue, success_hue = calibrate_hue(camera_fn, detector_fn)
-
-    return
-
-    # Save calibration
-    calibration_dict = read_calibration(calibration_file)
-    calibration_dict["ball_hue"] = hue
-    write_calibration(calibration_dict)
-
-    # Print to display
-    if success_hue:
-        wait_for_joystick(
-            hat,
-            f"Ball hue = {hue}",
-            "Click joystick\nto quit...",
-        )
-    else:
-        wait_for_joystick(
-            hat,
-            "Calibration failed.",
-            "Click joystick\nto quit...",
-        )
-
-
-def run_calibrate_servos(env, pid_fn, calibration_file):
-    # Get some hidden things from env
-    hat = env.hat
-    camera_fn = env.camera
-    detector_fn = env.detector
-
-    # Calibrate servo offsets
-    wait_for_joystick(hat, "Put ball in center\nwithout clear stand.")
-    hat.print_arbitrary_string("Running auto-\ncalibrate servos...")
-    servo_offsets, success_offsets = calibrate_servo_offsets(pid_fn, env)
-
-    # Save calibration
-    calibration_dict = read_calibration(calibration_file)
-    calibration_dict["servo_offsets"] = servo_offsets
-    write_calibration(calibration_dict)
-
-    # Print to display
-    if success_offsets:
-        o1, o2, o3 = servo_offsets
-        wait_for_joystick(
-            hat,
-            f"offsets = \n({o1:.2f}, {o2:.2f}, {o3:.2f})",
-            "Click joystick\nto quit...",
-        )
-    else:
-        wait_for_joystick(
-            hat,
-            "Calibrate servos failed.",
-            "Click joystick\nto quit...",
-        )
-
-
-def calibrate_all(env, pid_fn, calibration_file):
-    # Get some hidden things from env
-    hat = env.hat
-    camera_fn = env.camera
-    detector_fn = env.detector
+    success_pos = True
+    success_hue = True
+    success_offsets = True
 
     # Calibrate position and hue
-    wait_for_joystick(hat, "Put ball in center\nusing clear stand.")
-    (x_offset, y_offset), success_pos = calibrate_pos(camera_fn, detector_fn)
+    hat.display_long_string(
+        "To calibrate:\n\n"
+        "Place ball in\ncenter using\nclear stand.\n\n"
+        "Then click joystick\nto continue.\n"
+    )
+    wait_for_joystick(hat)
+    hat.display_string("Calibrating...")
     hue, success_hue = calibrate_hue(camera_fn, detector_fn)
+    (x_offset, y_offset), success_pos = calibrate_pos(camera_fn, detector_fn)
 
-    # Calibrate servo offsets
-    wait_for_joystick(hat, "Put ball in center\nwithout clear stand.")
-    hat.print_arbitrary_string("Running auto-\ncalibrate servos...")
-    servo_offsets, success_offsets = calibrate_servo_offsets(pid_fn, env)
+    # # Calibrate servo offsets
+    # hat.display_long_string(
+    #     "Calibarating\noffsets\n\n"
+    #     "Place ball in\ncenter using\nclear stand.\n\n"
+    #     "Click joystick\nto continue."
+    # )
+    # wait_for_joystick(hat)
+    # hat.display_long_string("Running auto-\ncalibrate servos...")
+    # servo_offsets, success_offsets = calibrate_servo_offsets(pid_fn, env)
 
     # Save calibration
     calibration_dict = read_calibration(calibration_file)
+    calibration_dict["ball_hue"] = hue
     calibration_dict["plate_x_offset"] = x_offset
     calibration_dict["plate_y_offset"] = y_offset
-    calibration_dict["ball_hue"] = hue
-    calibration_dict["servo_offsets"] = servo_offsets
+    # calibration_dict["servo_offsets"] = servo_offsets
+    # o1, o2, o3 = servo_offsets
     write_calibration(calibration_dict)
 
     # Update the environment to use the new calibration
@@ -310,40 +208,37 @@ def calibrate_all(env, pid_fn, calibration_file):
     env.reset_calibration(calibration_file=calibration_file)
 
     if success_pos and success_hue and success_offsets:
-        hat.set_icon_text(Icon.CHECK, Text.CAL_COMPLETE)
-    if not (success_pos or success_hue or success_offsets):
-        hat.set_icon_text(Icon.X, Text.CAL_FAILED)
+        hat.display_long_string(
+            "Calibration\nsuceeded\n\n"
+            f"Ball hue = {hue}\n\n"
+            f"(x, y) offsets = \n({x_offset:.2f}, {y_offset:.2f})\n\n"
+            # f"servo offsets = ({o1:.2f}, {o2:.2f}, {o3:.2f})\n\n"
+            "Click joystick\nto quit...\n"
+        )
+    elif not (success_pos or success_hue or success_offsets):
+        hat.display_long_string("Calibration\nfailed\n\nClick joystick\nto quit...")
     else:
-        hat.print_arbitrary_string("Calib partially\nfailed, press menu...")
+        hat.display_long_string(
+            "Calibration\npartially succeeded\n\n"
+            "Calibration\npartially succeeded\n\n"
+            "Click joystick\nto quit...\n"
+        )
+    wait_for_joystick(hat)
 
     return None, {}
 
 
-def main(calibrate_fn, calibration_file, frequency=30, debug=True):
+def main(calibration_file, frequency=30, debug=True):
     pid_fn = pid_controller(frequency=frequency)
 
     with MoabEnv(frequency=frequency, debug=debug) as env:
-        state = env.reset(Icon.DOT, Text.CAL)
-        calibrate_fn(env, pid_fn, calibration_file)
+        env.step((0, 0))
+        run_calibration(env, pid_fn, calibration_file)
 
 
 if __name__ == "__main__":  # Parse command line args
-    opts = {
-        "position": run_calibrate_pos,
-        "hue": run_calibrate_hue,
-        "servos": run_calibrate_servos,
-    }
-
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "calibration_type",
-        default="hue",
-        choices=list(opts.keys()),
-        help=f"""Select which calibration to do.
-        Options are: {opts.keys()}
-        """,
-    )
     parser.add_argument("-f", "--file", default="bot.json", type=str)
 
     args, _ = parser.parse_known_args()
-    main(opts[args.calibration_type], args.file)
+    main(args.file)

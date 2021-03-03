@@ -24,26 +24,10 @@ class SendCommand(IntEnum):
     SERVO_DISABLE           = 0x02  # The servos should be turned on
     SET_PLATE_ANGLES        = 0x04  # Set the plate angles (pitch and roll)
     SET_SERVOS              = 0x05  # Set the servo positions manually (s1, s2, s3)
-    TEXT_ICON_SELECT        = 0x06  # This packet contains the text and icon to be selected and displays both
-    ARBITRARY_MESSAGE       = 0x80  # There is a arbitrary length message being transmitted (max len 256 bytes)
-    DISPLAY_BUFFER          = 0x81  # The LED screen displays what is currently in the buffer
-
-# Messaging from the hat to the Pi
-class ReceiveCommand(IntEnum):
-    REPLY_NORMAL            = 0x01  # Normal operation, send back buttons & joystick values
-    REPLY_FW_VERSION        = 0x02  # Respond with the firmware version
-
-
-class Icon(IntEnum):
-    BLANK = 0
-    UP_DOWN = 1
-    DOWN = 2
-    UP = 3
-    DOT = 4
-    PAUSE = 5
-    CHECK = 6
-    X = 7
-
+    COPY_STRING             = 0x80  # There is a arbitrary length string being transmitted (max len 240 bytes) and copy into the text buffer
+    DISPLAY_BIG_TEXT_ICON   = 0x81  # Display what is currently in the buffer (large font) along with an icon sent in this message. Does not scroll.
+    DISPLAY_BIG_TEXT        = 0x82  # Display only what is currently in the buffer (large font). Does not scroll.
+    DISPLAY_SMALL_TEXT_SCROLLING = 0x83  # Display only what is currently in the buffer (small font). Scroll if required.
 
 class Text(IntEnum):
     BLANK = 0
@@ -65,17 +49,21 @@ class Text(IntEnum):
     UPDATE_BRAIN = 16
     UPDATE_SYSTEM = 17
 
+# Icon index
+class Icon(IntEnum):
+    BLANK = 0
+    UP_DOWN = 1
+    DOWN = 2
+    UP = 3
+    DOT = 4
+    PAUSE = 5
+    CHECK = 6
+    X = 7
+
 # GPIO pins
 class GpioPin(IntEnum):
-    BOOT_EN   = 5   # Bcm 5  - RPi pin 29 - RPI_BPLUS_GPIO_J8_29
     HAT_EN    = 20  # Bcm 20 - RPi pin 38 - RPI_BPLUS_GPIO_J8_38
     HAT_RESET = 6   # Bcm 6  - RPi pin 31 - RPI_BPLUS_GPIO_J8_31
-    HAT_PWR_N = 3   # Bcm 3  - RPi pin 5  - RPI_BPLUS_GPIO_J8_05
-
-
-X_TILT_SERVO1 = -0.5
-Y_TILT_SERVO2 = 0.866
-Y_TILT_SERVO3 = -0.866
 # fmt: on
 
 
@@ -114,7 +102,6 @@ def _get_sw_version():
 def setupGPIO():
     gpio.setwarnings(False)
     gpio.setmode(gpio.BCM)
-
     # Setting pin direction, in our case, reboots Moab!
     gpio.setup(
         [GpioPin.HAT_EN, GpioPin.HAT_RESET],
@@ -123,11 +110,17 @@ def setupGPIO():
     time.sleep(1.0)
 
 
-def _xy_offsets(x, y, servo_offsets: Tuple[float, float, float]) -> Tuple[float, float]:
+def _xy_offsets(
+    x: float,
+    y: float,
+    servo_offsets: Tuple[float, float, float],
+    x_tilt_servo1: float = -0.5,
+    y_tilt_servo2: float = 0.866,
+    y_tilt_servo3: float = -0.866,
+) -> Tuple[float, float]:
     so_1, so_2, so_3 = servo_offsets
-
-    x_offset = x + so_1 + X_TILT_SERVO1 * so_2 + X_TILT_SERVO1 * so_3
-    y_offset = y + Y_TILT_SERVO2 * so_2 + Y_TILT_SERVO3 * so_3
+    x_offset = x + so_1 + x_tilt_servo1 * so_2 + x_tilt_servo1 * so_3
+    y_offset = y + y_tilt_servo2 * so_2 + y_tilt_servo3 * so_3
     return x_offset, y_offset
 
 
@@ -185,13 +178,11 @@ class Hat:
         except:
             raise IOError(f"Could not open `/dev/spidev{spi_bus}.{spi_device}`.")
 
-        # Attempt to setup the GPIO pins and initialize the runtime
+        # Attempt to setup the GPIO pins
         try:
             setupGPIO()
         except:
             raise IOError(f"Could not setup GPIO pins")
-
-        runtime()
 
     def close(self):
         if self.spi is not None:
@@ -216,13 +207,12 @@ class Hat:
         """
         Send and receive 8 bytes from hat.
         """
-        assert self.spi is not None         # did you call hat.open() first ?
+        assert self.spi is not None  # did you call hat.open() first ?
         assert len(packet) == 8
 
         hat_to_pi = self.spi.xfer(packet.tolist())
         time.sleep(0.005)
 
-        # TODO: flag to enable/disable this "logic analyzer"
         self.hex_printer(packet.tolist(), hat_to_pi)
 
         # Check if buttons are pressed
@@ -340,21 +330,6 @@ class Hat:
         """
         self.servo_offsets = (servo1, servo2, servo3)
 
-    def set_icon_text(self, icon_idx: Icon, text_idx: Text):
-        # don't needlessly update display if icon AND text haven't changed
-        if icon_idx == self.last_icon and text_idx == self.last_text:
-            return
-
-        self.last_icon = icon_idx
-        self.last_text = text_idx
-
-        self.transceive(
-            np.array(
-                [SendCommand.TEXT_ICON_SELECT, icon_idx, text_idx, 0, 0, 0, 0, 0],
-                dtype=np.int8,
-            )
-        )
-
     def hover(self):
         """
         Set the plate to its hover position.
@@ -363,7 +338,7 @@ class Hat:
         """
         self.set_servos(150, 150, 150)
         # Give enough time for the action to be taken
-        time.sleep(0.200)  # Experimentally found
+        time.sleep(0.200)  # Make sure this action gets taken before turning off servos
 
     def lower(self):
         """
@@ -372,18 +347,14 @@ class Hat:
         """
         self.set_servos(155, 155, 155)
         # Give enough time for the action to be taken
-        time.sleep(0.200)  # Experimentally found
+        time.sleep(0.200)  # Make sure this action gets taken before turning off servos
 
-    def print_arbitrary_string(self, s: str):
+    def _copy_buffer(self, s: str):
         s = s.upper()  # The firware currently only has uppercase fonts
-
-        # reset the text/icon index optimization hack
-        self.last_icon = -1
-        self.last_text = -1
 
         s = bytes(s, "utf-8")
         s += b"\0"  # Ensure a trailing termination character
-        assert len(s) <= 256
+        assert len(s) <= 240, "String too long to send to hat."
 
         # Calculate the number of messages required to send the text
         num_msgs = int(np.ceil(len(s) / 7))
@@ -394,16 +365,95 @@ class Hat:
 
         for msg_idx in range(num_msgs):
             # Combine into one list to send
-            msg = [SendCommand.ARBITRARY_MESSAGE] + list(
-                s[7 * msg_idx : 7 * msg_idx + 7]
-            )
+            msg = [SendCommand.COPY_STRING] + list(s[7 * msg_idx : 7 * msg_idx + 7])
             self.transceive(np.array(msg, dtype=np.int8))
+
+            # TODO: Why is this sleep here instead of before display command?
             time.sleep(0.090)
 
-        # After sending all buffer info, send the command to display the buffer
+    def set_icon_text(self, icon_idx: Icon, text_idx: Text):
+        # Don't needlessly update display if icon AND text haven't changed
+        if icon_idx == self.last_icon and text_idx == self.last_text:
+            return
+
+        texts = {
+            0: ("BLANK", True),
+            1: ("INITIALIZING", False),
+            2: ("POWER_OFF", False),
+            3: ("ERROR", True),
+            4: ("CALIBRATE", True),
+            5: ("MANUAL", True),
+            6: ("CLASSIC", True),
+            7: ("BRAIN :)", True),
+            8: ("CUSTOM 1", True),
+            9: ("CUSTOM 2", True),
+            10: ("BOT INFO", True),
+            12: ("CAL_COMPLETE", True),
+            13: ("CALIBRATION\nCANCELED", False),
+            14: ("FAILED", False),
+        }
+
+        text = texts[text_idx][0]
+        uses_icon = texts[text_idx][1]
+        if uses_icon:
+            self.display_string_icon(text, icon_idx)
+        else:
+            self.display_string(text)
+
+    def display_string_icon(self, text: str, icon_idx: Icon):
+        assert len(text) <= 12, "String is too long to diplay with icon"
+
+        # Don't needlessly update display if text AND icon haven't changed
+        if text == self.last_text and icon_idx == self.last_icon:
+            return
+
+        self.last_text = text
+        self.last_icon = icon_idx
+
+        # Copy the text into a buffer in the firmware
+        self._copy_buffer(text)
+
+        # After sending copying to the fw buffer, display the buffer as a long string
         self.transceive(
             np.array(
-                [SendCommand.DISPLAY_BUFFER, 0, 0, 0, 0, 0, 0, 0],
+                [SendCommand.DISPLAY_BIG_TEXT_ICON, icon_idx, 0, 0, 0, 0, 0, 0],
+                dtype=np.int8,
+            )
+        )
+
+    def display_string(self, text: str):
+        assert len(text) <= 15, "String is too long to diplay without scrolling."
+
+        # Don't needlessly update display if text haven't changed (and there was no prev icon)
+        if text == self.last_text and icon_idx == self.last_icon:
+            return
+
+        self.last_text = text
+        self.last_icon = -1  # This means the last icon was no icon
+
+        # Copy the text into a buffer in the firmware
+        self._copy_buffer(text)
+
+        # After sending copying to the fw buffer, display the buffer as a long string
+        self.transceive(
+            np.array(
+                [SendCommand.DISPLAY_BIG_TEXT, 0, 0, 0, 0, 0, 0, 0],
+                dtype=np.int8,
+            )
+        )
+
+    def display_long_string(self, text: str):
+        # reset the text/icon index optimization hack
+        self.last_text = -1
+        self.last_icon = -1  # This means the last icon was no icon
+
+        # Copy the text into a buffer in the firmware
+        self._copy_buffer(text)
+
+        # After sending copying to the fw buffer, display the buffer as a long string
+        self.transceive(
+            np.array(
+                [SendCommand.DISPLAY_SMALL_TEXT_SCROLLING, 0, 0, 0, 0, 0, 0, 0],
                 dtype=np.int8,
             )
         )
@@ -411,7 +461,7 @@ class Hat:
     def print_info_screen(self):
         sw_major, sw_minor, sw_bug = _get_sw_version()
         ip1, ip2, ip3, ip4 = _get_host_ip()
-        self.print_arbitrary_string(
+        self.display_long_string(
             f"PROJECT MOAB\n"
             f"SW VERSION\n{sw_major}.{sw_minor}.{sw_bug}\n"
             f"IP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}"
