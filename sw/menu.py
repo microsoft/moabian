@@ -40,6 +40,7 @@ def info_screen_controller(env=None, **kwargs):
     env.hat.print_info_screen()
     return lambda state: ((0, 0), {})
 
+
 def main(frequency=30, debug=True):
 
     with MoabEnv(frequency, debug) as env:
@@ -83,10 +84,8 @@ def main(frequency=30, debug=True):
 
             else:
                 # SECOND LEVEL
-                # Set the icon DOT (ready) for brain/calibrate
-                print(f"MENU: {index}")
                 if index == 0 or index == 4:
-                    state = (0,0,0,0,0,0)
+                    state = (0, 0, 0, 0, 0, 0)
                     detected = False
                     buttons = Buttons()
                 else:
@@ -99,7 +98,6 @@ def main(frequency=30, debug=True):
 
                 while not buttons.menu_button:
                     action, info = controller((state, detected, buttons))
-                    time.sleep(1 / env.frequency)
                     state, detected, buttons = env.step(action)
 
                 # Loop breaks after menu pressed and puts the plate back to hover

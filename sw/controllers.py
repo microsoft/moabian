@@ -58,7 +58,7 @@ def zero_controller(**kwargs):
     return lambda state: (Vector2(0, 0), {})
 
 
-def random_controller(max_angle, **kwargs):
+def random_controller(max_angle=16, **kwargs):
     return lambda state: (
         Vector2(*np.random.uniform(-max_angle, max_angle, size=2)),
         {},
