@@ -102,6 +102,7 @@ def _get_sw_version():
 def setupGPIO():
     gpio.setwarnings(False)
     gpio.setmode(gpio.BCM)
+    # Setting pin direction, in our case, reboots Moab!
     gpio.setup(
         [GpioPin.HAT_EN, GpioPin.HAT_RESET],
         gpio.OUT,
@@ -157,39 +158,39 @@ def plate_angles_to_servo_positions(
 class Hat:
     def __init__(
         self,
-        spi_bus: int = 0,
-        spi_device: int = 0,
-        spi_max_speed_hz: int = 100000,
         servo_offsets: Tuple[float, float, float] = (0, 0, 0),
         use_plate_angles=False,
     ):
         self.servo_offsets: Tuple[float, float, float] = servo_offsets
         self.use_plate_angles = use_plate_angles
-
         self.buttons = Buttons(False, False, 0.0, 0.0)
-
         self.hex_printer = hexyl()
         self.last_icon = -1
         self.last_text = -1
+        self.spi = None
 
+    def open(self):
         # Attempt to open the spidev bus
         try:
             self.spi = spidev.SpiDev()
-            self.spi.open(spi_bus, spi_device)
-            self.spi.max_speed_hz = spi_max_speed_hz
+            self.spi.open(0, 0)
+            self.spi.max_speed_hz = 100000
         except:
             raise IOError(f"Could not open `/dev/spidev{spi_bus}.{spi_device}`.")
 
+        # Attempt to setup the GPIO pins
         try:
             setupGPIO()
         except:
             raise IOError(f"Could not setup GPIO pins")
 
     def close(self):
-        self.spi.close()
-        gpio.cleanup()
+        if self.spi is not None:
+            self.spi.close()
+            gpio.cleanup()
 
     def __enter__(self):
+        self.open()
         return self
 
     def __exit__(self, type, value, traceback):
@@ -199,7 +200,7 @@ class Hat:
     def xfer(*args, **kwargs):
         l = [*args][:8]
         p = (8 - len(l)) * [0]
-        dtype = kwargs.pop("dtype", np.int8)
+        dtype = kwargs.pop('dtype', np.int8)
         return np.array(l + p, dtype)
 
     def transceive(self, packet: np.ndarray):
@@ -208,16 +209,16 @@ class Hat:
         """
         assert self.spi is not None  # did you call hat.open() first ?
         assert len(packet) == 8
+
         hat_to_pi = self.spi.xfer(packet.tolist())
         time.sleep(0.005)
 
         self.hex_printer(packet.tolist(), hat_to_pi)
-        self._save_buttons(hat_to_pi)
 
-    def _save_buttons(self, hat_to_pi):
         # Check if buttons are pressed
         self.buttons.menu_button = hat_to_pi[0] == 1
         self.buttons.joy_button = hat_to_pi[1] == 1
+
         # Get x & y coordinates of joystick normalized to [-1, +1]
         self.buttons.joy_x = _uint8_to_int8(hat_to_pi[2]) / 100
         self.buttons.joy_y = _uint8_to_int8(hat_to_pi[3]) / 100
@@ -300,11 +301,11 @@ class Hat:
         # Get the first 8 bits and last 8 bits of every 16-bit integer
         # (To send it as indivdual bytes)
         servo1_centi_degrees_high_byte = servo1_centi_degrees >> 8
-        servo1_centi_degrees_low_byte = servo1_centi_degrees & 0x00FF
+        servo1_centi_degrees_low_byte = servo1_centi_degrees & 0x00ff
         servo2_centi_degrees_high_byte = servo2_centi_degrees >> 8
-        servo2_centi_degrees_low_byte = servo2_centi_degrees & 0x00FF
+        servo2_centi_degrees_low_byte = servo2_centi_degrees & 0x00ff
         servo3_centi_degrees_high_byte = servo3_centi_degrees >> 8
-        servo3_centi_degrees_low_byte = servo3_centi_degrees & 0x00FF
+        servo3_centi_degrees_low_byte = servo3_centi_degrees & 0x00ff
 
         self.transceive(
             np.array(

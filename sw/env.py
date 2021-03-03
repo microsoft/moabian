@@ -30,6 +30,7 @@ class MoabEnv:
         self.hue = calib["ball_hue"]
 
         self.hat = Hat(use_plate_angles=use_plate_angles)
+        self.hat.open()
         self.hat.set_servo_offsets(*self.servo_offsets)
         self.camera = Camera(frequency=frequency)
         self.detector = detector(debug=debug, hue=self.hue)
