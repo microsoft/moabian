@@ -11,7 +11,7 @@ from controllers import (
     pid_controller,
     brain_controller,
     random_controller,
-    manual_controller,
+    joystick_controller,
 )
 from enum import Enum
 from env import MoabEnv
@@ -50,7 +50,7 @@ def main(frequency=30, debug=True):
         # Structure is (controller_closure, icon_inactive, text, kwargs to controller_closure)
         opts_list = [
             (info_screen_controller, Icon.DOWN, Text.INFO, {"env": env}),
-            (manual_controller, Icon.UP_DOWN, Text.MANUAL, {}),
+            (joystick_controller, Icon.UP_DOWN, Text.MANUAL, {}),
             (pid_controller, Icon.UP_DOWN, Text.CLASSIC, {}),
             (brain_controller, Icon.UP_DOWN, Text.BRAIN, {"port": 5000}),
             (
