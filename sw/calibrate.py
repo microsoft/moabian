@@ -221,7 +221,7 @@ def run_calibration(env, pid_fn, calibration_file):
         hat.display_long_string(
             "Calibration\npartially succeeded\n\n"
             "Calibration\npartially succeeded\n\n"
-            "Click joystick\nto quit...\nå"
+            "Click joystick\nto quit...\n"
         )
     wait_for_joystick(hat)
 
