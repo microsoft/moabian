@@ -31,7 +31,7 @@ def ball_close_enough(x, y, radius, max_ball_dist=0.045, min_ball_dist=0.01):
     )
 
 
-def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=180, hue_steps=41):
+def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=360, hue_steps=41):
     img_frame, elapsed_time = camera_fn()
     hue_options = list(np.linspace(hue_low, hue_high, hue_steps))
 
@@ -64,7 +64,7 @@ def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=180, hue_steps=41)
     else:
         log.warning(f"Hue calibration failed.")
 
-        hue = 22  # Reasonable default
+        hue = 44  # Reasonable default
         success = False
         return hue, success
 
@@ -147,7 +147,7 @@ def read_calibration(calibration_file="bot.json"):
             calibration_dict = json.load(f)
     else:  # Use defaults
         calibration_dict = {
-            "ball_hue": 27,
+            "ball_hue": 44,
             "plate_x_offset": 0.0,
             "plate_y_offset": 0.0,
             "servo_offsets": [0.0, 0.0, 0.0],
@@ -253,6 +253,7 @@ def main(calibration_file, frequency=30, debug=True):
 
     with MoabEnv(frequency=frequency, debug=debug) as env:
         env.step((0, 0))
+        time.sleep(0.2)
         run_calibration(env, pid_fn, calibration_file)
         wait_for_menu(env.hat)
 
