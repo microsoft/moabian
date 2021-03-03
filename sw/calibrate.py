@@ -178,7 +178,7 @@ def wait_for_joystick(
 
     while True:
         hat.noop()  # Force new transfer to have up to date button reading
-        menu_btn, joy_btn, joy_x, joy_y = hat.poll_buttons()
+        menu_btn, joy_btn, joy_x, joy_y = hat.get_buttons()
         next_text()
         time.sleep(1 / 30)
         if joy_btn:
