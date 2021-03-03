@@ -69,10 +69,10 @@ def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=180, hue_steps=41)
         return hue, success
 
 
-def calibrate_pos(camera_fn, detector_fn):
+def calibrate_pos(camera_fn, detector_fn, hue):
     for i in range(20):  # Try and detect for 20 frames before giving up
         img_frame, elapsed_time = camera_fn()
-        ball_detected, ((x, y), radius) = detector_fn(img_frame)
+        ball_detected, ((x, y), radius) = detector_fn(img_frame, hue=hue)
 
         # If we found a ball roughly in the center that is large enough
         if ball_detected and ball_close_enough(x, y, radius):
@@ -192,7 +192,7 @@ def run_calibration(env, pid_fn, calibration_file):
     wait_for_joystick(hat)
     hat.display_string("Calibrating...")
     hue, success_hue = calibrate_hue(camera_fn, detector_fn)
-    (x_offset, y_offset), success_pos = calibrate_pos(camera_fn, detector_fn)
+    (x_offset, y_offset), success_pos = calibrate_pos(camera_fn, detector_fn, hue)
 
     # # Calibrate servo offsets
     # hat.display_long_string(
