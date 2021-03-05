@@ -66,7 +66,7 @@ def hsv_detector(
         hue = calibration.ball_hue
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, tuple(kernel_size))
 
-    def detect_features(img, hue=hue):
+    def detect_features(img, hue=hue, debug=debug, filename="/tmp/camera/frame.jpg"):
         # covert to HSV space
         color = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
@@ -107,7 +107,7 @@ def hsv_detector(
                 if debug:
                     ball_center_pixels = (int(x_obs), int(y_obs))
                     img = draw_ball(img, ball_center_pixels, radius)
-                    save_img("/tmp/camera/frame.jpg", img, rotated=False, quality=80)
+                    save_img(filename, img, rotated=False, quality=80)
 
                 # Rotate the x, y coordinates by -30 degrees
                 center = Vector2(x, y).rotate(np.radians(-30))
@@ -117,7 +117,7 @@ def hsv_detector(
         # If there were no contours or no contours the size of the ball
         ball_detected = False
         if debug:
-            save_img("/tmp/camera/frame.jpg", img, rotated=False, quality=80)
+            save_img(filename, img, rotated=False, quality=80)
         return ball_detected, (Vector2(0, 0), 0.0)
 
     return detect_features

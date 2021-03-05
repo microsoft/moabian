@@ -12,6 +12,7 @@ import time
 import json
 import cv2
 import argparse
+import datetime
 import numpy as np
 import logging as log
 
@@ -37,7 +38,6 @@ def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=360, hue_steps=41)
 
     detected_hues = []
     for hue in hue_options:
-        print(hue)
         img_frame, elapsed_time = camera_fn()
         ball_detected, ((x, y), radius) = detector_fn(img_frame, hue=hue)
 
@@ -72,7 +72,7 @@ def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=360, hue_steps=41)
 
 
 def calibrate_pos(camera_fn, detector_fn, hue):
-    for i in range(20):  # Try and detect for 20 frames before giving up
+    for i in range(10):  # Try and detect for 10 frames before giving up
         img_frame, elapsed_time = camera_fn()
         ball_detected, ((x, y), radius) = detector_fn(img_frame, hue=hue)
 
@@ -236,7 +236,7 @@ def run_calibration(env, pid_fn, calibration_file):
             else "Hue calib:\nfailed\n\n"
         )
         pos_str = (
-            f"center pos calib:\nsuccessful\n(x, y) = \n({x_offset:.2f}, {y_offset:.2f})\n\n"
+            f"Position \ncalib:\nsuccessful\nPosition = \n({100*x_offset:.1f}, {100*y_offset:.1f}) cm\n\n"
             if success_hue
             else "(X, Y) calib:\nfailed\n\n"
         )
@@ -244,8 +244,18 @@ def run_calibration(env, pid_fn, calibration_file):
             "Calibration\npartially succeeded\n\n"
             + hue_str
             + pos_str
-            + "Click menu\nto return..."
+            + "Click menu\nto return...\n"
         )
+
+    # When the calibration is complete, write the image of what the moab camera
+    # sees (useful for debugging when the hue calibration fails)
+    # Have a nice filename with the time and whether it succeeded or failed
+    time_of_day = datetime.datetime.now().strftime("%H%M%S")
+    filename = f"/tmp/hue.{time_of_day}."
+    filename += "success" if success_hue else "fail"
+    filename += ".jpg"
+    img_frame, _ = camera_fn()
+    detector_fn(img_frame, debug=True, filename=filename)
 
     return None, {}
 
