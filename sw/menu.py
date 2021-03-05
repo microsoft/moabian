@@ -49,13 +49,12 @@ def main(frequency=30, debug=True):
 
         # Structure is (controller_closure, icon_inactive, text, kwargs to controller_closure)
         opts_list = [
-            (info_screen_controller, Icon.DOWN, Text.INFO, {"env": env}),
-            (joystick_controller, Icon.UP_DOWN, Text.MANUAL, {}),
+            (joystick_controller, Icon.DOWN, Text.MANUAL, {}),
             (pid_controller, Icon.UP_DOWN, Text.CLASSIC, {}),
             (brain_controller, Icon.UP_DOWN, Text.BRAIN, {"port": 5000}),
             (
                 calibrate_controller,
-                Icon.UP,
+                Icon.UP_DOWN,
                 Text.CAL,
                 {
                     "env": env,
@@ -63,6 +62,7 @@ def main(frequency=30, debug=True):
                     "calibration_file": "bot.json",
                 },
             ),
+            (info_screen_controller, Icon.UP, Text.INFO, {"env": env}),
         ]
 
         env.hat.hover()
