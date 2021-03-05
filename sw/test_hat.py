@@ -6,23 +6,6 @@ from time import sleep
 
 
 def test_display():
-    # display all the icons
-    # print("cycling icons")
-    # sleep(1)
-    # icons = list(Icon)
-    # for icon in icons:
-    #     set_icon_text(icon, Text.MANUAL)
-    #     sleep(0.1)
-
-    # # display all the text
-    # print("cycling text")
-    # sleep(1)
-    # texts = list(Text)
-    # for text in texts:
-    #     set_icon_text(Icon.BLANK, text)
-    #     sleep(0.1)
-
-    # display all the text
     with Hat() as hat:
         hat.enable_servos()
         sleep(0.5)
@@ -34,4 +17,4 @@ def test_display():
             sleep(0.5)
 
 if __name__ == "__main__":
-    test_display()
+    print(test_display())

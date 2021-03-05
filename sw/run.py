@@ -10,20 +10,21 @@ from controllers import (
     pid_controller,
     brain_controller,
     random_controller,
-    manual_controller,
+    joystick_controller,
 )
 from hat import Hat
 from env import MoabEnv
 from hat import Icon, Text
+from functools import partial
 from log_csv import log_decorator
 
 
 CONTROLLER_INFO = {
     "pid": (pid_controller, Icon.DOT, Text.CLASSIC),
-    "zero": (zero_controller, Icon.DOT, Text.BLANK),
-    "brain": (brain_controller, Icon.DOT, Text.BRAIN),
-    "random": (random_controller, Icon.DOT, Text.BLANK),
-    "manual": (manual_controller, Icon.DOT, Text.MANUAL),
+    "brain": (partial(brain_controller, port=5000), Icon.DOT, Text.BRAIN),
+    "custom1": (partial(brain_controller, port=5001), Icon.DOT, Text.CUSTOM1),
+    "custom2": (partial(brain_controller, port=5002), Icon.DOT, Text.CUSTOM1),
+    "joystick": (joystick_controller, Icon.DOT, Text.MANUAL),
 }
 
 # Seperate each element out into its own dictionary
@@ -36,8 +37,6 @@ def main(
     controller_name,
     frequency,
     debug,
-    max_angle,
-    port,
     enable_logging,
     logfile,
     use_plate_angles,
@@ -49,9 +48,8 @@ def main(
         # Pass all arguments, if a controller doesn't need it, it will ignore it (**kwargs)
         controller = log_decorator(
             CONTROLLERS[controller_name](
+                end_point=end_point,
                 frequency=frequency,
-                max_angle=max_angle,
-                end_point="http://localhost:" + str(port),
             ),
             logfile=logfile,
         )
@@ -59,8 +57,6 @@ def main(
         # Pass all arguments, if a controller doesn't need it, it will ignore it (**kwargs)
         controller = CONTROLLERS[controller_name](
             frequency=frequency,
-            max_angle=max_angle,
-            end_point="http://localhost:" + str(port),
         )
 
     with MoabEnv(frequency, debug, use_plate_angles) as env:
@@ -84,8 +80,6 @@ if __name__ == "__main__":
     )
     parser.add_argument("-d", "--debug", action="store_true")
     parser.add_argument("-f", "--frequency", default=30, type=int)
-    parser.add_argument("-ma", "--max_angle", default=16, type=float)
-    parser.add_argument("-p", "--port", default=5000, type=int)
     parser.add_argument("-l", "--enable_logging", action="store_true")
     parser.add_argument("-lf", "--logfile", default="/tmp/log.csv", type=str)
     parser.add_argument("-pa", "--use_plate_angles", action="store_true")
@@ -94,8 +88,6 @@ if __name__ == "__main__":
         args.controller,
         args.frequency,
         args.debug,
-        args.max_angle,
-        args.port,
         args.enable_logging,
         args.logfile,
         args.use_plate_angles,

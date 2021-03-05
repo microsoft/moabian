@@ -8,6 +8,7 @@ HSV filtering ball detector
 import cv2
 import math
 import numpy as np
+from hsv import hue_to_bgr
 from huemask import hue_mask
 from common import Vector2, CircleFeature, Calibration
 
@@ -23,11 +24,10 @@ def pixels_to_meters(vec, frame_size=256, field_of_view=1.05):
     return vec * conversion
 
 
-def draw_ball(img, center, radius):
-    # WARNING: this function has side effects due to cv2!
-    # Draw on a circle
-    cv2.circle(img, center, 2, (255, 0, 255), 2)
-    cv2.circle(img, center, int(radius), (255, 0, 255), 2)
+def draw_ball(img, center, radius, hue):
+    bgr = hue_to_bgr(hue)
+    cv2.circle(img, center, 2, bgr, 2)
+    cv2.circle(img, center, int(radius), bgr, 2)
     return img
 
 
@@ -106,7 +106,6 @@ def hsv_detector(
 
                 if debug:
                     ball_center_pixels = (int(x_obs), int(y_obs))
-                    img = draw_ball(img, ball_center_pixels, radius)
                     save_img(filename, img, rotated=False, quality=80)
 
                 # Rotate the x, y coordinates by -30 degrees

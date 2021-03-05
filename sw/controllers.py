@@ -45,7 +45,7 @@ def pid_controller(
     return next_action
 
 
-def manual_controller(max_angle=22, **kwargs):
+def joystick_controller(max_angle=22, **kwargs):
     def next_action(state):
         env_state, ball_detected, buttons = state
         action = Vector2(-buttons.joy_x, -buttons.joy_y)
@@ -64,10 +64,11 @@ def random_controller(max_angle=16, **kwargs):
         {},
     )
 
+#    end_point="http://localhost:5000",
 
 def brain_controller(
     max_angle=22,
-    end_point="http://localhost:5000",
+    port=5555,
     enable_logging=False,
     **kwargs,
 ):
@@ -79,7 +80,8 @@ def brain_controller(
     The hardware state is unprojected from camera pixel space
     back to real space by using the calculated plate surface plane.
     """
-    prediction_url = f"{end_point}/v1/prediction"
+    prediction_url = f"http://localhost:{port}/v1/prediction"
+    print(f'{prediction_url}')
 
     def next_action(state):
         env_state, ball_detected, buttons = state
