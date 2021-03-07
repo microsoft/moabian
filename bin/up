@@ -6,7 +6,5 @@
 
 readonly _D="$(dirname "$(readlink -f "$0")")" && cd $_D
 
-fw-reset
-
 cd ..
 docker-compose up -d
