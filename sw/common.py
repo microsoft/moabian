@@ -18,15 +18,24 @@ class Buttons:
 
 @dataclass
 class EnvState:
-    x: float
-    y: float
-    vel_x: float
-    vel_y: float
-    sum_x: float
-    sum_y: float
+    x: float = 0.
+    y: float = 0.
+    vel_x: float = 0.
+    vel_y: float = 0.
+    sum_x: float = 0.
+    sum_y: float = 0.
 
     def __iter__(self):
         return iter(astuple(self))
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        a = f"x,y ({self.x:.3f}, {self.y:.3f}) "
+        b = f"ẋ,ẏ ({self.vel_x:.3f}, {self.vel_y:.3f}) "
+        c = f"Δx,Δy {self.sum_x:.3f}, {self.sum_y:.3f})"
+        return a + b +c
 
 
 def high_pass_filter(frequency, fc=50):

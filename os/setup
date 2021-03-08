@@ -105,6 +105,9 @@ function layer-classic-moabian
     ## Remove files from v2.5 (now in ~/moab/bin
     rm -f /usr/local/lib/libbcm2835*
     rm -f /usr/local/bin/{splash,diagnose,oled}
+
+    ## /etc/environment file sets MOABIAN=3.x.x for all users
+    install -pvm 644 files/etc/* /etc
 }
 
 

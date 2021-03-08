@@ -99,17 +99,6 @@ def _get_sw_version():
     return ver_triplet
 
 
-def setupGPIO():
-    gpio.setwarnings(False)
-    gpio.setmode(gpio.BCM)
-    # Setting pin direction, in our case, reboots Moab!
-    gpio.setup(
-        [GpioPin.HAT_EN, GpioPin.HAT_RESET],
-        gpio.OUT,
-    )
-    time.sleep(1.0)
-
-
 def _xy_offsets(
     x: float,
     y: float,
@@ -156,11 +145,11 @@ def plate_angles_to_servo_positions(
 
 
 # Return an exact 8 byte numpy array
-def pad_message(*args, **kwargs):
-    l = [*args][:8]
-    p = (8 - len(l)) * [0]
+def pad(*args, **kwargs):
+    data = [*args][:8]
+    pads = (8 - len(data)) * [0]
     dtype = kwargs.pop("dtype", np.int8)
-    return np.array(l + p, dtype)
+    return np.array(data + pads, dtype)
 
 
 class Hat:
@@ -188,19 +177,29 @@ class Hat:
             self.spi = spidev.SpiDev()
             self.spi.open(0, 0)
             self.spi.max_speed_hz = 100000
-        except:
+        except Exception as e:
+            # possible that ctrl-C was caught here
             raise IOError(f"Could not open `/dev/spidev{spi_bus}.{spi_device}`.")
 
         # Attempt to setup the GPIO pins
         try:
-            setupGPIO()
+            gpio.setwarnings(False)
+            gpio.setmode(gpio.BCM)
+            # Setting pin direction, in our case, reboots Moab!
+            gpio.setup(
+                [GpioPin.HAT_EN, GpioPin.HAT_RESET],
+                gpio.OUT,
+            )
+            time.sleep(1.0)
+        except KeyboardInterrupt:
+            raise
         except:
             raise IOError(f"Could not setup GPIO pins")
 
-    def close(self):
+    def close(self, text="OFF"):
+        self.display_string(text)
         if self.spi is not None:
             self.spi.close()
-            gpio.cleanup()
 
     def __enter__(self):
         self.open()
@@ -247,30 +246,15 @@ class Hat:
 
     def noop(self):
         """Send a NOOP. Useful for if you just want to read buttons."""
-        self.transceive(
-            np.array(
-                [SendCommand.NOOP, 0, 0, 0, 0, 0, 0, 0],
-                dtype=np.int8,
-            )
-        )
+        self.transceive(pad(SendCommand.NOOP))
 
     def enable_servos(self):
         """ Set the plate to track plate angles. """
-        self.transceive(
-            np.array(
-                [SendCommand.SERVO_ENABLE, 0, 0, 0, 0, 0, 0, 0],
-                dtype=np.int8,
-            )
-        )
+        self.transceive(pad(SendCommand.SERVO_ENABLE))
 
     def disable_servos(self):
         """ Disables the power to the servos. """
-        self.transceive(
-            np.array(
-                [SendCommand.SERVO_DISABLE, 0, 0, 0, 0, 0, 0, 0],
-                dtype=np.int8,
-            )
-        )
+        self.transceive(pad(SendCommand.SERVO_DISABLE))
 
     def set_angles(self, plate_x: float, plate_y: float):
         # If set_plate_angles flag is set, use the plate to servo conversion on
@@ -280,12 +264,7 @@ class Hat:
             # Take into account offsets when converting from degrees to values sent to hat
             plate_x, plate_y = _xy_offsets(plate_x, plate_y, self.servo_offsets)
             plate_x, plate_y = -plate_x, -plate_y
-            self.transceive(
-                np.array(
-                    [SendCommand.SET_PLATE_ANGLES, plate_x, plate_y, 0, 0, 0, 0, 0],
-                    dtype=np.uint8,
-                )
-            )
+            self.transceive(pad(SendCommand.SET_PLATE_ANGLES, plate_x, plate_y))
 
         else:
             s1, s2, s3 = plate_angles_to_servo_positions(-plate_x, -plate_y)
@@ -315,18 +294,14 @@ class Hat:
         servo3_centi_degrees_low_byte = servo3_centi_degrees & 0x00FF
 
         self.transceive(
-            np.array(
-                [
-                    SendCommand.SET_SERVOS,
-                    servo3_centi_degrees_high_byte,
-                    servo3_centi_degrees_low_byte,
-                    servo1_centi_degrees_high_byte,
-                    servo1_centi_degrees_low_byte,
-                    servo2_centi_degrees_high_byte,
-                    servo2_centi_degrees_low_byte,
-                    0,
-                ],
-                dtype=np.uint8,
+            pad(
+                SendCommand.SET_SERVOS,
+                servo3_centi_degrees_high_byte,
+                servo3_centi_degrees_low_byte,
+                servo1_centi_degrees_high_byte,
+                servo1_centi_degrees_low_byte,
+                servo2_centi_degrees_high_byte,
+                servo2_centi_degrees_low_byte,
             )
         )
 
@@ -385,8 +360,8 @@ class Hat:
             2: ("POWER_OFF", False),
             3: ("ERROR", True),
             4: ("CALIBRATE", True),
-            5: ("MANUAL", True),
-            6: ("CLASSIC", True),
+            5: ("JOYSTICK", True),
+            6: ("PID", True),
             7: ("BRAIN", True),
             8: ("CUSTOM 1", True),
             9: ("CUSTOM 2", True),
@@ -416,12 +391,7 @@ class Hat:
         self._copy_buffer(text)
 
         # After sending copying to the fw buffer, display the buffer as a long string
-        self.transceive(
-            np.array(
-                [SendCommand.DISPLAY_BIG_TEXT_ICON, icon_idx, 0, 0, 0, 0, 0, 0],
-                dtype=np.int8,
-            )
-        )
+        self.transceive(pad(SendCommand.DISPLAY_BIG_TEXT_ICON, icon_idx))
 
     def display_string(self, text: str):
         assert len(text) <= 15, "String is too long to diplay without scrolling."
@@ -437,12 +407,8 @@ class Hat:
         self._copy_buffer(text)
 
         # After sending copying to the fw buffer, display the buffer as a long string
-        self.transceive(
-            np.array(
-                [SendCommand.DISPLAY_BIG_TEXT, 0, 0, 0, 0, 0, 0, 0],
-                dtype=np.int8,
-            )
-        )
+        self.transceive(pad(SendCommand.DISPLAY_BIG_TEXT))
+
 
     def display_long_string(self, text: str):
         # reset the text/icon index optimization hack
@@ -453,18 +419,13 @@ class Hat:
         self._copy_buffer(text)
 
         # After sending copying to the fw buffer, display the buffer as a long string
-        self.transceive(
-            np.array(
-                [SendCommand.DISPLAY_SMALL_TEXT_SCROLLING, 0, 0, 0, 0, 0, 0, 0],
-                dtype=np.int8,
-            )
-        )
+        self.transceive(pad(SendCommand.DISPLAY_SMALL_TEXT_SCROLLING))
+
 
     def print_info_screen(self):
         sw_major, sw_minor, sw_bug = _get_sw_version()
         ip1, ip2, ip3, ip4 = _get_host_ip()
         self.display_long_string(
-            f"PROJECT MOAB\n"
-            f"SW VERSION\n{sw_major}.{sw_minor}.{sw_bug}\n"
-            f"IP ADDRESS:\n{ip1}.{ip2}.{ip3}.{ip4}"
+            f"VER: {sw_major}.{sw_minor}.{sw_bug}\n"
+            f"IP : {ip1}.{ip2}.{ip3}.{ip4}\n"
         )

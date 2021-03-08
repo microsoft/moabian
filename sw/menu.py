@@ -4,29 +4,18 @@
 # Licensed under the MIT License.
 
 import time
-import argparse
+import click
 
-from controllers import (
-    zero_controller,
-    pid_controller,
-    brain_controller,
-    random_controller,
-    joystick_controller,
-)
+#from statemachine import StateMachine
 from enum import Enum
-from env import MoabEnv
-from log_csv import log_decorator
-from calibrate import run_calibration
-from common import EnvState, Buttons
-from hat import Hat, Icon, Text, _get_host_ip, _get_sw_version
+from functools import partial
+
+import common, hat, calibrate
+from controllers import *
+from env import *
 
 
-class StateMachine(Enum):
-    Menu = 0
-    Controller = 1
-
-
-# These make the respective functions 'act' like controllers
+# TODO: move to controllers?
 def calibrate_controller(**kwargs):
     run_calibration(
         kwargs["env"],
@@ -41,17 +30,107 @@ def info_screen_controller(env=None, **kwargs):
     return lambda state: ((0, 0), {})
 
 
-def main(frequency=30, debug=True):
+# color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
+out = partial(click.secho, bold=False, err=True)
+err = partial(click.secho, fg="red", err=True)
 
-    with MoabEnv(frequency, debug) as env:
-        current = StateMachine.Menu
+
+@dataclass
+class Mode:
+    verbose: int
+    frequency: int
+    stream: bool
+    logfile: str
+    controller: str
+
+
+@click.command()
+@click.version_option(version="3.0")
+@click.option(
+    "-v",
+    "--verbose",
+    count=True,
+    default=0,
+    help="level of verbosity",
+)
+@click.option(
+    "-f",
+    "--frequency",
+    type=click.IntRange(1, 40),
+    default=30,
+    help="Cycle time of controller in Hz",
+    show_default=True,
+)
+@click.option(
+    "-s",
+    "--stream/--no-stream",
+    default=True,
+    help=("Stream a live view of the camera to http://moab.local"),
+)
+@click.option(
+    "-l",
+    "--logfile",
+    type=click.Path(
+        exists=False,
+        dir_okay=False,
+        writable=True,
+        resolve_path=True,
+    ),
+)
+@click.argument("controller", nargs=-1)
+@click.pass_context
+def main(ctx, verbose, frequency, stream, logfile, controller):
+
+    if logfile:
+        click.echo(click.format_filename(logfile))
+
+    mode = Mode(
+        verbose=verbose,
+        frequency=frequency,
+        stream=stream,
+        logfile=logfile,
+        controller=controller,
+    )
+
+    if mode.verbose:
+        click.secho(str(mode), fg="green")
+
+    with MoabEnv(frequency, debug=True) as env:
+        current = 1
         index = 0
 
         # Structure is (controller_closure, icon_inactive, text, kwargs to controller_closure)
         opts_list = [
-            (joystick_controller, Icon.DOWN, Text.MANUAL, {}),
-            (pid_controller, Icon.UP_DOWN, Text.CLASSIC, {}),
-            (brain_controller, Icon.UP_DOWN, Text.BRAIN, {"port": 5000}),
+            (
+                joystick_controller,
+                Icon.DOWN,
+                Text.MANUAL,
+                {},
+            ),
+            (
+                pid_controller,
+                Icon.UP_DOWN,
+                Text.CLASSIC,
+                {},
+            ),
+            (
+                brain_controller,
+                Icon.UP_DOWN,
+                Text.BRAIN,
+                {"port": 5000},
+            ),
+            (
+                brain_controller,
+                Icon.UP_DOWN,
+                Text.CUSTOM1,
+                {"port": 5001},
+            ),
+            (
+                brain_controller,
+                Icon.UP_DOWN,
+                Text.CUSTOM2,
+                {"port": 5002},
+            ),
             (
                 calibrate_controller,
                 Icon.UP_DOWN,
@@ -62,21 +141,30 @@ def main(frequency=30, debug=True):
                     "calibration_file": "bot.json",
                 },
             ),
-            (info_screen_controller, Icon.UP, Text.INFO, {"env": env}),
+            (
+                info_screen_controller,
+                Icon.UP,
+                Text.INFO,
+                {"env": env},
+            ),
         ]
 
         env.hat.hover()
         buttons = env.hat.get_buttons()
         while True:
             time.sleep(1 / env.frequency)
-            if current == StateMachine.Menu:
+
+            if current == 1:
                 # TOP LEVEL
-                env.hat.set_icon_text(opts_list[index][1], opts_list[index][2])
+                env.hat.set_icon_text(
+                    opts_list[index][1],
+                    opts_list[index][2],
+                )
                 env.hat.noop()
                 buttons = env.hat.get_buttons()
 
                 if buttons.joy_button:  # Selected controller
-                    current = StateMachine.Controller
+                    current = 2
                 elif buttons.joy_y < -0.8:  # Flicked joystick down
                     index = min(index + 1, len(opts_list) - 1)
                 elif buttons.joy_y > 0.8:  # Flicked joystick up
@@ -101,14 +189,13 @@ def main(frequency=30, debug=True):
                     state, detected, buttons = env.step(action)
 
                 # Loop breaks after menu pressed and puts the plate back to hover
-                current = StateMachine.Menu
+                current = 1
                 env.hat.hover()
 
 
 if __name__ == "__main__":
-    # Parse command line args
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--debug", action="store_true")
-    parser.add_argument("-f", "--frequency", default="30", type=int)
-    args, _ = parser.parse_known_args()
-    main(args.frequency, args.debug)
+    try:
+        main(standalone_mode=False)
+    except click.Abort:
+        sys.stderr.write("Stopping.\n")
+        sys.exit(1)
