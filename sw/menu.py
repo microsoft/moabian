@@ -2,17 +2,24 @@
 
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
-
+import sys
 import time
 import click
 
-#from statemachine import StateMachine
-from enum import Enum
-from functools import partial
 
-import common, hat, calibrate
-from controllers import *
-from env import *
+from controllers import (
+    zero_controller,
+    pid_controller,
+    brain_controller,
+    random_controller,
+    joystick_controller,
+)
+from calibrate import run_calibration
+from dataclasses import dataclass
+from functools import partial
+from common import Buttons
+from hat import Icon, Text
+from env import MoabEnv
 
 
 # TODO: move to controllers?

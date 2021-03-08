@@ -72,14 +72,14 @@ def _uint8_to_int8(b: int) -> int:
     """
     Converts a byte to a signed int (int8) instead of unsigned int (uint8).
     """
-    return b if b < 128 else (-256 + b)
+    return np.int8(b)
 
 
 def _int8_to_uint8(b: int) -> int:
     """
     Converts a byte to a signed int (int8) instead of unsigned int (uint8).
     """
-    return np.uint8(b)  # b if b > 0 else (256 - b)
+    return np.uint8(b)
 
 
 def _get_host_ip():
@@ -409,7 +409,6 @@ class Hat:
         # After sending copying to the fw buffer, display the buffer as a long string
         self.transceive(pad(SendCommand.DISPLAY_BIG_TEXT))
 
-
     def display_long_string(self, text: str):
         # reset the text/icon index optimization hack
         self.last_text = -1
@@ -421,11 +420,9 @@ class Hat:
         # After sending copying to the fw buffer, display the buffer as a long string
         self.transceive(pad(SendCommand.DISPLAY_SMALL_TEXT_SCROLLING))
 
-
     def print_info_screen(self):
         sw_major, sw_minor, sw_bug = _get_sw_version()
         ip1, ip2, ip3, ip4 = _get_host_ip()
         self.display_long_string(
-            f"VER: {sw_major}.{sw_minor}.{sw_bug}\n"
-            f"IP : {ip1}.{ip2}.{ip3}.{ip4}\n"
+            f"VER: {sw_major}.{sw_minor}.{sw_bug}\nIP : {ip1}.{ip2}.{ip3}.{ip4}"
         )
