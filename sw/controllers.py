@@ -17,7 +17,7 @@ def pid_controller(
     Kp=75,  # Proportional coefficient
     Ki=0.5,  # Integral coefficient
     Kd=45,  # Derivative coefficient
-    max_angle=16,
+    max_angle=20,
     **kwargs,
 ):
     def next_action(state):
@@ -45,7 +45,7 @@ def pid_controller(
     return next_action
 
 
-def joystick_controller(max_angle=22, **kwargs):
+def joystick_controller(max_angle=16, **kwargs):
     def next_action(state):
         env_state, ball_detected, buttons = state
         action = Vector2(-buttons.joy_x, -buttons.joy_y)
@@ -53,18 +53,6 @@ def joystick_controller(max_angle=22, **kwargs):
 
     return next_action
 
-
-def zero_controller(**kwargs):
-    return lambda state: (Vector2(0, 0), {})
-
-
-def random_controller(max_angle=16, **kwargs):
-    return lambda state: (
-        Vector2(*np.random.uniform(-max_angle, max_angle, size=2)),
-        {},
-    )
-
-#    end_point="http://localhost:5000",
 
 def brain_controller(
     max_angle=22,
