@@ -59,6 +59,7 @@ class Icon(IntEnum):
     PAUSE = 5
     CHECK = 6
     X = 7
+    MOON = 8
 
 # GPIO pins
 class GpioPin(IntEnum):
@@ -196,8 +197,8 @@ class Hat:
         except:
             raise IOError(f"Could not setup GPIO pins")
 
-    def close(self, text="OFF"):
-        self.display_string(text)
+    def close(self):
+        self.display_string_icon("OFF", Icon.MOON)
         if self.spi is not None:
             self.spi.close()
 
