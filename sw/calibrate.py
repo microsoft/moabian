@@ -222,7 +222,7 @@ def run_calibration(env, pid_fn, calibration_file):
     if success_pos and success_hue:  # and success_offsets:
         hat.display_long_string(
             "Calibration\nsuccessful\n\n"
-            f"Ball hue = {hue}\n\n"
+            f"Ball hue = {hue:.1f}\n\n"
             f"Position = \n({100*x_offset:.1f}, {100*y_offset:.1f}) cm\n\n"
             # f"servo offsets = ({o1:.2f}, {o2:.2f}, {o3:.2f})\n\n"
             "Click menu\nto return...\n"
@@ -231,12 +231,12 @@ def run_calibration(env, pid_fn, calibration_file):
         hat.display_long_string("Calibration\nfailed\n\nClick menu\nto return...")
     else:
         hue_str = (
-            f"Hue calib:\nsuccessful\nBall hue = {hue}\n\n"
+            f"Hue calib:\nsuccessful\nBall hue = {hue:.1f}\n\n"
             if success_hue
             else "Hue calib:\nfailed\n\n"
         )
         pos_str = (
-            f"Position \ncalib:\nsuccessful\nPosition = \n({100*x_offset:.1f}, {100*y_offset:.1f}) cm\n\n"
+            f"Position \ncalib:\nsuccessful\nPosition = \n({100*x_offset:.1f}, {100*y_offset:.1f})cm\n\n"
             if success_hue
             else "(X, Y) calib:\nfailed\n\n"
         )
