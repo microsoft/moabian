@@ -7,5 +7,4 @@
 readonly _D="$(dirname "$(readlink -f "$0")")" && cd $_D
 cd ../sw
 
-python3 menu.py 
-
+python3 menu.py "$*"
