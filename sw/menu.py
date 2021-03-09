@@ -7,13 +7,7 @@ import time
 import click
 
 
-from controllers import (
-    zero_controller,
-    pid_controller,
-    brain_controller,
-    random_controller,
-    joystick_controller,
-)
+from controllers import pid_controller, brain_controller, joystick_controller
 from calibrate import run_calibration
 from dataclasses import dataclass
 from functools import partial
@@ -116,7 +110,7 @@ def main(ctx, verbose, frequency, stream, logfile, controller):
             ),
             (
                 pid_controller,
-                Icon.UP_DOWN,
+                Icon.DOWN,
                 Text.CLASSIC,
                 {},
             ),
