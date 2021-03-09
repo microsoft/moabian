@@ -2,18 +2,19 @@
 
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
+
 import sys
 import time
 import click
 
-
-from controllers import pid_controller, brain_controller, joystick_controller
-from calibrate import run_calibration
-from dataclasses import dataclass
-from functools import partial
-from common import Buttons
-from hat import Icon, Text
+from hat import Icon
 from env import MoabEnv
+from common import Buttons
+from typing import Callable
+from functools import partial
+from dataclasses import dataclass
+from calibrate import run_calibration
+from controllers import pid_controller, brain_controller, joystick_controller
 
 
 # TODO: move to controllers?
@@ -43,6 +44,13 @@ class Mode:
     stream: bool
     logfile: str
     controller: str
+
+
+@dataclass
+class ControllerInfo:
+    name: str
+    closure: Callable
+    kwargs: dict
 
 
 @click.command()
@@ -100,54 +108,22 @@ def main(ctx, verbose, frequency, stream, logfile, controller):
         current = 1
         index = 0
 
-        # Structure is (controller_closure, icon_inactive, text, kwargs to controller_closure)
         opts_list = [
-            (
-                joystick_controller,
-                Icon.DOWN,
-                Text.MANUAL,
-                {},
-            ),
-            (
-                pid_controller,
-                Icon.DOWN,
-                Text.CLASSIC,
-                {},
-            ),
-            (
-                brain_controller,
-                Icon.UP_DOWN,
-                Text.BRAIN,
-                {"port": 5000},
-            ),
-            (
-                brain_controller,
-                Icon.UP_DOWN,
-                Text.CUSTOM1,
-                {"port": 5001},
-            ),
-            (
-                brain_controller,
-                Icon.UP_DOWN,
-                Text.CUSTOM2,
-                {"port": 5002},
-            ),
-            (
+            ControllerInfo("Joystick", joystick_controller, {}),
+            ControllerInfo("PID", pid_controller, {}),
+            ControllerInfo("Brain", brain_controller, {"port": 5000}),
+            ControllerInfo("Custom1", brain_controller, {"port": 5001}),
+            ControllerInfo("Custom2", brain_controller, {"port": 5002}),
+            ControllerInfo(
+                "Calibrate",
                 calibrate_controller,
-                Icon.UP_DOWN,
-                Text.CAL,
                 {
                     "env": env,
                     "pid_fn": pid_controller(),
                     "calibration_file": "bot.json",
                 },
             ),
-            (
-                info_screen_controller,
-                Icon.UP,
-                Text.INFO,
-                {"env": env},
-            ),
+            ControllerInfo("Bot Info", info_screen_controller, {"env": env}),
         ]
 
         env.hat.hover()
@@ -157,10 +133,16 @@ def main(ctx, verbose, frequency, stream, logfile, controller):
 
             if current == 1:
                 # TOP LEVEL
-                env.hat.set_icon_text(
-                    opts_list[index][1],
-                    opts_list[index][2],
-                )
+
+                # Depends on if it's the first/last icon
+                if index == 0:
+                    icon = Icon.DOWN
+                elif index == len(opts_list) - 1:
+                    icon = Icon.UP
+                else:
+                    icon = Icon.UP_DOWN
+
+                env.hat.display_string_icon(opts_list[index].name, icon)
                 env.hat.noop()
                 buttons = env.hat.get_buttons()
 
@@ -178,11 +160,13 @@ def main(ctx, verbose, frequency, stream, logfile, controller):
                     detected = False
                     buttons = Buttons()
                 else:
-                    state, detected, buttons = env.reset(Icon.DOT, opts_list[index][2])
+                    state, detected, buttons = env.reset(
+                        opts_list[index].name, Icon.DOT
+                    )
 
                 # Initialize the controller
-                controller_closure = opts_list[index][0]
-                kwargs = opts_list[index][3]
+                controller_closure = opts_list[index].closure
+                kwargs = opts_list[index].kwargs
                 controller = controller_closure(**kwargs)
 
                 while not buttons.menu_button:

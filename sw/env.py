@@ -63,9 +63,12 @@ class MoabEnv:
         # Set the servo offsets (self.hue & self.plate_offsets are used in step)
         self.hat.set_servo_offsets(*self.servo_offsets)
 
-    def reset(self, control_icon=None, control_name=None):
-        if control_icon and control_name:
-            self.hat.set_icon_text(control_icon, control_name)
+    def reset(self, text=None, icon=None):
+        # Optionally display the controller active text
+        if icon and text:
+            self.hat.display_string_icon(text, icon)
+        elif text:
+            self.hat.display_string(text)
 
         # Reset the derivative of the position
         # Use a high pass filter instead of a numerical derivative for stability.

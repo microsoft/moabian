@@ -3,46 +3,26 @@
 
 import argparse
 
-from controllers import (
-    zero_controller,
-    pid_controller,
-    brain_controller,
-    random_controller,
-    manual_controller,
-)
-from hat import Hat
 from env import MoabEnv
-from hat import Icon, Text
+from hat import Hat, Icon
+from controllers import pid_controller, brain_controller, joystick_controller
 
 
 CONTROLLERS = {
-    "pid": pid_controller,
-    "zero": zero_controller,
-    "brain": brain_controller,
-    "random": random_controller,
-    "manual": manual_controller,
+    "PID": pid_controller,
+    "Brain": brain_controller,
+    "Joystick": joystick_controller,
 }
 
 ICONS = {
-    "pid": Icon.DOT,
-    "zero": Icon.DOT,
-    "brain": Icon.DOT,
-    "random": Icon.DOT,
-    "manual": Icon.DOT,
-}
-
-TEXTS = {
-    "pid": Text.CLASSIC,
-    "zero": Text.BLANK,
-    "brain": Text.BRAIN,
-    "random": Text.BLANK,
-    "manual": Text.MANUAL,
+    "PID": Icon.DOT,
+    "Brain": Icon.DOT,
+    "Joystick": Icon.DOT,
 }
 
 
 def main(controller_name, frequency, debug, max_angle, port):
     icon = ICONS[controller_name]
-    text = TEXTS[controller_name]
 
     # Pass all arguments, if a controller doesn't need it, it will ignore it (**kwargs)
     controller_fn = CONTROLLERS[controller_name]
@@ -53,10 +33,11 @@ def main(controller_name, frequency, debug, max_angle, port):
     )
 
     with MoabEnv(frequency, debug) as env:
-        state = env.reset(icon, text)
+        state = env.reset(text=controller_name, icon=ICONS[controller_name])
         while True:
             action, info = controller(state)
             state = env.step(action)
+            print(state, action)
 
 
 if __name__ == "__main__":
@@ -64,7 +45,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-c",
         "--controller",
-        default="pid",
+        default="PID",
         choices=list(CONTROLLERS.keys()),
         help=f"""Select what type of action to take.
         Options are: {CONTROLLERS.keys()}

@@ -29,26 +29,6 @@ class SendCommand(IntEnum):
     DISPLAY_BIG_TEXT        = 0x82  # Display only what is currently in the buffer (large font). Does not scroll.
     DISPLAY_SMALL_TEXT_SCROLLING = 0x83  # Display only what is currently in the buffer (small font). Scroll if required.
 
-class Text(IntEnum):
-    BLANK = 0
-    INIT = 1
-    POWER_OFF = 2
-    ERROR = 3
-    CAL = 4
-    MANUAL = 5
-    CLASSIC = 6
-    BRAIN = 7
-    CUSTOM1 = 8
-    CUSTOM2 = 9
-    INFO = 10
-    CAL_INSTR = 11
-    CAL_COMPLETE = 12
-    CAL_CANCELED = 13
-    CAL_FAILED = 14
-    VERS_IP_SN = 15
-    UPDATE_BRAIN = 16
-    UPDATE_SYSTEM = 17
-
 # Icon index
 class Icon(IntEnum):
     BLANK = 0
@@ -353,30 +333,6 @@ class Hat:
 
             # TODO: Why is this sleep here instead of before display command?
             time.sleep(0.090)
-
-    def set_icon_text(self, icon_idx: Icon, text_idx: Text):
-        texts = {
-            0: ("BLANK", True),
-            1: ("INITIALIZING", False),
-            2: ("POWER_OFF", False),
-            3: ("ERROR", True),
-            4: ("CALIBRATE", True),
-            5: ("JOYSTICK", True),
-            6: ("PID", True),
-            7: ("BRAIN", True),
-            8: ("CUSTOM 1", True),
-            9: ("CUSTOM 2", True),
-            10: ("BOT INFO", True),
-            12: ("CAL_COMPLETE", True),
-            13: ("CALIBRATION\nCANCELED", False),
-            14: ("FAILED", False),
-        }
-        text = texts[text_idx][0]
-        uses_icon = texts[text_idx][1]
-        if uses_icon:
-            self.display_string_icon(text, icon_idx)
-        else:
-            self.display_string(text)
 
     def display_string_icon(self, text: str, icon_idx: Icon):
         assert len(text) <= 12, "String is too long to diplay with icon"

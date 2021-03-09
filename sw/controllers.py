@@ -1,14 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-import sys
 import time
 import requests
 import numpy as np
 import logging as log
 
 from env import MoabEnv
-from hat import Icon, Text
 from common import Vector2
 
 
@@ -69,7 +67,7 @@ def brain_controller(
     back to real space by using the calculated plate surface plane.
     """
     prediction_url = f"http://localhost:{port}/v1/prediction"
-    print(f'{prediction_url}')
+    print(f"{prediction_url}")
 
     def next_action(state):
         env_state, ball_detected, buttons = state

@@ -8,9 +8,9 @@ Performs calibration for hue, center of camera position, and servo offsets
 """
 
 import os
+import cv2
 import time
 import json
-import cv2
 import argparse
 import datetime
 import numpy as np
@@ -20,7 +20,7 @@ from env import MoabEnv
 from common import Vector2
 from detector import hsv_detector
 from controllers import pid_controller
-from hat import Hat, Icon, Text, plate_angles_to_servo_positions
+from hat import Hat, plate_angles_to_servo_positions
 
 
 def ball_close_enough(x, y, radius, max_ball_dist=0.045, min_ball_dist=0.01):
