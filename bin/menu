@@ -1,0 +1,11 @@
+#!/bin/bash
+# vim:filetype=sh:
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+readonly _D="$(dirname "$(readlink -f "$0")")" && cd $_D
+cd ../sw
+
+python3 menu.py 
+
