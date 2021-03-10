@@ -19,15 +19,16 @@ from typing import Union, List, Tuple
 
 # Messaging from the Pi to the hat
 class SendCommand(IntEnum):
-    NOOP                    = 0x00
+    NOOP                    = 0x00  # Import for polling the state of the buttons and joystick
     SERVO_ENABLE            = 0x01  # The servos should be turned off
     SERVO_DISABLE           = 0x02  # The servos should be turned on
     SET_PLATE_ANGLES        = 0x04  # Set the plate angles (pitch and roll)
     SET_SERVOS              = 0x05  # Set the servo positions manually (s1, s2, s3)
-    COPY_STRING             = 0x80  # There is a arbitrary length string being transmitted (max len 240 bytes) and copy into the text buffer
-    DISPLAY_BIG_TEXT_ICON   = 0x81  # Display what is currently in the buffer (large font) along with an icon sent in this message. Does not scroll.
-    DISPLAY_BIG_TEXT        = 0x82  # Display only what is currently in the buffer (large font). Does not scroll.
-    DISPLAY_SMALL_TEXT_SCROLLING = 0x83  # Display only what is currently in the buffer (small font). Scroll if required.
+    COPY_STRING             = 0x80  # Pass a variable length string (max 240 bytes). Requires DISPLAY_ after.
+    DISPLAY_BIG_TEXT_ICON   = 0x81  # Display buffer (large font) with icon. Does not scroll.
+    DISPLAY_BIG_TEXT        = 0x82  # Display the 0x80 buffer (in large font). Does not scroll.
+    DISPLAY_SMALL_TEXT      = 0x83  # Display the 0x80 buffer (in small font). Scroll if required.
+    DISPLAY_POWER_SYMBOL    = 0x84  # Display buffer with one of the five IEC Power Symbols now in Unicode 9.0
 
 # Icon index
 class Icon(IntEnum):
@@ -39,7 +40,14 @@ class Icon(IntEnum):
     PAUSE = 5
     CHECK = 6
     X = 7
-    MOON = 8
+
+# ⏻ ⏼ ⏽ ⭘ ⏾
+class PowerIcon(IntEnum):
+    POWER = 1
+    TOGGLE_POWER = 2
+    POWER_ON = 3
+    SLEEP_MODE = 4
+    POWER_OFF = 5
 
 # GPIO pins
 class GpioPin(IntEnum):
@@ -178,7 +186,7 @@ class Hat:
             raise IOError(f"Could not setup GPIO pins")
 
     def close(self):
-        self.display_string_icon("OFF", Icon.MOON)
+        self.display_power_symbol("TO WAKE", PowerIcon.POWER)
         if self.spi is not None:
             self.spi.close()
 
@@ -334,8 +342,24 @@ class Hat:
             # TODO: Why is this sleep here instead of before display command?
             time.sleep(0.090)
 
+    def display_power_symbol(self, text: str, icon_idx: PowerIcon):
+        assert len(text) <= 12, "String is too long to display with icon"
+
+        # Don't needlessly update display if text AND icon haven't changed
+        if text == self.last_text and icon_idx == self.last_icon:
+            return
+
+        self.last_text = text
+        self.last_icon = icon_idx
+
+        # Copy the text into a buffer in the firmware
+        self._copy_buffer(text)
+
+        # After sending copying to the fw buffer, display the buffer as a long string
+        self.transceive(pad(SendCommand.DISPLAY_POWER_SYMBOL, icon_idx))
+
     def display_string_icon(self, text: str, icon_idx: Icon):
-        assert len(text) <= 12, "String is too long to diplay with icon"
+        assert len(text) <= 12, "String is too long to display with icon"
 
         # Don't needlessly update display if text AND icon haven't changed
         if text == self.last_text and icon_idx == self.last_icon:
@@ -351,7 +375,7 @@ class Hat:
         self.transceive(pad(SendCommand.DISPLAY_BIG_TEXT_ICON, icon_idx))
 
     def display_string(self, text: str):
-        assert len(text) <= 15, "String is too long to diplay without scrolling."
+        assert len(text) <= 15, "String is too long to display without scrolling."
 
         # Don't needlessly update display if text haven't changed (and there was no prev icon)
         if text == self.last_text and icon_idx == self.last_icon:
@@ -375,7 +399,7 @@ class Hat:
         self._copy_buffer(text)
 
         # After sending copying to the fw buffer, display the buffer as a long string
-        self.transceive(pad(SendCommand.DISPLAY_SMALL_TEXT_SCROLLING))
+        self.transceive(pad(SendCommand.DISPLAY_SMALL_TEXT))
 
     def print_info_screen(self):
         sw_major, sw_minor, sw_bug = _get_sw_version()

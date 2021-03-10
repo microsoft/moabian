@@ -5,6 +5,9 @@
 # Licensed under the MIT License.
 
 readonly _D="$(dirname "$(readlink -f "$0")")" && cd $_D
-cd ../sw
 
+cd ..
+docker-compose restart -d &> /dev/null &
+
+cd sw
 python3 menu.py "$*"
