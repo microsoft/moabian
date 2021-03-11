@@ -23,6 +23,12 @@ function info {
 
 info "Installing apt-get packages (root)" 
 
+numpy=(
+    nginx
+)
+echo "• installing: nginx"
+apt-get install -qq --no-install-recommends ${numpy[*]}
+
 # numpy https://www.piwheels.org/project/numpy/
 numpy=(
     libatlas3-base

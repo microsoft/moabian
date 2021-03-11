@@ -185,6 +185,9 @@ def run_calibration(env, pid_fn, calibration_file):
     success_hue = True
     success_offsets = True
 
+    # lift plate up fist
+    hat.set_angles(0, 0)
+
     # Calibrate position and hue
     hat.display_long_string(
         "To calibrate:\n\n"
@@ -246,6 +249,8 @@ def run_calibration(env, pid_fn, calibration_file):
             + pos_str
             + "Click menu\nto return...\n"
         )
+
+    hat.hover()
 
     # When the calibration is complete, write the image of what the moab camera
     # sees (useful for debugging when the hue calibration fails)

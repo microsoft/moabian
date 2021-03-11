@@ -13,6 +13,7 @@ alias t="tmux -2 new-session -A -s moabian"
 alias dc="docker-compose"
 alias fwlog="sudo minicom --device=/dev/ttyAMA0"
 alias fwshell="sudo minicom --device=/dev/ttyAMA1"
+alias ports="sudo netstat -atlp"
 
 # General aliases
 lsflags="--color=auto --group-directories-first -F "

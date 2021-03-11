@@ -1,0 +1,12 @@
+[Unit]
+Description=Moab Web Service
+After=network.target
+
+[Service]
+Group=www-data
+User=pi
+WorkingDirectory=/home/pi/moab/sw/stream
+ExecStart=/home/pi/moab/sw/stream/launch.sh
+
+[Install]
+WantedBy=multi-user.target

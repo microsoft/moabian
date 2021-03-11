@@ -29,7 +29,7 @@ class MoabEnv:
         self.servo_offsets = calib["servo_offsets"]
         self.hue = calib["ball_hue"]
 
-        self.hat = Hat(use_plate_angles=use_plate_angles, use_hexyl=debug)
+        self.hat = Hat(use_plate_angles=use_plate_angles, debug=debug)
         self.hat.open()
         self.hat.set_servo_offsets(*self.servo_offsets)
         self.camera = Camera(frequency=frequency)
@@ -41,6 +41,13 @@ class MoabEnv:
         self.vel_x = self.derivative_fn(frequency)
         self.vel_y = self.derivative_fn(frequency)
         self.sum_x, self.sum_y = 0, 0
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return f'hue: {self.hue}, offsets: {self.servo_offsets}'
+
 
     def __enter__(self):
         self.hat.enable_servos()

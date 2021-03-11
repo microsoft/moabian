@@ -1,5 +1,7 @@
 import time
+import logging
 import threading
+
 try:
     from greenlet import getcurrent as get_ident
 except ImportError:
@@ -88,7 +90,7 @@ class BaseCamera(object):
     @classmethod
     def _thread(cls):
         """Camera background thread."""
-        print('Starting camera thread.')
+        logging.info('Starting camera thread')
         frames_iterator = cls.frames()
         for frame in frames_iterator:
             BaseCamera.frame = frame
@@ -99,6 +101,6 @@ class BaseCamera(object):
             # the last 10 seconds then stop the thread
             if time.time() - BaseCamera.last_access > 10:
                 frames_iterator.close()
-                print('Stopping camera thread due to inactivity.')
+                logging.info('Stopping camera thread due to inactivity.')
                 break
         BaseCamera.thread = None

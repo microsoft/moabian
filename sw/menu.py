@@ -14,6 +14,7 @@ from typing import Callable
 from functools import partial
 from dataclasses import dataclass
 from calibrate import run_calibration
+from info_screen import info_screen_controller, info_config_controller
 from controllers import pid_controller, brain_controller, joystick_controller
 
 
@@ -27,11 +28,6 @@ def calibrate_controller(**kwargs):
     return lambda state: ((0, 0), {})
 
 
-def info_screen_controller(env=None, **kwargs):
-    env.hat.print_info_screen()
-    return lambda state: ((0, 0), {})
-
-
 # color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
 out = partial(click.secho, bold=False, err=True)
 err = partial(click.secho, fg="red", err=True)
@@ -40,6 +36,7 @@ err = partial(click.secho, fg="red", err=True)
 @dataclass
 class Mode:
     verbose: int
+    debug: bool
     frequency: int
     stream: bool
     logfile: str
@@ -61,6 +58,12 @@ class ControllerInfo:
     count=True,
     default=0,
     help="level of verbosity",
+)
+@click.option(
+    "-d",
+    "--debug/--no-debug",
+    default=True,
+    help="programmer details showing Tx/Rx buffers"
 )
 @click.option(
     "-f",
@@ -88,13 +91,14 @@ class ControllerInfo:
 )
 @click.argument("controller", nargs=-1)
 @click.pass_context
-def main(ctx, verbose, frequency, stream, logfile, controller):
+def main(ctx, verbose, debug, frequency, stream, logfile, controller):
 
     if logfile:
         click.echo(click.format_filename(logfile))
 
     mode = Mode(
         verbose=verbose,
+        debug=debug,
         frequency=frequency,
         stream=stream,
         logfile=logfile,
@@ -104,7 +108,7 @@ def main(ctx, verbose, frequency, stream, logfile, controller):
     if mode.verbose:
         click.secho(str(mode), fg="green")
 
-    with MoabEnv(frequency, debug=True) as env:
+    with MoabEnv(frequency, debug=debug) as env:
         current = 1
         index = 0
 
@@ -123,6 +127,7 @@ def main(ctx, verbose, frequency, stream, logfile, controller):
                     "calibration_file": "bot.json",
                 },
             ),
+            ControllerInfo("Calib Info", info_config_controller, {"env": env}),
             ControllerInfo("Bot Info", info_screen_controller, {"env": env}),
         ]
 
@@ -132,8 +137,6 @@ def main(ctx, verbose, frequency, stream, logfile, controller):
             time.sleep(1 / env.frequency)
 
             if current == 1:
-                # TOP LEVEL
-
                 # Depends on if it's the first/last icon
                 if index == 0:
                     icon = Icon.DOWN

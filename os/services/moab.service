@@ -4,8 +4,7 @@ DefaultDependencies=false
 After=docker.service
 
 [Service]
-Type=forking
-ExecStart=/bin/bash /home/pi/moab/bin/up
+ExecStart=/bin/bash /home/pi/moab/bin/menu --no-debug
 WorkingDirectory=/home/pi/moab
 Restart=no
 User=pi

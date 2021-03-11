@@ -4,6 +4,14 @@
   ping -c 1 github.com
 }
 
+@test "nginx config ok" {
+    sudo nginx -t
+}
+
+@test "web server running" {
+    wget http://0.0.0.0/index.html -O /dev/null
+}
+
 @test "opencv for python loads" {
   python3 -c "import cv2"
 }
@@ -43,8 +51,8 @@
 @test "moab.service running" {
     systemctl is-active moab.service
 }
-@test "web.service running" {
-    systemctl is-active web.service
+@test "stream.service running" {
+    systemctl is-active stream.service
 }
 
 @test "Docker is running" {

@@ -4,7 +4,6 @@ from base_camera import BaseCamera
 
 
 class CameraOpenCV(BaseCamera):
-    video_source = 0
 
     @staticmethod
     def frames():

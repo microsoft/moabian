@@ -71,23 +71,6 @@ def _int8_to_uint8(b: int) -> int:
     return np.uint8(b)
 
 
-def _get_host_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("1.1.1.1", 1))
-    ip = s.getsockname()[0]  # returns string like '1.2.3.4'
-    ip_quads = [int(b) for b in ip.split(".")]
-    log.info(f"IP: {ip}")
-    return ip_quads
-
-
-def _get_sw_version():
-    ver_string = os.environ.get("MOABIAN", "1.0.0")
-    ver_triplet = [int(b) for b in ver_string.split(".")]
-    log.info(f"Version string: {ver_string}")
-    log.info(f"Version triplet: {ver_triplet}")
-    return ver_triplet
-
-
 def _xy_offsets(
     x: float,
     y: float,
@@ -146,7 +129,7 @@ class Hat:
         self,
         servo_offsets: Tuple[float, float, float] = (0, 0, 0),
         use_plate_angles=False,
-        use_hexyl=False,
+        debug=False,
     ):
         self.servo_offsets: Tuple[float, float, float] = servo_offsets
         self.buttons = Buttons(False, False, 0.0, 0.0)
@@ -154,8 +137,8 @@ class Hat:
         self.last_text = -1
 
         self.use_plate_angles = use_plate_angles
-        self.use_hexyl = use_hexyl
-        if use_hexyl:
+        self.debug = debug
+        if debug:
             self.hex_printer = hexyl()
 
         self.spi = None
@@ -179,7 +162,8 @@ class Hat:
                 [GpioPin.HAT_EN, GpioPin.HAT_RESET],
                 gpio.OUT,
             )
-            time.sleep(1.0)
+            # TODO: firmware isn't restarting, so lower from 0.9 to 0.1
+            time.sleep(0.1)
         except KeyboardInterrupt:
             raise
         except:
@@ -207,7 +191,7 @@ class Hat:
         hat_to_pi = self.spi.xfer(packet.tolist())
         time.sleep(0.005)
 
-        if self.use_hexyl:
+        if self.debug:
             self.hex_printer(packet.tolist(), hat_to_pi)
 
         # Check if buttons are pressed
@@ -340,7 +324,7 @@ class Hat:
             self.transceive(np.array(msg, dtype=np.int8))
 
             # TODO: Why is this sleep here instead of before display command?
-            time.sleep(0.090)
+            time.sleep(0.010)
 
     def display_power_symbol(self, text: str, icon_idx: PowerIcon):
         assert len(text) <= 12, "String is too long to display with icon"
@@ -401,9 +385,3 @@ class Hat:
         # After sending copying to the fw buffer, display the buffer as a long string
         self.transceive(pad(SendCommand.DISPLAY_SMALL_TEXT))
 
-    def print_info_screen(self):
-        sw_major, sw_minor, sw_bug = _get_sw_version()
-        ip1, ip2, ip3, ip4 = _get_host_ip()
-        self.display_long_string(
-            f"VER: {sw_major}.{sw_minor}.{sw_bug}\nIP : {ip1}.{ip2}.{ip3}.{ip4}"
-        )
