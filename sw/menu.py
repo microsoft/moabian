@@ -32,6 +32,10 @@ def calibrate_controller(**kwargs):
 out = partial(click.secho, bold=False, err=True)
 err = partial(click.secho, fg="red", err=True)
 
+import logging as log
+def red_alert(toggle: bool):
+    if toggle is True:
+        log.warning(f'Alert: brain has a problem')
 
 @dataclass
 class Mode:
@@ -115,9 +119,9 @@ def main(ctx, verbose, debug, frequency, stream, logfile, controller):
         opts_list = [
             ControllerInfo("Joystick", joystick_controller, {}),
             ControllerInfo("PID", pid_controller, {}),
-            ControllerInfo("Brain", brain_controller, {"port": 5000}),
-            ControllerInfo("Custom1", brain_controller, {"port": 5001}),
-            ControllerInfo("Custom2", brain_controller, {"port": 5002}),
+            ControllerInfo("Brain", brain_controller, {"port": 5000, "alert_fn": red_alert}),
+            ControllerInfo("Custom1", brain_controller, {"port": 5001, "alert_fn": red_alert}),
+            ControllerInfo("Custom2", brain_controller, {"port": 5002, "alert_fn": red_alert}),
             ControllerInfo(
                 "Calibrate",
                 calibrate_controller,

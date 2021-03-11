@@ -9,6 +9,7 @@ import logging as log
 from hat import Hat
 from env import MoabEnv
 
+
 def _get_host_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("1.1.1.1", 1))
@@ -17,6 +18,7 @@ def _get_host_ip():
     log.info(f"IP: {ip}")
     return ip_quads
 
+
 def _get_sw_version():
     ver_string = os.environ.get("MOABIAN", "1.0.0")
     ver_triplet = [int(b) for b in ver_string.split(".")]
@@ -24,8 +26,6 @@ def _get_sw_version():
     log.info(f"Version triplet: {ver_triplet}")
     return ver_triplet
 
-def get_info_string():
-    return s
 
 def info_screen_controller(env=None, **kwargs):
     sw_major, sw_minor, sw_bug = _get_sw_version()
@@ -35,12 +35,14 @@ def info_screen_controller(env=None, **kwargs):
     env.hat.display_long_string(s)
     return lambda state: ((0, 0), {})
 
+
 def info_config_controller(env=None, **kwargs):
     s = f"HUE: {env.hue}\n"
     s += f"BIAS: {env.servo_offsets}"
 
     env.hat.display_long_string(s)
     return lambda state: ((0, 0), {})
+
 
 def main():
     with MoabEnv(debug=True) as env:
@@ -53,5 +55,6 @@ def main():
         input("Press ENTER to quit")
         env.hat.display_string("done")
 
-if __name__ == "__main__":  # Parse command line args
+
+if __name__ == "__main__":
     main()

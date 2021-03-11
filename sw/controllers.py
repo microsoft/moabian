@@ -56,6 +56,7 @@ def brain_controller(
     max_angle=22,
     port=5555,
     enable_logging=False,
+    alert_fn=lambda toggle: None,
     **kwargs,
 ):
     """
@@ -83,6 +84,7 @@ def brain_controller(
         action = Vector2(0, 0)  # Action is 0,0 if not detected or brain didn't work
         info = {"status": 400, "resp": ""}
         if ball_detected:
+
             # Trap on GET failures so we can restart the brain without
             # bringing down this run loop. Plate will default to level
             # when it loses the connection.
@@ -93,6 +95,7 @@ def brain_controller(
                 action_json = response.json()
 
                 if response.ok:
+                    alert_fn(False)
                     action_json = requests.get(prediction_url, json=observables).json()
                     pitch = action_json["input_pitch"]
                     roll = action_json["input_roll"]
@@ -105,9 +108,12 @@ def brain_controller(
                     pitch, roll = int(pitch), int(roll)
 
                     action = Vector2(-roll, pitch)
+                else:
+                    alert_fn(True)
 
             except Exception as e:
                 log.exception(f"Exception calling predictor\n{e}")
+
 
         return action, info
 

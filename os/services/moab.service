@@ -1,5 +1,5 @@
 [Unit]
-Description=Moab Autostart Docker
+Description=Moab Menu
 DefaultDependencies=false
 After=docker.service
 
