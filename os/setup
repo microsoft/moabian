@@ -145,7 +145,7 @@ function layer-pip-docker
 function layer-moab-services 
 {
     sudo -u pi python3 -m pip install --user RPi.GPIO
-    services/install 2&> /dev/null
+    services/install
 }
 
 function layer-rename {
