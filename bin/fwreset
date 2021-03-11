@@ -11,12 +11,8 @@ set -euo pipefail
 # Hat reset		6
 
 # Enabling writing to these pins
-sudo raspi-gpio set 5 op
 sudo raspi-gpio set 6 op
-sudo raspi-gpio set 20 op
 
-sudo raspi-gpio set 20 dh
-sudo raspi-gpio set 5 dl
 sudo raspi-gpio set 6 dh
 sleep 0.1
 sudo raspi-gpio set 6 dl
