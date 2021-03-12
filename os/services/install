@@ -24,7 +24,7 @@ setup stream.service
 systemctl daemon-reload
 
 cp stream.conf /etc/nginx/sites-enabled
-ln -fs /etc/nginx/sites-available/stream.conf /etc/nginx/sites-enabled || true
+cp stream.conf /etc/nginx/sites-available
 
 echo "restarting nginx"
 service nginx reload

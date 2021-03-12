@@ -7,7 +7,7 @@
 readonly _D="$(dirname "$(readlink -f "$0")")" && cd $_D
 
 cd ..
-docker-compose restart -d &> /dev/null &
+docker-compose up -d &
 
 cd sw
 python3 menu.py "$*"
