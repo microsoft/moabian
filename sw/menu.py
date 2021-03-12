@@ -33,9 +33,7 @@ out = partial(click.secho, bold=False, err=True)
 err = partial(click.secho, fg="red", err=True)
 
 import logging as log
-def red_alert(toggle: bool):
-    if toggle is True:
-        log.warning(f'Alert: brain has a problem')
+
 
 @dataclass
 class Mode:
@@ -54,6 +52,11 @@ class ControllerInfo:
     kwargs: dict
 
 
+def red_alert(toggle: bool):
+    if toggle is True:
+        log.warning(f"Alert: brain has a problem")
+
+
 @click.command()
 @click.version_option(version="3.0")
 @click.option(
@@ -67,7 +70,7 @@ class ControllerInfo:
     "-d",
     "--debug/--no-debug",
     default=True,
-    help="programmer details showing Tx/Rx buffers"
+    help="programmer details showing Tx/Rx buffers",
 )
 @click.option(
     "-f",
@@ -119,9 +122,15 @@ def main(ctx, verbose, debug, frequency, stream, logfile, controller):
         opts_list = [
             ControllerInfo("Joystick", joystick_controller, {}),
             ControllerInfo("PID", pid_controller, {}),
-            ControllerInfo("Brain", brain_controller, {"port": 5000, "alert_fn": red_alert}),
-            ControllerInfo("Custom1", brain_controller, {"port": 5001, "alert_fn": red_alert}),
-            ControllerInfo("Custom2", brain_controller, {"port": 5002, "alert_fn": red_alert}),
+            ControllerInfo(
+                "Brain", brain_controller, {"port": 5000, "alert_fn": red_alert}
+            ),
+            ControllerInfo(
+                "Custom1", brain_controller, {"port": 5001, "alert_fn": red_alert}
+            ),
+            ControllerInfo(
+                "Custom2", brain_controller, {"port": 5002, "alert_fn": red_alert}
+            ),
             ControllerInfo(
                 "Calibrate",
                 calibrate_controller,
@@ -131,8 +140,12 @@ def main(ctx, verbose, debug, frequency, stream, logfile, controller):
                     "calibration_file": "bot.json",
                 },
             ),
-            ControllerInfo("Calib Info", info_config_controller, {"env": env}),
-            ControllerInfo("Bot Info", info_screen_controller, {"env": env}),
+            ControllerInfo(
+                "Calib Info", info_config_controller, {"env": env, "no_reset": True}
+            ),
+            ControllerInfo(
+                "Bot Info", info_screen_controller, {"env": env, "no_reset": True}
+            ),
         ]
 
         env.hat.hover()
@@ -162,10 +175,11 @@ def main(ctx, verbose, debug, frequency, stream, logfile, controller):
 
             else:
                 # SECOND LEVEL
-                if index == 0 or index == 4:
+                if opts_list[index].kwargs.get("no_reset"):
                     state = (0, 0, 0, 0, 0, 0)
                     detected = False
                     buttons = Buttons()
+                    env.hat.display_string_icon(opts_list[index].name, Icon.DOT)
                 else:
                     state, detected, buttons = env.reset(
                         opts_list[index].name, Icon.DOT

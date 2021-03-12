@@ -3,6 +3,8 @@
 
 import os
 import time
+import signal
+
 import socket
 import spidev
 import numpy as np
@@ -384,4 +386,3 @@ class Hat:
 
         # After sending copying to the fw buffer, display the buffer as a long string
         self.transceive(pad(SendCommand.DISPLAY_SMALL_TEXT))
-
