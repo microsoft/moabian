@@ -1,7 +1,7 @@
 {
-    "ball_hue": 40,
-    "plate_x_offset": 0.0,
-    "plate_y_offset": 0.0,
+    "ball_hue": 49.50000000000001,
+    "plate_x_offset": -0.001,
+    "plate_y_offset": -0.011,
     "servo_offsets": [
         0.0,
         0.0,

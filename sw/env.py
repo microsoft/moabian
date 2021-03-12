@@ -28,13 +28,13 @@ class MoabEnv:
         self.vel_y = self.derivative_fn(frequency)
         self.sum_x, self.sum_y = 0, 0
 
-        self.hat = Hat(use_plate_angles=use_plate_angles, use_hexyl=debug)
+        self.hat = Hat(use_plate_angles=use_plate_angles, debug=debug)
         self.hat.open()
         self.camera = OpenCVCameraSensor(frequency=frequency)
         self.detector = hsv_detector(debug=debug)
 
         self.calibration_file = calibration_file
-        self.reset_calibration(calibration_file)
+        self.reset_calibration()
 
     def __enter__(self):
         self.hat.enable_servos()
@@ -53,7 +53,10 @@ class MoabEnv:
     def __str__(self):
         return f"hue: {self.hue}, offsets: {self.servo_offsets}"
 
-    def reset_calibration(self):
+    def reset_calibration(self, calibration_file=None):
+        # Use default if not defined
+        calibration_file = calibration_file or self.calibration_file
+
         # Get calibration settings
         with open(self.calibration_file, "r") as f:
             calib = json.load(f)
