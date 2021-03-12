@@ -7,10 +7,9 @@ import json
 from hat import Hat
 from typing import Tuple
 from dataclasses import dataclass
-from common import EnvState, Buttons
-from detector import hsv_detector as detector
-from camera import OpenCVCameraSensor as Camera
-from common import high_pass_filter, low_pass_filter, derivative
+from camera import OpenCVCameraSensor
+from detector import hsv_detector, meters_to_pixels
+from common import EnvState, Buttons, high_pass_filter, low_pass_filter, derivative
 
 
 class MoabEnv:
@@ -22,32 +21,20 @@ class MoabEnv:
         derivative_fn=derivative,
         calibration_file="bot.json",
     ):
-        # Get calibration settings
-        with open(calibration_file, "r") as f:
-            calib = json.load(f)
-        self.plate_offsets = calib["plate_x_offset"], calib["plate_y_offset"]
-        self.servo_offsets = calib["servo_offsets"]
-        self.hue = calib["ball_hue"]
-
-        self.hat = Hat(use_plate_angles=use_plate_angles, debug=debug)
-        self.hat.open()
-        self.hat.set_servo_offsets(*self.servo_offsets)
-        self.camera = Camera(frequency=frequency)
-        self.detector = detector(debug=debug, hue=self.hue)
         self.debug = debug
-
         self.frequency = frequency
         self.derivative_fn = derivative
         self.vel_x = self.derivative_fn(frequency)
         self.vel_y = self.derivative_fn(frequency)
         self.sum_x, self.sum_y = 0, 0
 
-    def __repr__(self):
-        return self.__str__()
+        self.hat = Hat(use_plate_angles=use_plate_angles, use_hexyl=debug)
+        self.hat.open()
+        self.camera = OpenCVCameraSensor(frequency=frequency)
+        self.detector = hsv_detector(debug=debug)
 
-    def __str__(self):
-        return f'hue: {self.hue}, offsets: {self.servo_offsets}'
-
+        self.calibration_file = calibration_file
+        self.reset_calibration(calibration_file)
 
     def __enter__(self):
         self.hat.enable_servos()
@@ -60,15 +47,25 @@ class MoabEnv:
         self.hat.close()
         self.camera.stop()
 
-    def reset_calibration(self, calibration_file="bot.json"):
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return f"hue: {self.hue}, offsets: {self.servo_offsets}"
+
+    def reset_calibration(self):
         # Get calibration settings
-        with open(calibration_file, "r") as f:
+        with open(self.calibration_file, "r") as f:
             calib = json.load(f)
-        self.plate_offsets = calib["plate_x_offset"], calib["plate_y_offset"]
+        plate_offsets = (calib["plate_x_offset"], calib["plate_y_offset"])
+        self.plate_offsets_pixels = meters_to_pixels(plate_offsets)
         self.servo_offsets = calib["servo_offsets"]
         self.hue = calib["ball_hue"]
-        # Set the servo offsets (self.hue & self.plate_offsets are used in step)
+
+        # Set the servo offsets (self.hue & self.plate_offsets_pixels are used in step)
         self.hat.set_servo_offsets(*self.servo_offsets)
+        self.camera.x_offset_pixels = self.plate_offsets_pixels[0]
+        self.camera.y_offset_pixels = self.plate_offsets_pixels[1]
 
     def reset(self, text=None, icon=None):
         # Optionally display the controller active text
@@ -100,11 +97,6 @@ class MoabEnv:
         ball_center, ball_radius = cicle_feature
 
         x, y = ball_center
-
-        # TODO: this is temporary solution to centering the ball. This should
-        #       really be used to figure out the correct camera cropping!!!
-        x -= self.plate_offsets[0]
-        y -= self.plate_offsets[1]
 
         # Update derivate calulation
         vel_x, vel_y = self.vel_x(x), self.vel_y(y)

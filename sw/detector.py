@@ -20,8 +20,15 @@ def pixels_to_meters(vec, frame_size=256, field_of_view=1.05):
     plate_diameter_meters = 0.225
     plate_diameter_pixels = frame_size * field_of_view
     conversion = plate_diameter_meters / plate_diameter_pixels
+    return np.asarray(vec) * conversion
 
-    return vec * conversion
+
+def meters_to_pixels(vec, frame_size=256, field_of_view=1.05):
+    # The plate is default roughly 105% of the field of view
+    plate_diameter_meters = 0.225
+    plate_diameter_pixels = frame_size * field_of_view
+    conversion = plate_diameter_meters / plate_diameter_pixels
+    return np.asarray(vec) / conversion
 
 
 def draw_ball(img, center, radius, hue):
