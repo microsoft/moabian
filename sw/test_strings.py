@@ -3,14 +3,13 @@
 import argparse
 
 import time
-from hat import Hat, Icon, Text, plate_angles_to_servo_positions
+from hat import Hat
 
 menus = {
     0: "Berkeley\nCalifornia",
-    1: "Sacramento\nVacaville\nBerkeley\nSan Luis Obispo CA",
+    1: "Sacramento\nVacaville\nBerkeley\nSan Luis Obispo",
     2: "Sacramento Vacaville\nKansas City\nBerkeley San Luis Obispo CA",
 }
-
 
 def main(menu=0, frequency=30, debug=True):
     idx = menu
