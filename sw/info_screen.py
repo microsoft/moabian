@@ -27,21 +27,33 @@ def _get_sw_version():
     return ver_triplet
 
 
-def info_screen_controller(env=None, **kwargs):
+def info_screen_controller(env, **kwargs):
     sw_major, sw_minor, sw_bug = _get_sw_version()
     ip1, ip2, ip3, ip4 = _get_host_ip()
     s = f"VER: {sw_major}.{sw_minor}.{sw_bug}\nIP : {ip1}.{ip2}.{ip3}.{ip4}"
-
     env.hat.display_long_string(s)
-    return lambda state: ((0, 0), {})
+
+    def wait_for_menu():
+        menu_button = False
+        while not menu_button:
+            env.hat.noop()
+            menu_button, joy_button, joy_x, joy_y = env.hat.get_buttons()
+
+    return wait_for_menu
 
 
-def info_config_controller(env=None, **kwargs):
+def info_config_controller(env, **kwargs):
     s = f"HUE: {env.hue}\n"
     s += f"BIAS: {env.servo_offsets}"
-
     env.hat.display_long_string(s)
-    return lambda state: ((0, 0), {})
+
+    def wait_for_menu():
+        menu_button = False
+        while not menu_button:
+            env.hat.noop()
+            menu_button, joy_button, joy_x, joy_y = env.hat.get_buttons()
+
+    return wait_for_menu
 
 
 def main():

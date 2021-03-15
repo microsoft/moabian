@@ -4,12 +4,34 @@
 import time
 import json
 
-from hat import Hat
 from typing import Tuple
+from hat import Hat, Buttons
 from dataclasses import dataclass
 from camera import OpenCVCameraSensor
 from detector import hsv_detector, meters_to_pixels
-from common import EnvState, Buttons, high_pass_filter, low_pass_filter, derivative
+from common import high_pass_filter, low_pass_filter, derivative
+
+
+@dataclass
+class EnvState:
+    x: float = 0.0
+    y: float = 0.0
+    vel_x: float = 0.0
+    vel_y: float = 0.0
+    sum_x: float = 0.0
+    sum_y: float = 0.0
+
+    def __iter__(self):
+        return iter(astuple(self))
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        a = f"x,y ({self.x:.3f}, {self.y:.3f}) "
+        b = f"ẋ,ẏ ({self.vel_x:.3f}, {self.vel_y:.3f}) "
+        c = f"Δx,Δy {self.sum_x:.3f}, {self.sum_y:.3f})"
+        return a + b + c
 
 
 class MoabEnv:

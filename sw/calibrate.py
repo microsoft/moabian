@@ -68,7 +68,7 @@ def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=360, hue_steps=41)
 
         hue = 44  # Reasonable default
         success = False
-        return hue, success
+        return int(hue), success
 
 
 def calibrate_pos(camera_fn, detector_fn, hue):
@@ -225,7 +225,7 @@ def run_calibration(env, pid_fn, calibration_file):
     if success_pos and success_hue:  # and success_offsets:
         hat.display_long_string(
             "Calibration\nsuccessful\n\n"
-            f"Ball hue = {hue:.1f}\n\n"
+            f"Ball hue = {hue}\n\n"
             f"Position = \n({100*x_offset:.1f}, {100*y_offset:.1f}) cm\n\n"
             # f"servo offsets = ({o1:.2f}, {o2:.2f}, {o3:.2f})\n\n"
             "Click menu\nto return...\n"
@@ -234,7 +234,7 @@ def run_calibration(env, pid_fn, calibration_file):
         hat.display_long_string("Calibration\nfailed\n\nClick menu\nto return...")
     else:
         hue_str = (
-            f"Hue calib:\nsuccessful\nBall hue = {hue:.1f}\n\n"
+            f"Hue calib:\nsuccessful\nBall hue = {hue}\n\n"
             if success_hue
             else "Hue calib:\nfailed\n\n"
         )
@@ -263,6 +263,23 @@ def run_calibration(env, pid_fn, calibration_file):
     detector_fn(img_frame, debug=True, filename=filename)
 
     return None, {}
+
+
+def calibrate_controller(**kwargs):
+    run_calibration(
+        kwargs["env"],
+        kwargs["pid_fn"],
+        kwargs["calibration_file"],
+    )
+
+    def wait_for_menu():
+        hat = kwargs["env"].hat
+        menu_button = False
+        while not menu_button:
+            hat.noop()
+            menu_button, joy_button, joy_x, joy_y = hat.get_buttons()
+
+    return wait_for_menu
 
 
 def main(calibration_file, frequency=30, debug=True):

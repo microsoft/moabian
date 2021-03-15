@@ -8,31 +8,33 @@ import time
 import click
 
 from hat import Icon
+import logging as log
+from enum import Enum
 from env import MoabEnv
-from common import Buttons
 from typing import Callable
 from functools import partial
 from dataclasses import dataclass
-from calibrate import run_calibration
+
+from calibrate import calibrate_controller
 from info_screen import info_screen_controller, info_config_controller
 from controllers import pid_controller, brain_controller, joystick_controller
 
 
-# TODO: move to controllers?
-def calibrate_controller(**kwargs):
-    run_calibration(
-        kwargs["env"],
-        kwargs["pid_fn"],
-        kwargs["calibration_file"],
-    )
-    return lambda state: ((0, 0), {})
+@dataclass
+class MenuOption:
+    name: str
+    closure: Callable
+    kwargs: dict
+    is_controller: bool
+    # Some menu options are controllers (run a control loop), others are simply
+    # blocking functions that return on menu press. These other functions are
+    # for anything that does something to the bot (displaying info to the screen,
+    # doing a calibration, running git pull, etc.)
 
 
-# color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
-out = partial(click.secho, bold=False, err=True)
-err = partial(click.secho, fg="red", err=True)
-
-import logging as log
+class MenuState(Enum):
+    first_level = 1  # In the main menu screen (selecting beteween menu options)
+    second_level = 2  # Inside a controller or 'modal' (running the fn from MenuOption)
 
 
 @dataclass
@@ -45,16 +47,78 @@ class Mode:
     controller: str
 
 
-@dataclass
-class ControllerInfo:
-    name: str
-    closure: Callable
-    kwargs: dict
+def update_icon_fn(hat):
+    def update_icon(toggle: bool):
+        if toggle is True:
+            hat.update_icon(Icon.X)
+            log.warning(f"Alert: brain has a problem")
+        else:
+            hat.update_icon(Icon.DOT)
+
+    return update_icon
 
 
-def red_alert(toggle: bool):
-    if toggle is True:
-        log.warning(f"Alert: brain has a problem")
+def get_menu_list(env, mode: Mode):
+    update_icon = update_icon_fn(env.hat)
+    return [
+        MenuOption(
+            name="Joystick",
+            closure=joystick_controller,
+            kwargs={},
+            is_controller=True,
+        ),
+        MenuOption(
+            name="PID",
+            closure=pid_controller,
+            kwargs={},
+            is_controller=True,
+        ),
+        MenuOption(
+            name="Brain",
+            closure=brain_controller,
+            kwargs={"port": 5000, "alert_fn": update_icon},
+            is_controller=True,
+        ),
+        MenuOption(
+            name="Custom1",
+            closure=brain_controller,
+            kwargs={"port": 5001, "alert_fn": update_icon},
+            is_controller=True,
+        ),
+        MenuOption(
+            name="Custom2",
+            closure=brain_controller,
+            kwargs={"port": 5002, "alert_fn": update_icon},
+            is_controller=True,
+        ),
+        MenuOption(
+            name="Calibrate",
+            closure=calibrate_controller,
+            kwargs={
+                "env": env,
+                "pid_fn": pid_controller(),
+                "calibration_file": "bot.json",
+            },
+            is_controller=False,
+        ),
+        MenuOption(
+            name="Calib Info",
+            closure=info_config_controller,
+            kwargs={"env": env},
+            is_controller=False,
+        ),
+        MenuOption(
+            name="Bot Info",
+            closure=info_screen_controller,
+            kwargs={"env": env},
+            is_controller=False,
+        ),
+    ]
+
+
+# color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
+out = partial(click.secho, bold=False, err=True)
+err = partial(click.secho, fg="red", err=True)
 
 
 @click.command()
@@ -99,103 +163,68 @@ def red_alert(toggle: bool):
 @click.argument("controller", nargs=-1)
 @click.pass_context
 def main(ctx, verbose, debug, frequency, stream, logfile, controller):
-
+    mode = Mode(verbose, debug, frequency, stream, logfile, controller)
     if logfile:
         click.echo(click.format_filename(logfile))
-
-    mode = Mode(
-        verbose=verbose,
-        debug=debug,
-        frequency=frequency,
-        stream=stream,
-        logfile=logfile,
-        controller=controller,
-    )
-
-    if mode.verbose:
+    if verbose:
         click.secho(str(mode), fg="green")
 
     with MoabEnv(frequency, debug=debug) as env:
-        current = 1
+        menu_list = get_menu_list(env, mode)
+        current = MenuState.first_level
         index = 0
 
-        opts_list = [
-            ControllerInfo("Joystick", joystick_controller, {}),
-            ControllerInfo("PID", pid_controller, {}),
-            ControllerInfo(
-                "Brain", brain_controller, {"port": 5000, "alert_fn": red_alert}
-            ),
-            ControllerInfo(
-                "Custom1", brain_controller, {"port": 5001, "alert_fn": red_alert}
-            ),
-            ControllerInfo(
-                "Custom2", brain_controller, {"port": 5002, "alert_fn": red_alert}
-            ),
-            ControllerInfo(
-                "Calibrate",
-                calibrate_controller,
-                {
-                    "env": env,
-                    "pid_fn": pid_controller(),
-                    "calibration_file": "bot.json",
-                },
-            ),
-            ControllerInfo(
-                "Calib Info", info_config_controller, {"env": env, "no_reset": True}
-            ),
-            ControllerInfo(
-                "Bot Info", info_screen_controller, {"env": env, "no_reset": True}
-            ),
-        ]
-
+        # Start the menu loop with the plate hovering
         env.hat.hover()
         buttons = env.hat.get_buttons()
         while True:
             time.sleep(1 / env.frequency)
 
-            if current == 1:
+            if current == MenuState.first_level:
                 # Depends on if it's the first/last icon
                 if index == 0:
                     icon = Icon.DOWN
-                elif index == len(opts_list) - 1:
+                elif index == len(menu_list) - 1:
                     icon = Icon.UP
                 else:
                     icon = Icon.UP_DOWN
 
-                env.hat.display_string_icon(opts_list[index].name, icon)
+                env.hat.display_string_icon(menu_list[index].name, icon)
+                # Noop is needed since display string only sends msg when it has
+                # a new string (different from previous string)
                 env.hat.noop()
                 buttons = env.hat.get_buttons()
 
                 if buttons.joy_button:  # Selected controller
-                    current = 2
+                    current = MenuState.second_level
                 elif buttons.joy_y < -0.8:  # Flicked joystick down
-                    index = min(index + 1, len(opts_list) - 1)
+                    index = min(index + 1, len(menu_list) - 1)
                 elif buttons.joy_y > 0.8:  # Flicked joystick up
                     index = max(index - 1, 0)
 
-            else:
-                # SECOND LEVEL
-                if opts_list[index].kwargs.get("no_reset"):
-                    state = (0, 0, 0, 0, 0, 0)
-                    detected = False
-                    buttons = Buttons()
-                    env.hat.display_string_icon(opts_list[index].name, Icon.DOT)
-                else:
+            else:  # current == MenuState.second_level:
+                if menu_list[index].is_controller:
                     state, detected, buttons = env.reset(
-                        opts_list[index].name, Icon.DOT
+                        menu_list[index].name, Icon.DOT
                     )
 
                 # Initialize the controller
-                controller_closure = opts_list[index].closure
-                kwargs = opts_list[index].kwargs
+                controller_closure = menu_list[index].closure
+                kwargs = menu_list[index].kwargs
                 controller = controller_closure(**kwargs)
 
-                while not buttons.menu_button:
-                    action, info = controller((state, detected, buttons))
-                    state, detected, buttons = env.step(action)
+                if menu_list[index].is_controller:
+                    # If it's a controller run the control loop
+                    while not buttons.menu_button:
+                        action, info = controller((state, detected, buttons))
+                        state, detected, buttons = env.step(action)
+                else:
+                    # If not a controller, let it do it's own thing. We assume
+                    # it's a blocking call that will return when menu is pressed
+                    controller()
 
                 # Loop breaks after menu pressed and puts the plate back to hover
-                current = 1
+                current = MenuState.first_level
                 env.hat.hover()
 
 
