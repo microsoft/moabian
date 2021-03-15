@@ -2,40 +2,7 @@
 # Licensed under the MIT License.
 
 import math
-from dataclasses import dataclass, field, astuple
-
-
-@dataclass
-class Buttons:
-    menu_button: bool = False
-    joy_button: bool = False
-    joy_x: float = 0
-    joy_y: float = 0
-
-    def __iter__(self):
-        return iter(astuple(self))
-
-
-@dataclass
-class EnvState:
-    x: float = 0.
-    y: float = 0.
-    vel_x: float = 0.
-    vel_y: float = 0.
-    sum_x: float = 0.
-    sum_y: float = 0.
-
-    def __iter__(self):
-        return iter(astuple(self))
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __str__(self):
-        a = f"x,y ({self.x:.3f}, {self.y:.3f}) "
-        b = f"ẋ,ẏ ({self.vel_x:.3f}, {self.vel_y:.3f}) "
-        c = f"Δx,Δy {self.sum_x:.3f}, {self.sum_y:.3f})"
-        return a + b +c
+from dataclasses import dataclass
 
 
 def high_pass_filter(frequency, fc=50):

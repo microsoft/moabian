@@ -13,8 +13,8 @@ import RPi.GPIO as gpio
 
 from hexyl import hexyl
 from enum import IntEnum
-from common import Buttons
 from typing import Union, List, Tuple
+from dataclasses import dataclass, astuple
 
 # fmt: off
 # Define which bytes represent which commands
@@ -50,6 +50,18 @@ class PowerIcon(IntEnum):
     POWER_ON = 3
     SLEEP_MODE = 4
     POWER_OFF = 5
+
+
+@dataclass
+class Buttons:
+    menu_button: bool
+    joy_button: bool
+    joy_x: float
+    joy_y: float
+
+    def __iter__(self):
+        return iter(astuple(self))
+
 
 # GPIO pins
 class GpioPin(IntEnum):
@@ -135,8 +147,8 @@ class Hat:
     ):
         self.servo_offsets: Tuple[float, float, float] = servo_offsets
         self.buttons = Buttons(False, False, 0.0, 0.0)
-        self.last_icon = -1
-        self.last_text = -1
+        self.last_icon = -2  # Make sure these are always printed the first time
+        self.last_text = -2  # Make sure these are always printed the first time
 
         self.use_plate_angles = use_plate_angles
         self.debug = debug
@@ -204,7 +216,7 @@ class Hat:
         self.buttons.joy_x = _uint8_to_int8(hat_to_pi[2]) / 100
         self.buttons.joy_y = _uint8_to_int8(hat_to_pi[3]) / 100
 
-    def get_buttons(self) -> Tuple[bool, bool, float, float]:
+    def get_buttons(self) -> Buttons:
         """
         Check whether buttons are pressed and the joystick x & y values in the
         response.
@@ -341,7 +353,7 @@ class Hat:
         # Copy the text into a buffer in the firmware
         self._copy_buffer(text)
 
-        # After sending copying to the fw buffer, display the buffer as a long string
+        # After sending copying to the fw buffer, display the buffer as a short string
         self.transceive(pad(SendCommand.DISPLAY_POWER_SYMBOL, icon_idx))
 
     def display_string_icon(self, text: str, icon_idx: Icon):
@@ -357,7 +369,19 @@ class Hat:
         # Copy the text into a buffer in the firmware
         self._copy_buffer(text)
 
-        # After sending copying to the fw buffer, display the buffer as a long string
+        # After sending copying to the fw buffer, display the buffer as a short string
+        self.transceive(pad(SendCommand.DISPLAY_BIG_TEXT_ICON, icon_idx))
+
+    def update_icon(self, icon_idx: Icon):
+        # Don't needlessly update display if icon hasn't changed or if last text
+        # didn't have an icon (ie last called send text was display_string or
+        # display_long_string)
+        if icon_idx == self.last_icon or self.last_icon == -1:
+            return
+
+        self.last_icon = icon_idx
+
+        # Display the buffer as a long string
         self.transceive(pad(SendCommand.DISPLAY_BIG_TEXT_ICON, icon_idx))
 
     def display_string(self, text: str):
@@ -373,7 +397,7 @@ class Hat:
         # Copy the text into a buffer in the firmware
         self._copy_buffer(text)
 
-        # After sending copying to the fw buffer, display the buffer as a long string
+        # After sending copying to the fw buffer, display the buffer as a short string
         self.transceive(pad(SendCommand.DISPLAY_BIG_TEXT))
 
     def display_long_string(self, text: str):
