@@ -35,8 +35,9 @@ exec 2> >(tee "/tmp/stderr.log")
 # 3.0.13: add all IEC Power Symbols
 # 3.0.14: no changes, just bumping versions to match SW
 # 3.0.15: merge into moabian
+# 3.0.16: off-by-one icon errors
 
-VERSION="3.0.15"
+VERSION="3.0.16"
 
 # YRDDDHR: 2103908. 2021, 39th day of the year, 08th hour (PDT)
 TIMESTAMP=$(TZ='America/Los_Angeles' date +"%j%H%M")

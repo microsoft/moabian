@@ -37,34 +37,6 @@ typedef enum
 	IEC_ICON_EOL           // (sentinel)
 } disp_power_icon_t;
 
-typedef enum
-{
-	DISP_TXT_BLANK = 0,
-	DISP_TXT_INIT,
-	DISP_TXT_POWER_OFF,
-	DISP_TXT_ERROR,
-	DISP_TXT_CAL,
-	DISP_TXT_MANUAL,
-	DISP_TXT_CLASSIC,
-	DISP_TXT_BRAIN,
-	DISP_TXT_CUSTOM1,
-	DISP_TXT_CUSTOM2,
-	DISP_TXT_BOT_INFO,
-	DISP_TXT_CAL_INSTR,
-	DISP_TXT_CAL_COMPLETE,
-	DISP_TXT_CAL_CANCLED,
-	DISP_TXT_CAL_FAILED,
-	DISP_TXT_INFO_SCREEN,
-	DISP_TXT_BRAIN_UPDATED,
-	DISP_TXT_SYSTEM_UPDATED,
-	DISP_TXT_MOABV2,
-	DISP_TXT_EOL, // end of list
-	DISP_TXT_ARBITRARY // hack to support arbitrary strings
-} disp_text_t;
-
-// void disp_set_icon(disp_icon_t icon);
-// void disp_set_text(disp_text_t text);
-// void display_buffer(const char *str);
 void display_big_text_icon(const char *str, disp_icon_t i);
 void display_big_text(const char *str);
 void display_small_text(const char *str);

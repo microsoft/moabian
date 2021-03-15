@@ -159,9 +159,6 @@ void display_big_text_icon(const char *str, disp_icon_t i)
     // The icon is really a font, so convert number to a glyph
 	static char icon_str[4] = {0};
 
-	if (i >= DISP_ICON_EOL || i < 0)
-		return;
-
 	k_mutex_lock(&mutex1, K_FOREVER);
 	lv_label_set_text(text_label, str);
 	sprintf(icon_str, "%d", (u8_t) i);
@@ -175,9 +172,6 @@ void display_power_symbol(const char *str, disp_power_icon_t i)
 {
     // The icon is really a font, so convert number to a glyph
 	static char icon_str[4] = {0};
-
-	if (i >= IEC_ICON_EOL || i < 0)
-		return;
 
 	k_mutex_lock(&mutex1, K_FOREVER);
 	lv_label_set_text(text_label, str);
