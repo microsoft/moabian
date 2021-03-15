@@ -1,0 +1,18 @@
+identifier: moab_hat
+name: MOAB_HAT
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+ram: 128
+flash: 1024
+supported:
+  - uart
+  - gpio
+  - i2c
+  - spi
+  - pwm
+  - usb
+  

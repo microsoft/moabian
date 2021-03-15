@@ -1,0 +1,16 @@
+title: TI LP50xx LED Driver
+
+description: TI LP50xx LED binding
+
+compatible: "ti,lp50xx"
+
+include: i2c-device.yaml
+
+# Describes number of RGB LEDS supported by the specific chip
+# example:  5018 is 6, 5024 is 8, 5030 is 10, and 5036 is 12
+properties:
+  rgb-count:
+    type: int
+    required: true
+
+    

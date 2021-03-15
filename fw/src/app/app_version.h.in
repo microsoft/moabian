@@ -1,0 +1,10 @@
+#ifndef APP_VERSION_H
+#define APP_VERSION_H
+
+#define APP_VERSION_MAJOR	@app_VERSION_MAJOR@
+#define APP_VERSION_MINOR	@app_VERSION_MINOR@
+#define APP_VERSION_PATCH	@app_VERSION_PATCH@
+
+#define APP_SEMVER          "@SEMVER@"
+
+#endif

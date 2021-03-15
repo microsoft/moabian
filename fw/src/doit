@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+# vim:filetype=sh:
+
+set -euo pipefail
+trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
+
+require() { hash "$@" || exit 127; }
+
+require west
+
+## Log script output
+exec 1> >(tee "/tmp/stdout.log")
+exec 2> >(tee "/tmp/stderr.log")
+
+
+# Steps to build from scratch:
+# cd app
+# cmake -B build
+# cd build
+# make -j 12
+
+
+# Version Schema
+# major.minor.patch.timestamp
+# 3.0.4: atomic get/set of joystick/menu
+# 3.0.5: mutexes
+# 3.0.6: display calls handled by main.c loop w/timer instead of sleep
+# 3.0.7: restored display to it's own thread (due to main blocking on FIFO queue)
+# 3.0.8: unused
+# 3.0.10: always copy string from pi (instead of using text index)
+# 3.0.11: three display string/icon types
+# 3.0.12: add MOON icon
+# 3.0.13: add all IEC Power Symbols
+# 3.0.14: no changes, just bumping versions to match SW
+# 3.0.15: merge into moabian
+
+VERSION="3.0.15"
+
+# YRDDDHR: 2103908. 2021, 39th day of the year, 08th hour (PDT)
+TIMESTAMP=$(TZ='America/Los_Angeles' date +"%j%H%M")
+export SEMVER=$VERSION.$TIMESTAMP
+
+# Lets you run this script from anywhere
+readonly _D="$(dirname "$(readlink -f "$0")")"  && cd $_D
+
+# Dump firmware binaries here
+[[ -d binaries ]] || mkdir binaries
+DEST="$_D/binaries"
+
+# production "app" folder
+build () {
+    echo "Building Moab hat firmware with embedded version:" $SEMVER
+
+    west build -b moab_hat --pristine auto
+    west sign -d build -t imgtool -- --key ~/root-rsa-2048.pem
+
+    # SHA=$(git rev-parse HEAD | cut -b 1-4)
+    # DMY=$(date +"%Y%m%d-%H%M")
+    FN="$SEMVER.bin"
+    cp build/zephyr/zephyr.signed.bin "$DEST/$FN"
+}
+
+install() {
+    # "moab" must be setup for password-less ssh in ~/.ssh/config
+    if [[ $(ssh moab "hostname") ]]; then
+        # copy the last build to the pi
+        FN=$(ls -1 $DEST | tail -1)
+
+        echo "Installing $DEST/$FN on moab"
+        scp "$DEST/$FN" moab:$FN || echo "scp copy to moab failed"
+        ssh moab "sudo moab/bin/flash /home/pi/$FN"
+    fi 
+}
+
+clean() {
+    echo "removing temporary folders"
+    rm -rf build
+    rm -rf binaries
+}
+
+cmd="${1:-build}"
+
+[[ "$cmd" == "build" ]] && build
+[[ "$cmd" == "clean" ]] && clean
+[[ "$cmd" == "install" ]] && install

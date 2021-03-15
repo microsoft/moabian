@@ -1,0 +1,6 @@
+# Kconfig - MOAB Hat with STM32F030CCT MCU
+#
+
+config BOARD_MOAB_HAT
+	bool "MOAB Hat Development Board"
+	depends on SOC_STM32F415XX

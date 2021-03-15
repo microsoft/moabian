@@ -1,0 +1,61 @@
+# Kconfig - MOAB Hat with STM32F030CCT MCU
+#
+
+if BOARD_MOAB_HAT
+
+config BOARD
+	default "moab_hat"
+
+config USE_CODE_PARTITION
+	default y
+
+config UART_1
+	default y
+
+if SHELL
+config UART_3
+	default y
+endif # SHELL
+
+if I2C
+config I2C_2
+	default y
+
+config I2C_STM32_INTERRUPT
+	default y
+endif # I2C
+
+if PWM
+config PWM_STM32_3
+	default y
+endif # PWM
+
+if LVGL
+config LVGL_LOG_LEVEL
+    default 2
+
+config LVGL_DISPLAY_DEV_NAME
+	default "SH1106"
+
+config LVGL_HOR_RES
+	default 128
+
+config LVGL_VER_RES
+	default 32
+
+config LVGL_VDB_SIZE
+	default 100
+
+config LVGL_DPI
+	default 128
+
+config LVGL_BITS_PER_PIXEL
+	default 1
+
+choice LVGL_COLOR_DEPTH
+	default LVGL_COLOR_DEPTH_1
+endchoice
+endif
+
+
+endif # BOARD_MOAB_HAT
