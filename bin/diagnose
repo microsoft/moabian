@@ -4,6 +4,10 @@
   ping -c 1 github.com
 }
 
+@test "raspi-gpio installed" {
+    which raspi-gpio
+}
+
 @test "nginx config ok" {
     sudo nginx -t
 }
