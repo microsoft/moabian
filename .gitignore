@@ -77,3 +77,4 @@ pythonenv*
 **/bot.json
 **/tags
 **/.ipynb_checkpoints/
+**/*.pem
