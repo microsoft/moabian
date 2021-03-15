@@ -4,6 +4,9 @@ with Hat() as hat:
     hat.display_string_icon("DOT", Icon.DOT)
     input("Confirm: • DOT")
 
+    hat.display_string_icon("X Mark", Icon.X)
+    input("Confirm: × Mark")
+
     hat.display_power_symbol("POWER", PowerIcon.POWER)
     input("Confirm: ⏻ POWER")
 
