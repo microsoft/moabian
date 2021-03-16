@@ -1,0 +1,13 @@
+[Unit]
+Description=Moab Menu
+DefaultDependencies=false
+After=docker.service
+
+[Service]
+ExecStart=/usr/bin/python3 menu.py --no-debug
+WorkingDirectory=/home/pi/moab/sw
+Restart=no
+User=pi
+
+[Install]
+WantedBy=multi-user.target

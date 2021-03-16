@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+[[ $TERM == "alacritty" ]] && TERM=xterm-256color 
+sudo systemctl status fan power nginx stream brains menu
