@@ -59,6 +59,7 @@ class MoabEnv:
         self.reset_calibration()
 
     def __enter__(self):
+        # TODO: only enable if necessary, not on enter/exit
         self.hat.enable_servos()
         self.camera.start()
         return self
@@ -83,7 +84,7 @@ class MoabEnv:
         with open(self.calibration_file, "r") as f:
             calib = json.load(f)
         plate_offsets = (calib["plate_x_offset"], calib["plate_y_offset"])
-        self.plate_offsets_pixels = meters_to_pixels(plate_offsets)
+        self.plate_offsets_pixels = [int(i) for i in meters_to_pixels(plate_offsets)]
         self.servo_offsets = calib["servo_offsets"]
         self.hue = calib["ball_hue"]
 
