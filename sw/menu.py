@@ -173,6 +173,7 @@ def main(ctx, verbose, debug, frequency, stream, logfile, controller):
         menu_list = get_menu_list(env, mode)
         current = MenuState.first_level
         index = 0
+        last_index = -1
 
         # Start the menu loop with the plate hovering
         env.hat.hover()
@@ -189,7 +190,11 @@ def main(ctx, verbose, debug, frequency, stream, logfile, controller):
                 else:
                     icon = Icon.UP_DOWN
 
-                env.hat.display_string_icon(menu_list[index].name, icon)
+                if last_index != index:
+                    print(f"Trying {menu_list[index].name} and {icon}")
+                    env.hat.display_string_icon(menu_list[index].name, icon)
+                    last_index = index
+
                 # Noop is needed since display string only sends msg when it has
                 # a new string (different from previous string)
                 env.hat.noop()
@@ -218,6 +223,8 @@ def main(ctx, verbose, debug, frequency, stream, logfile, controller):
                     while not buttons.menu_button:
                         action, info = controller((state, detected, buttons))
                         state, detected, buttons = env.step(action)
+
+                    env.hat.hover()
                 else:
                     # If not a controller, let it do it's own thing. We assume
                     # it's a blocking call that will return when menu is pressed
@@ -225,7 +232,7 @@ def main(ctx, verbose, debug, frequency, stream, logfile, controller):
 
                 # Loop breaks after menu pressed and puts the plate back to hover
                 current = MenuState.first_level
-                env.hat.hover()
+                last_index = -1
 
 
 if __name__ == "__main__":

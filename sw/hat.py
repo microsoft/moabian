@@ -147,8 +147,6 @@ class Hat:
     ):
         self.servo_offsets: Tuple[float, float, float] = servo_offsets
         self.buttons = Buttons(False, False, 0.0, 0.0)
-        self.last_icon = -2  # Make sure these are always printed the first time
-        self.last_text = -2  # Make sure these are always printed the first time
 
         self.use_plate_angles = use_plate_angles
         self.debug = debug
@@ -343,13 +341,6 @@ class Hat:
     def display_power_symbol(self, text: str, icon_idx: PowerIcon):
         assert len(text) <= 12, "String is too long to display with icon"
 
-        # Don't needlessly update display if text AND icon haven't changed
-        if text == self.last_text and icon_idx == self.last_icon:
-            return
-
-        self.last_text = text
-        self.last_icon = icon_idx
-
         # Copy the text into a buffer in the firmware
         self._copy_buffer(text)
 
@@ -358,13 +349,6 @@ class Hat:
 
     def display_string_icon(self, text: str, icon_idx: Icon):
         assert len(text) <= 12, "String is too long to display with icon"
-
-        # Don't needlessly update display if text AND icon haven't changed
-        if text == self.last_text and icon_idx == self.last_icon:
-            return
-
-        self.last_text = text
-        self.last_icon = icon_idx
 
         # Copy the text into a buffer in the firmware
         self._copy_buffer(text)
@@ -376,23 +360,12 @@ class Hat:
         # Don't needlessly update display if icon hasn't changed or if last text
         # didn't have an icon (ie last called send text was display_string or
         # display_long_string)
-        if icon_idx == self.last_icon or self.last_icon == -1:
-            return
-
-        self.last_icon = icon_idx
 
         # Display the buffer as a long string
         self.transceive(pad(SendCommand.DISPLAY_BIG_TEXT_ICON, icon_idx))
 
     def display_string(self, text: str):
         assert len(text) <= 15, "String is too long to display without scrolling."
-
-        # Don't needlessly update display if text haven't changed (and there was no prev icon)
-        if text == self.last_text and icon_idx == self.last_icon:
-            return
-
-        self.last_text = text
-        self.last_icon = -1  # This means the last icon was no icon
 
         # Copy the text into a buffer in the firmware
         self._copy_buffer(text)
@@ -401,10 +374,6 @@ class Hat:
         self.transceive(pad(SendCommand.DISPLAY_BIG_TEXT))
 
     def display_long_string(self, text: str):
-        # reset the text/icon index optimization hack
-        self.last_text = -1
-        self.last_icon = -1  # This means the last icon was no icon
-
         # Copy the text into a buffer in the firmware
         self._copy_buffer(text)
 
