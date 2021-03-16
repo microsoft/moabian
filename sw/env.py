@@ -6,7 +6,7 @@ import json
 
 from typing import Tuple
 from hat import Hat, Buttons
-from dataclasses import dataclass
+from dataclasses import dataclass, astuple
 from camera import OpenCVCameraSensor
 from detector import hsv_detector, meters_to_pixels
 from common import high_pass_filter, low_pass_filter, derivative
