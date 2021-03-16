@@ -76,19 +76,19 @@ def get_menu_list(env, mode: Mode):
         MenuOption(
             name="Brain",
             closure=brain_controller,
-            kwargs={"port": 5000, "alert_fn": update_icon},
+            kwargs={"port": 5000},
             is_controller=True,
         ),
         MenuOption(
             name="Custom1",
             closure=brain_controller,
-            kwargs={"port": 5001, "alert_fn": update_icon},
+            kwargs={"port": 5001},
             is_controller=True,
         ),
         MenuOption(
             name="Custom2",
             closure=brain_controller,
-            kwargs={"port": 5002, "alert_fn": update_icon},
+            kwargs={"port": 5002},
             is_controller=True,
         ),
         MenuOption(
