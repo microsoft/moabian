@@ -40,7 +40,7 @@ typedef enum
 void display_big_text_icon(const char *str, disp_icon_t i);
 void display_big_text(const char *str);
 void display_small_text(const char *str);
-void display_power_symbol(const char *str, disp_power_icon_t i);
-
+//void display_power_symbol(const char *str, disp_power_icon_t i);
+void display_big_text_power_icon(const char *str, disp_power_icon_t i);
 
 #endif

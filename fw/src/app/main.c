@@ -71,9 +71,9 @@ void main(void)
                     mb_idx = 0;
                     LOG_INF("power icon index is %d", (u8_t) rx.data.icon);
                     LOG_HEXDUMP_INF((const u8_t *) message_buffer, 32, "buffer_ps");
-                    display_power_symbol(message_buffer, (disp_power_icon_t) rx.data.icon);
+                    display_big_text_power_icon(message_buffer, (disp_power_icon_t) rx.data.icon);
                     break;
-
+                    
                 case SERVO_ENABLE:
                     plate_servo_enable(true);
                     break;

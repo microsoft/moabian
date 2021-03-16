@@ -21,16 +21,21 @@ LV_FONT_DECLARE(iecsymbol_30)
 lv_obj_t* s1;
 lv_obj_t* s2;
 lv_obj_t* s3;
+lv_obj_t* s4;
 
 lv_obj_t* i1;
+lv_obj_t* i2;
 lv_obj_t* t1;
 lv_obj_t* t2;
 lv_obj_t* t3;
+lv_obj_t* t4;
 
-static lv_style_t i1_style;      // moab_symbol (or power_symbol)
+static lv_style_t i1_style;      // moab_symbol 
+static lv_style_t i2_style;      // power_symbol
 static lv_style_t t1_style;      // big, offset 32
 static lv_style_t t2_style;      // big, centered
 static lv_style_t t3_style;      // small, centered, scrolling
+static lv_style_t t4_style;      // big, offset 32 power_symbol
 
 // For the display thread
 #define STACKSIZE 1024*4
@@ -57,17 +62,22 @@ int display_init()
     s1 = lv_obj_create(NULL, NULL);
     s2 = lv_obj_create(NULL, NULL);
     s3 = lv_obj_create(NULL, NULL);
+	s4 = lv_obj_create(NULL, NULL);
 
 	// STYLES
 	lv_style_copy(&i1_style, &lv_style_plain);
+	lv_style_copy(&i2_style, &lv_style_plain);
 	lv_style_copy(&t1_style, &lv_style_plain);
 	lv_style_copy(&t2_style, &lv_style_plain);
 	lv_style_copy(&t3_style, &lv_style_plain);
+	lv_style_copy(&t4_style, &lv_style_plain);
 
 	i1_style.text.font = &moabsym_30;
+	i2_style.text.font = &iecsymbol_30;
 	t1_style.text.font = &din2014_18;
 	t2_style.text.font = &din2014_18;
 	t3_style.text.font = &din2014light_12;
+	t4_style.text.font = &din2014_18;
 
     //
     // SCREEN1
@@ -105,6 +115,23 @@ int display_init()
 	lv_label_set_align(t3, LV_LABEL_ALIGN_CENTER);
 	lv_obj_set_size(t3, 128, 32);
 	lv_obj_align(t3, NULL, LV_ALIGN_CENTER, 0, 0);
+
+    //
+    // SCREEN4
+    //
+    i2 = lv_label_create(s4, NULL);
+    lv_label_set_style(i2, LV_LABEL_STYLE_MAIN, &i2_style);
+	lv_obj_set_width(i2, 32);
+	lv_obj_align(i2, NULL, LV_ALIGN_IN_LEFT_MID, 2, 0);
+
+    t4 = lv_label_create(s4, NULL);
+	lv_label_set_style(t4, LV_LABEL_STYLE_MAIN, &t4_style);
+
+	lv_label_set_long_mode(t4, LV_LABEL_LONG_BREAK);
+	lv_label_set_align(t4,     LV_LABEL_ALIGN_LEFT);
+    lv_label_set_text(t4, "TEXT1");
+	lv_obj_set_width(t4, 94); //align text to label 
+	lv_obj_align(t4, NULL, LV_ALIGN_IN_LEFT_MID, 36, 0);
 
 
 	display_big_text("PROJ MOAB");
@@ -227,6 +254,28 @@ void display_small_text(const char *str)
 	k_mutex_unlock(&mutex1);
 }
 
+void display_big_text_power_icon(const char *str, disp_power_icon_t i)
+{
+    // The icon is really a font, so convert number to a glyph
+	static char icon_str[4] = {0};
+
+	k_mutex_lock(&mutex1, K_FOREVER);
+
+    //  HACK START
+    //lv_label_set_long_mode(t3, LV_LABEL_LONG_BREAK);
+    //lv_obj_invalidate(t3);
+	//lv_task_handler();
+    // k_sleep(50);
+    //  HACK END
+	
+	lv_label_set_text(t4, str);
+	sprintf(icon_str, "%d", (u8_t) i);
+	lv_label_set_text(i2, icon_str);
+    lv_scr_load(s4); // toggle MOABSYMBOL
+	LOG_INF("screen4");
+
+	k_mutex_unlock(&mutex1);
+}
 
 static void disp_task(void)
 {
