@@ -30,7 +30,7 @@ def _get_sw_version():
 def info_screen_controller(env, **kwargs):
     sw_major, sw_minor, sw_bug = _get_sw_version()
     ip1, ip2, ip3, ip4 = _get_host_ip()
-    s = f"VER: {sw_major}.{sw_minor}.{sw_bug}\nIP : {ip1}.{ip2}.{ip3}.{ip4}"
+    s = f"VER {sw_major}.{sw_minor}.{sw_bug}\nIP {ip1}.{ip2}.{ip3}.{ip4}"
     env.hat.display_long_string(s)
 
     def wait_for_menu():
@@ -43,8 +43,12 @@ def info_screen_controller(env, **kwargs):
 
 
 def info_config_controller(env, **kwargs):
-    s = f"HUE: {env.hue}\n"
-    s += f"BIAS: {env.servo_offsets}"
+    s = f"Hue {env.hue}\n"
+    #s += f"x {env.plate_offsets_pixels[0]}  y={env.plate_offsets_pixels[1]}\n"
+    s += f"x:   {env.plate_offsets_pixels[0]}\n"
+    s += f"y:   {env.plate_offsets_pixels[1]}\n"
+    s += f"SO:  {env.servo_offsets}"
+    print(s)
     env.hat.display_long_string(s)
 
     def wait_for_menu():
