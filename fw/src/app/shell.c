@@ -422,5 +422,39 @@ static int cmd_resetservo(const struct shell *sh, size_t argc, char **argv)
     }
     return 0;
 }
-
 SHELL_CMD_REGISTER(resetservo, NULL, "Write defaults to servo calibration", cmd_resetservo);
+
+
+// string command
+
+static int cmd_string_big(const struct shell *sh, size_t argc, char **argv)
+{
+    // no arguments: show "Hello World"
+    if (argc-1 == 0)
+        display_big_text("Hello Big World");
+
+    if (argc-1 == 1)
+        display_big_text(argv[1]);
+
+    return 0;
+}
+
+static int cmd_string_small(const struct shell *sh, size_t argc, char **argv)
+{
+    // no arguments: show "Hello World"
+    if (argc-1 == 0)
+        display_small_text("Hello Small World");
+
+    if (argc-1 == 1)
+        display_small_text(argv[1]);
+
+    return 0;
+}
+
+SHELL_STATIC_SUBCMD_SET_CREATE(sub_string,
+    SHELL_CMD(big, NULL, "big", cmd_string_big),
+    SHELL_CMD(small, NULL, "small", cmd_string_small),
+    SHELL_SUBCMD_SET_END
+);
+SHELL_CMD_REGISTER(string, &sub_string, "Display string", NULL);
+
