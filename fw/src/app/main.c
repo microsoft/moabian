@@ -10,26 +10,26 @@ LOG_MODULE_REGISTER(main);
 
 void main(void)
 {
-	pi_to_hat_t rx;
-	u8_t last_control;
+    pi_to_hat_t rx;
+    u8_t last_control;
 
-	u8_t mb_idx = 0;
-	char message_buffer[255];
+    u8_t mb_idx = 0;
+    char message_buffer[255];
 
-	float servo1_pos, servo2_pos, servo3_pos;
-	u16_t servo1_pos_centi_deg, servo2_pos_centi_deg, servo3_pos_centi_deg;
+    float servo1_pos, servo2_pos, servo3_pos;
+    u16_t servo1_pos_centi_deg, servo2_pos_centi_deg, servo3_pos_centi_deg;
 
     LOG_INF("Version %s", log_strdup(APP_SEMVER));
     LOG_INF("Word Size %d. pi_to_hat_t %d", sizeof(void *), sizeof(pi_to_hat_t));
 
-	plate_init();
+    plate_init();
 
-	while (true)
-	{
-		// process incoming SPI msgs
-		if (wait_for_pi_message(&rx, K_FOREVER) == 0)
-		{
-			last_control = rx.control;
+    while (true)
+    {
+        // process incoming SPI msgs
+        if (wait_for_pi_message(&rx, K_FOREVER) == 0)
+        {
+            last_control = rx.control;
 
             switch (rx.control)
             {
@@ -73,7 +73,7 @@ void main(void)
                     LOG_HEXDUMP_INF((const u8_t *) message_buffer, 32, "buffer_ps");
                     display_big_text_power_icon(message_buffer, (disp_power_icon_t) rx.data.icon);
                     break;
-                    
+
                 case SERVO_ENABLE:
                     plate_servo_enable(true);
                     break;
@@ -104,9 +104,9 @@ void main(void)
                     break;
 
                 default:
-					LOG_ERR("Bad control byte: %x. Prior was: %x", rx.control, last_control);
+                    LOG_ERR("Bad control byte: %x. Prior was: %x", rx.control, last_control);
                     break;
-			}
-		}
-	}
+            }
+        }
+    }
 }
