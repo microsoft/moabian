@@ -1,10 +1,11 @@
 [Unit]
-Description=Moab Menu
+Description=Moab Brains
 DefaultDependencies=false
 After=docker.service
 
 [Service]
-ExecStart=/bin/bash /home/pi/moab/bin/menu --no-debug
+Type=forking
+ExecStart=/bin/bash /home/pi/moab/bin/up
 WorkingDirectory=/home/pi/moab
 Restart=no
 User=pi

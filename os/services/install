@@ -9,16 +9,20 @@ readonly _D="$(dirname "$(readlink -f "$0")")" && cd "$_D"
 function setup()
 {
     # next line failing in nominal on new systems
-    sudo systemctl disable "$1" || true
+    sudo systemctl disable "$1" 2>/dev/null || true
 
     sudo ln -sf "$PWD/$1" /etc/systemd/system/"$1"
     sudo systemctl enable "$1"
     sudo chmod 0644 "$1"
 }
 
-setup moab.service
-setup power.service
+# v3 no longer needs version 2.4.1 moab.service
+systemctl disable moab 2>/dev/null || true
+
 setup fan.service
+setup power.service
+setup brains.service
+setup menu.service
 setup stream.service
 
 systemctl daemon-reload
