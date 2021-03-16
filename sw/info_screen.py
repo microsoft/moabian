@@ -4,10 +4,11 @@
 # Licensed under the MIT License.
 
 import os
-import time
+from random import *
+from time import *
 import socket
 import logging as log
-from hat import Hat
+from hat import Hat, Icon
 from env import MoabEnv
 
 
@@ -32,12 +33,12 @@ def info_screen_controller(env, **kwargs):
     sw_major, sw_minor, sw_bug = _get_sw_version()
     ip1, ip2, ip3, ip4 = _get_host_ip()
     s = f"VER {sw_major}.{sw_minor}.{sw_bug}\nIP {ip1}.{ip2}.{ip3}.{ip4}"
-    print(s)
     env.hat.display_long_string(s)
 
     def wait_for_menu():
         menu_button = False
         while not menu_button:
+            sleep(1/30)
             env.hat.noop()
             menu_button, joy_button, joy_x, joy_y = env.hat.get_buttons()
 
@@ -45,32 +46,40 @@ def info_screen_controller(env, **kwargs):
 
 
 def info_config_controller(env, **kwargs):
-    s = f"Hue {env.hue}\n"
-    s += f"x:   {env.plate_offsets_pixels[0]}\n"
-    s += f"y:   {env.plate_offsets_pixels[1]}\n"
-    s += f"SO:  {env.servo_offsets}"
-    print(s)
+    so = ",".join(map(str, env.servo_offsets))
+    s = f"HUE {env.hue}\n"
+    s += f"X,Y {env.plate_offsets_pixels[0]},{env.plate_offsets_pixels[1]}\n"
+    s += f"SO {so}"
     env.hat.display_long_string(s)
 
     def wait_for_menu():
         menu_button = False
         while not menu_button:
+            sleep(1/30)
             env.hat.noop()
             menu_button, joy_button, joy_x, joy_y = env.hat.get_buttons()
 
     return wait_for_menu
 
+def sequence(env, msec=1/20):
+        env.hat.display_string_icon("BOT INFO", Icon.UP_DOWN)
+
+        for x in range(randint(1, 5)):
+            sleep(msec)
+            env.hat.noop()
+
+        info_config_controller(env)
+        for x in range(randint(1, 15)):
+            sleep(msec)
+            env.hat.noop()
+
 
 def main():
     with MoabEnv(debug=True) as env:
+        for x in range(10):
+            sequence(env)
 
-        info_screen_controller(env)
-        input("Press ENTER to quit")
-
-        info_config_controller(env)
-        input("Press ENTER to quit")
         env.hat.display_string("done")
-
 
 if __name__ == "__main__":
     main()

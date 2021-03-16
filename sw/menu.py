@@ -191,7 +191,6 @@ def main(ctx, verbose, debug, frequency, stream, logfile, controller):
                     icon = Icon.UP_DOWN
 
                 if last_index != index:
-                    print(f"Trying {menu_list[index].name} and {icon}")
                     env.hat.display_string_icon(menu_list[index].name, icon)
                     last_index = index
 
