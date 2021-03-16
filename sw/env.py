@@ -1,13 +1,14 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+import os
 import time
 import json
 
 from typing import Tuple
 from hat import Hat, Buttons
-from dataclasses import dataclass, astuple
 from camera import OpenCVCameraSensor
+from dataclasses import dataclass, astuple
 from detector import hsv_detector, meters_to_pixels
 from common import high_pass_filter, low_pass_filter, derivative
 
@@ -81,10 +82,18 @@ class MoabEnv:
         calibration_file = calibration_file or self.calibration_file
 
         # Get calibration settings
-        with open(self.calibration_file, "r") as f:
-            calib = json.load(f)
-        plate_offsets = (calib["plate_x_offset"], calib["plate_y_offset"])
-        self.plate_offsets_pixels = [int(i) for i in meters_to_pixels(plate_offsets)]
+        if os.path.isfile(calibration_file):
+            with open(calibration_file, "r") as f:
+                calib = json.load(f)
+        else:  # Use defaults
+            calib = {
+                "ball_hue": 44,
+                "plate_offsets": (0.0, 0.0),
+                "servo_offsets": (0.0, 0.0, 0.0),
+            }
+
+        plate_offsets = calib["plate_offsets"]
+        self.plate_offsets_pixels = meters_to_pixels(plate_offsets)
         self.servo_offsets = calib["servo_offsets"]
         self.hue = calib["ball_hue"]
 

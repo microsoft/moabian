@@ -17,10 +17,42 @@ import numpy as np
 import logging as log
 
 from env import MoabEnv
+from typing import Tuple
 from common import Vector2
 from detector import hsv_detector
 from controllers import pid_controller
+from dataclasses import dataclass, astuple
 from hat import Hat, plate_angles_to_servo_positions
+
+
+@dataclass
+class CalibHue:
+    hue: int = 44  # Reasonable default
+    success: bool = False
+    early_quit: bool = False  # If menu is pressed before the calibration is complete
+
+    def __iter__(self):
+        return iter(astuple(self))
+
+
+@dataclass
+class CalibPos:
+    position: Tuple[float, float] = (0.0, 0.0)
+    success: bool = False
+    early_quit: bool = False  # If menu is pressed before the calibration is complete
+
+    def __iter__(self):
+        return iter(astuple(self))
+
+
+@dataclass
+class CalibServos:
+    servos: Tuple[float, float, float] = (0.0, 0.0, 0.0)
+    success: bool = False
+    early_quit: bool = False  # If menu is pressed before the calibration is complete
+
+    def __iter__(self):
+        return iter(astuple(self))
 
 
 def ball_close_enough(x, y, radius, max_ball_dist=0.045, min_ball_dist=0.01):
@@ -32,18 +64,24 @@ def ball_close_enough(x, y, radius, max_ball_dist=0.045, min_ball_dist=0.01):
     )
 
 
-def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=360, hue_steps=41):
+def calibrate_hue(
+    camera_fn, detector_fn, is_menu_down_fn, hue_low=0, hue_high=360, hue_steps=41
+):
     img_frame, elapsed_time = camera_fn()
     hue_options = list(np.linspace(hue_low, hue_high, hue_steps))
 
     detected_hues = []
     for hue in hue_options:
+        print("hue", hue)
+        if is_menu_down_fn():
+            return CalibHue(early_quit=True)
+
         img_frame, elapsed_time = camera_fn()
         ball_detected, ((x, y), radius) = detector_fn(img_frame, hue=hue)
 
         # If we found a ball roughly in the center that is large enough
         if ball_detected and ball_close_enough(x, y, radius):
-            print(
+            log.info(
                 f"hue={hue:0.3f}, ball_detected={ball_detected}, "
                 f"(x, y)={x:0.3f} {y:0.3f}, radius={radius:0.3f}"
             )
@@ -59,37 +97,32 @@ def calibrate_hue(camera_fn, detector_fn, hue_low=0, hue_high=360, hue_steps=41)
 
         print(f"Hues are: {detected_hues}")
         print(f"Hue calibrated: {avg_hue:0.3f}")
-
-        success = True
-        return avg_hue, success
+        print(f"\n\n\n\n\n\n {avg_hue} \n\n\n\n\n\n\n")
+        return CalibHue(hue=int(avg_hue), success=True)
 
     else:
         log.warning(f"Hue calibration failed.")
-
-        hue = 44  # Reasonable default
-        success = False
-        return int(hue), success
+        return CalibHue()
 
 
-def calibrate_pos(camera_fn, detector_fn, hue):
+def calibrate_pos(camera_fn, detector_fn, hue, is_menu_down_fn):
     for i in range(10):  # Try and detect for 10 frames before giving up
+        if is_menu_down_fn():
+            return CalibPos(early_quit=True)
+
         img_frame, elapsed_time = camera_fn()
         ball_detected, ((x, y), radius) = detector_fn(img_frame, hue=hue)
 
         # If we found a ball roughly in the center that is large enough
         if ball_detected and ball_close_enough(x, y, radius):
-            success = True
-
             x_offset = round(x, 3)
             y_offset = round(y, 3)
 
             log.info(f"Offset calibrated: [{x_offset:.3f}, {y_offset:.3f}]")
-            print(f"Offset calibrated: [{x_offset:.3f}, {y_offset:.3f}]")
-            return (x_offset, y_offset), success
+            return CalibPos(position=(x_offset, y_offset), success=True)
 
     log.warning(f"Offset calibration failed.")
-    success = False
-    return (0.0, 0.0), success
+    return CalibPos()
 
 
 # TODO: optimize this calibration
@@ -107,6 +140,11 @@ def calibrate_servo_offsets(pid_fn, env, stationary_vel=0.001, time_limit=20):
         action, info = pid_fn(state)
 
         (x, y, vel_x, vel_y, sum_x, sum_y), ball_detected, buttons = state
+
+        # Quit on menu down
+        if buttons.menu_button:
+            return CalibServos(early_quit=True)
+
         if ball_detected:
             vel_x_hist.append(vel_x)
             vel_y_hist.append(vel_y)
@@ -115,7 +153,6 @@ def calibrate_servo_offsets(pid_fn, env, stationary_vel=0.001, time_limit=20):
 
             # If the average velocity for the last 100 timesteps is under the limit
             if (prev_100_x < stationary_vel) and (prev_100_y < stationary_vel):
-                success = True
 
                 # Calculate offsets by calculating servo positions at the
                 # current stable position and subtracting the `default` zeroed
@@ -124,12 +161,11 @@ def calibrate_servo_offsets(pid_fn, env, stationary_vel=0.001, time_limit=20):
                 servos_zeroed = np.array(plate_angles_to_servo_positions(0, 0))
                 servo_offsets = list(servos - servos_zeroed)
 
-                return servo_offsets, success
+                return CalibServos(servos=servo_offsets, success=True)
 
     # If the plate could be stabilized in time_limit seconds, quit
     log.warning(f"Servo calibration failed.")
-    success = False
-    return [0.0, 0.0, 0.0], success
+    return CalibServos()
 
 
 def write_calibration(calibration_dict, calibration_file="bot.json"):
@@ -150,28 +186,28 @@ def read_calibration(calibration_file="bot.json"):
     else:  # Use defaults
         calibration_dict = {
             "ball_hue": 44,
-            "plate_x_offset": 0.0,
-            "plate_y_offset": 0.0,
-            "servo_offsets": [0.0, 0.0, 0.0],
+            "plate_offsets": (0.0, 0.0),
+            "servo_offsets": (0.0, 0.0, 0.0),
         }
     return calibration_dict
 
 
-def wait_for_joystick(hat, sleep_time=1 / 30):
+def wait_for_joystick_or_menu(hat, sleep_time=1 / 30):
+    """Waits for either the joystick or the menu. Returns the buttons"""
     while True:
         hat.noop()  # Force new transfer to have up to date button reading
-        menu_btn, joy_btn, joy_x, joy_y = hat.get_buttons()
+        buttons = hat.get_buttons()
+        if buttons.menu_button or buttons.joy_button:
+            return buttons
         time.sleep(sleep_time)
-        if joy_btn:
-            return
 
 
 def wait_for_menu(hat, sleep_time=1 / 30):
     while True:
         hat.noop()  # Force new transfer to have up to date button reading
-        menu_btn, joy_btn, joy_x, joy_y = hat.get_buttons()
+        menu_button, joy_button, joy_x, joy_y = hat.get_buttons()
         time.sleep(sleep_time)
-        if menu_btn:
+        if menu_button:
             return
 
 
@@ -181,23 +217,36 @@ def run_calibration(env, pid_fn, calibration_file):
     camera_fn = env.camera
     detector_fn = env.detector
 
-    success_pos = True
-    success_hue = True
-    success_offsets = True
+    def is_menu_down(hat=hat) -> bool:
+        hat.noop()
+        return hat.get_buttons().menu_button
 
     # lift plate up fist
     hat.set_angles(0, 0)
 
-    # Calibrate position and hue
+    # Display message and wait for joystick
     hat.display_long_string(
         "To calibrate:\n\n"
         "Place ball in\ncenter using\nclear stand.\n\n"
         "Then click joystick\nto continue.\n"
     )
-    wait_for_joystick(hat)
+    buttons = wait_for_joystick_or_menu(hat)
+    if buttons.menu_button:  # Early quit
+        hat.hover()
+        return
     hat.display_string("Calibrating...")
-    hue, success_hue = calibrate_hue(camera_fn, detector_fn)
-    (x_offset, y_offset), success_pos = calibrate_pos(camera_fn, detector_fn, hue)
+
+    # Calibrate hue
+    hue_calib = calibrate_hue(camera_fn, detector_fn, is_menu_down)
+    if hue_calib.early_quit:
+        hat.hover()
+        return
+
+    # Calibrate position
+    pos_calib = calibrate_pos(camera_fn, detector_fn, hue_calib.hue, is_menu_down)
+    if pos_calib.early_quit:
+        hat.hover()
+        return
 
     # # Calibrate servo offsets
     # hat.display_long_string(
@@ -205,42 +254,49 @@ def run_calibration(env, pid_fn, calibration_file):
     #     "Place ball in\ncenter using\nclear stand.\n\n"
     #     "Click joystick\nto continue."
     # )
-    # wait_for_joystick(hat)
+    # buttons = wait_for_joystick_or_menu(hat)
+    # if buttons.menu_button:  # Early quit
+    #     hat.hover()
+    #     return
+    #
     # hat.display_long_string("Running auto-\ncalibrate servos...")
-    # servo_offsets, success_offsets = calibrate_servo_offsets(pid_fn, env)
+    # servos = calibrate_servo_offsets(pid_fn, env)
+    # if servo_calib.early_quit:
+    #     hat.hover()
+    #     return
 
     # Save calibration
     calibration_dict = read_calibration(calibration_file)
-    calibration_dict["ball_hue"] = hue
-    calibration_dict["plate_x_offset"] = x_offset
-    calibration_dict["plate_y_offset"] = y_offset
-    # calibration_dict["servo_offsets"] = servo_offsets
-    # o1, o2, o3 = servo_offsets
+    calibration_dict["ball_hue"] = hue_calib.hue
+    calibration_dict["plate_offsets"] = pos_calib.position
+    x_offset, y_offset = pos_calib.position
+    # calibration_dict["servo_offsets"] = servo_calib.servos
+    # s1, s2, s3 = servo_calib.servos
     write_calibration(calibration_dict)
 
     # Update the environment to use the new calibration
     # Warning! This mutates the state!
     env.reset_calibration(calibration_file=calibration_file)
 
-    if success_pos and success_hue:  # and success_offsets:
+    if pos_calib.success and hue_calib.success:  # and servo_calib.success:
         hat.display_long_string(
             "Calibration\nsuccessful\n\n"
-            f"Ball hue = {hue}\n\n"
+            f"Ball hue = {hue_calib.hue}\n\n"
             f"Position = \n({100*x_offset:.1f}, {100*y_offset:.1f}) cm\n\n"
-            # f"servo offsets = ({o1:.2f}, {o2:.2f}, {o3:.2f})\n\n"
+            # f"servo offsets = ({s1:.2f}, {s2:.2f}, {s3:.2f})\n\n"
             "Click menu\nto return...\n"
         )
-    elif not (success_pos or success_hue):  # or success_offsets):
+    elif not (pos_calib.success or hue_calib.success):  # or servo_calib.success):
         hat.display_long_string("Calibration\nfailed\n\nClick menu\nto return...")
     else:
         hue_str = (
-            f"Hue calib:\nsuccessful\nBall hue = {hue}\n\n"
-            if success_hue
+            f"Hue calib:\nsuccessful\nBall hue = {hue_calib.hue}\n\n"
+            if hue_calib.success
             else "Hue calib:\nfailed\n\n"
         )
         pos_str = (
             f"Position \ncalib:\nsuccessful\nPosition = \n({100*x_offset:.1f}, {100*y_offset:.1f})cm\n\n"
-            if success_hue
+            if hue_calib.success
             else "(X, Y) calib:\nfailed\n\n"
         )
         hat.display_long_string(
@@ -250,19 +306,17 @@ def run_calibration(env, pid_fn, calibration_file):
             + "Click menu\nto return...\n"
         )
 
-    hat.hover()
-
-    # When the calibration is complete, write the image of what the moab camera
+    # When the calibration is complete, save the image of what the moab camera
     # sees (useful for debugging when the hue calibration fails)
     # Have a nice filename with the time and whether it succeeded or failed
     time_of_day = datetime.datetime.now().strftime("%H%M%S")
     filename = f"/tmp/hue.{time_of_day}."
-    filename += "success" if success_hue else "fail"
+    filename += "success" if hue_calib.success else "fail"
     filename += ".jpg"
     img_frame, _ = camera_fn()
     detector_fn(img_frame, debug=True, filename=filename)
 
-    return None, {}
+    hat.hover()
 
 
 def calibrate_controller(**kwargs):
