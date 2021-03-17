@@ -14,8 +14,9 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
     cols += ["pitch", "roll"]  # Action
     cols += ["status", "error_response"]  # Error status
 
+    header = ",".join(cols)
     with open(logfile, "w") as fd:
-        print(cols, file=fd)
+        print(header, file=fd)
 
     # Create the state variables
     prev_time = time.time()
@@ -35,6 +36,8 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
         # use default values of 200 and empty string
         status = info.get("status") or 200
         resp = info.get("resp") or ""
+
+        resp = '"' + str(resp) + '"'
 
         # Deconstuct the state to get the values we want
         env_state, ball_detected, buttons = state

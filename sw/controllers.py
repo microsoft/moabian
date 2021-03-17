@@ -55,7 +55,6 @@ def joystick_controller(max_angle=16, **kwargs):
 def brain_controller(
     max_angle=22,
     port=5555,
-    enable_logging=False,
     alert_fn=lambda toggle: None,
     **kwargs,
 ):
