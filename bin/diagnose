@@ -30,14 +30,6 @@
     pip3 list | grep -i huemask
 }
 
-@test 'Hostname is "moab"' {
-  hostname | grep moab
-}
-
-@test 'Pi UART disabled' {
-  grep -v 'console=serial0,115200 console=tty1' /boot/cmdline.txt
-}
-
 @test "Camera detected" {
   vcgencmd get_camera | grep 'detected=1'
 }
@@ -52,10 +44,13 @@
 @test "power.service running" {
     systemctl is-active power.service
 }
-@test "moab.service running" {
-    systemctl is-active moab.service
+@test "menu.service running" {
+    systemctl is-active menu.service
 }
 @test "stream.service running" {
+    systemctl is-active stream.service
+}
+@test "brain.service running" {
     systemctl is-active stream.service
 }
 

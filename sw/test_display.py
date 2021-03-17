@@ -36,6 +36,3 @@ with Hat() as hat:
 
     hat.display_long_string(menus[2])
     input("Confirm: 2 lines, horizontal scroll")
-
-    hat.display_string("ALL DONE")
-

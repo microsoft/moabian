@@ -21,7 +21,7 @@ systemctl disable moab 2>/dev/null || true
 
 setup fan.service       # 5 sec monitoring the /sys/cpu/temp
 setup power.service     # Monitors power button: 2 seconds shuts down
-setup brains.service    # 3 docker containers 5000 REST <--
+setup brain.service    # 3 docker containers 5000 REST <--
 setup menu.service      # menu.py
 setup stream.service    # gunicorn(flask.py) <- reverse proxy nginx
 

@@ -1,5 +1,5 @@
 [Unit]
-Description=Moab Brains
+Description=Moab Brain
 DefaultDependencies=false
 After=docker.service
 
