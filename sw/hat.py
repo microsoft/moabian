@@ -30,7 +30,7 @@ class SendCommand(IntEnum):
     DISPLAY_BIG_TEXT_ICON   = 0x81  # Display buffer (large font) with icon. Does not scroll.
     DISPLAY_BIG_TEXT        = 0x82  # Display the 0x80 buffer (in large font). Does not scroll.
     DISPLAY_SMALL_TEXT      = 0x83  # Display the 0x80 buffer (in small font). Scroll if required.
-    DISPLAY_BIG_TEXT_POWER_ICON = 0x84  # Display buffer (large font) with icon. Does not scroll.
+    DISPLAY_POWER_SYMBOL    = 0x84  # Display buffer (large font) with icon. Does not scroll.
 
 # Icon index
 class Icon(IntEnum):
@@ -182,7 +182,7 @@ class Hat:
             raise IOError(f"Could not setup GPIO pins")
 
     def close(self):
-        self.display_power_symbol("TO WAKE", PowerIcon.POWER)
+        self.display_power_symbol("WAKE", PowerIcon.POWER)
         if self.spi is not None:
             self.spi.close()
 
@@ -338,14 +338,14 @@ class Hat:
             # TODO: Why is this sleep here instead of before display command?
             time.sleep(0.010)
 
-    def display_string_power_icon(self, text: str, icon_idx: PowerIcon):
+    def display_power_symbol(self, text: str, icon_idx: PowerIcon):
         assert len(text) <= 12, "String is too long to display with icon"
 
         # Copy the text into a buffer in the firmware
         self._copy_buffer(text)
 
         # After sending copying to the fw buffer, display the buffer as a short string
-        self.transceive(pad(SendCommand.DISPLAY_BIG_TEXT_POWER_ICON, icon_idx))
+        self.transceive(pad(SendCommand.DISPLAY_POWER_SYMBOL, icon_idx))
 
     def display_string_icon(self, text: str, icon_idx: Icon):
         assert len(text) <= 12, "String is too long to display with icon"
