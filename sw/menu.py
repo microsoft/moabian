@@ -6,15 +6,15 @@
 import sys
 import time
 import click
+import logging as log
 
 from hat import Icon
-import logging as log
 from enum import Enum
 from env import MoabEnv
 from typing import Callable
 from functools import partial
 from dataclasses import dataclass
-
+from log_csv import log_decorator
 from calibrate import calibrate_controller
 from info_screen import info_screen_controller, info_config_controller
 from controllers import pid_controller, brain_controller, joystick_controller
@@ -43,6 +43,7 @@ class Mode:
     debug: bool
     frequency: int
     stream: bool
+    log: bool
     logfile: str
     controller: str
 
@@ -137,11 +138,11 @@ err = partial(click.secho, fg="red", err=True)
     help="programmer details showing Tx/Rx buffers",
 )
 @click.option(
-    "-f",
-    "--frequency",
+    "-h",
+    "--hertz",
     type=click.IntRange(1, 40),
     default=30,
-    help="Cycle time of controller in Hz",
+    help="Frequency of controller in Hz",
     show_default=True,
 )
 @click.option(
@@ -152,7 +153,15 @@ err = partial(click.secho, fg="red", err=True)
 )
 @click.option(
     "-l",
-    "--logfile",
+    "--log/--no-log",
+    default=True,
+    help=("Enables or disables the logging as specified by -f/--file"),
+)
+@click.option(
+    "-f",
+    "--file",
+    default="/tmp/log.csv",
+    help=("Set the logfile"),
     type=click.Path(
         exists=False,
         dir_okay=False,
@@ -162,14 +171,14 @@ err = partial(click.secho, fg="red", err=True)
 )
 @click.argument("controller", nargs=-1)
 @click.pass_context
-def main(ctx, verbose, debug, frequency, stream, logfile, controller):
-    mode = Mode(verbose, debug, frequency, stream, logfile, controller)
-    if logfile:
-        click.echo(click.format_filename(logfile))
+def main(ctx, verbose, debug, hertz, stream, log, file, controller):
+    mode = Mode(verbose, debug, hertz, stream, log, file, controller)
+    if file:
+        click.echo(click.format_filename(file))
     if verbose:
         click.secho(str(mode), fg="green")
 
-    with MoabEnv(frequency, debug=debug) as env:
+    with MoabEnv(hertz, debug=debug) as env:
         menu_list = get_menu_list(env, mode)
         current = MenuState.first_level
         index = 0
@@ -210,6 +219,7 @@ def main(ctx, verbose, debug, frequency, stream, logfile, controller):
                 # Turn on the servos
                 env.hat.enable_servos()
 
+                # Reset the controller
                 if menu_list[index].is_controller:
                     state, detected, buttons = env.reset(
                         menu_list[index].name, Icon.DOT
@@ -218,7 +228,12 @@ def main(ctx, verbose, debug, frequency, stream, logfile, controller):
                 # Initialize the controller
                 controller_closure = menu_list[index].closure
                 kwargs = menu_list[index].kwargs
-                controller = controller_closure(**kwargs)
+                if log and menu_list[index].is_controller:  # Use the log decorator
+                    controller = log_decorator(
+                        controller_closure(**kwargs), logfile=file
+                    )
+                else:
+                    controller = controller_closure(**kwargs)
 
                 if menu_list[index].is_controller:
                     # If it's a controller run the control loop
