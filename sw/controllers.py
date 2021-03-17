@@ -56,7 +56,7 @@ def brain_controller(
     max_angle=22,
     port=5555,
     enable_logging=False,
-   # alert_fn=lambda toggle: None,
+    alert_fn=lambda toggle: None,
     **kwargs,
 ):
     """
@@ -94,8 +94,9 @@ def brain_controller(
                 info = {"status": response.status_code, "resp": response.json()}
                 action_json = response.json()
 
-                if response.ok:
-                    alert_fn(False)
+               if response.ok:
+                    if alert_fn is not None
+                         alert_fn(False)
                     action_json = requests.get(prediction_url, json=observables).json()
                     pitch = action_json["input_pitch"]
                     roll = action_json["input_roll"]
@@ -108,8 +109,9 @@ def brain_controller(
                     pitch, roll = int(pitch), int(roll)
 
                     action = Vector2(-roll, pitch)
-                else:
-                    alert_fn(True)
+               else:
+                    if alert_fn is not None
+                         alert_fn(True)
 
             except Exception as e:
                 log.exception(f"Exception calling predictor\n{e}")
