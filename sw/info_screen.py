@@ -48,7 +48,7 @@ def info_screen_controller(env, **kwargs):
 def info_config_controller(env, **kwargs):
     so = ",".join(map(str, env.servo_offsets))
     s = f"HUE {env.hue}\n"
-    s += f"X,Y {env.plate_offsets_pixels[0]},{env.plate_offsets_pixels[1]}\n"
+    #s += f"X,Y {env.plate_offsets_pixels[0]},{env.plate_offsets_pixels[1]}\n"
     s += f"SO {so}"
     env.hat.display_long_string(s)
 
