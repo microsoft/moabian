@@ -3,8 +3,8 @@
     "plate_x_offset": 0.0,
     "plate_y_offset": 0.0,
     "servo_offsets": [
-        3.0,
-        -2.5,
-        0.0
+        0,
+        0,
+        0
     ]
 }
