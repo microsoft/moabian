@@ -94,8 +94,8 @@ def brain_controller(
                 info = {"status": response.status_code, "resp": response.json()}
                 action_json = response.json()
 
-               if response.ok:
-                    if alert_fn is not None
+                if response.ok:
+                    if alert_fn is not None:
                          alert_fn(False)
                     action_json = requests.get(prediction_url, json=observables).json()
                     pitch = action_json["input_pitch"]
@@ -109,8 +109,8 @@ def brain_controller(
                     pitch, roll = int(pitch), int(roll)
 
                     action = Vector2(-roll, pitch)
-               else:
-                    if alert_fn is not None
+                else:
+                    if alert_fn is not None:
                          alert_fn(True)
 
             except Exception as e:
