@@ -38,7 +38,7 @@ exec 2> >(tee "/tmp/stderr.log")
 # 3.0.16: off-by-one icon errors
 # 3.0.17: Testing new MUTEX protected display.c code in MUTEX branch
 
-VERSION="3.0.17"
+VERSION="3.0.19"
 
 # YRDDDHR: 2103908. 2021, 39th day of the year, 08th hour (PDT)
 TIMESTAMP=$(TZ='America/Los_Angeles' date +"%j%H%M")
