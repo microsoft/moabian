@@ -207,6 +207,9 @@ def main(ctx, verbose, debug, frequency, stream, logfile, controller):
                     index = max(index - 1, 0)
 
             else:  # current == MenuState.second_level:
+                # Turn on the servos
+                env.hat.enable_servos()
+
                 if menu_list[index].is_controller:
                     state, detected, buttons = env.reset(
                         menu_list[index].name, Icon.DOT
@@ -232,6 +235,9 @@ def main(ctx, verbose, debug, frequency, stream, logfile, controller):
                 # Loop breaks after menu pressed and puts the plate back to hover
                 current = MenuState.first_level
                 last_index = -1
+
+                # Turn off the servos for main menu (they make that crackling noise)
+                env.hat.disable_servos()
 
 
 if __name__ == "__main__":
