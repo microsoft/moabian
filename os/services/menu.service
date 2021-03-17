@@ -4,7 +4,7 @@ DefaultDependencies=false
 After=docker.service
 
 [Service]
-Environment="MOABIAN=3.0.18"
+Environment="MOABIAN=3.0.19"
 ExecStart=/usr/bin/python3 menu.py --no-debug
 WorkingDirectory=/home/pi/moab/sw
 Restart=no
