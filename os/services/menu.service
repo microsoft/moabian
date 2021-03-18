@@ -4,8 +4,10 @@ DefaultDependencies=false
 After=docker.service
 
 [Service]
+Type=forking
 Environment="MOABIAN=3.0.19"
 ExecStart=/usr/bin/python3 menu.py --no-debug
+ExecStop=/bin/kill -s SIGINT $MAINPID
 WorkingDirectory=/home/pi/moab/sw
 Restart=no
 User=pi

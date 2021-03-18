@@ -66,6 +66,7 @@ function layer-classic-moabian
         tmux
         vim
         minicom
+        raspi-gpio
     )
     apt-get install --no-install-recommends -y ${packages[*]}
 

@@ -51,7 +51,7 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
         # l = [tick, dt] + state + action + [status + resp]
 
         # round floats to 5 digits
-        l = [f"{n:.5f}" if type(n) is float else n for n in l]
+        l = [f"{n:8.5f}" if type(n) is float else n for n in l]
 
         # Convert all fields into strings
         l = ",".join([str(e) for e in l])

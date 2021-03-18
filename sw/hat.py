@@ -11,6 +11,7 @@ import numpy as np
 import logging as log
 import RPi.GPIO as gpio
 
+from procid import kill_doppelganger
 from hexyl import hexyl
 from enum import IntEnum
 from typing import Union, List, Tuple
@@ -156,6 +157,9 @@ class Hat:
         self.spi = None
 
     def open(self):
+        # Ensure we are the only processing since SPI bus is a singleton
+        kill_doppelganger()
+
         # Attempt to open the spidev bus
         try:
             self.spi = spidev.SpiDev()
