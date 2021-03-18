@@ -121,26 +121,6 @@ static void plate_coerce_to_range(float* value, float low, float high)
 		*value = high;
 }
 
-static void plate_compute_servo_angles(float theta_x, float theta_y, float* servo_angles)
-{
-	static float z1, z2, z3, r;
-
-	const float sin_theta_y = sin(plate_to_radians(-theta_y));
-	const float sin_theta_x = sin(plate_to_radians(theta_x));
-
-	z1 = PIVOT_HEIGHT + sin_theta_y * (SIDE_LENGTH / SQRT3);
-	r = PIVOT_HEIGHT - sin_theta_y * (SIDE_LENGTH / ( 2 * SQRT3));
-	z2 = r + sin_theta_x * (SIDE_LENGTH / 2);
-	z3 = r - sin_theta_x * (SIDE_LENGTH / 2);
-
-	if (z1 > (2 * ARM_LENGTH)) z1 = (2 * ARM_LENGTH);
-	if (z2 > (2 * ARM_LENGTH)) z2 = (2 * ARM_LENGTH);
-	if (z3 > (2 * ARM_LENGTH)) z3 = (2 * ARM_LENGTH);
-
-	servo_angles[0] = 180 - plate_to_degrees(asin(z1 / (2 * ARM_LENGTH)));
-	servo_angles[1] = 180 - plate_to_degrees(asin(z2 / (2 * ARM_LENGTH)));
-	servo_angles[2] = 180 - plate_to_degrees(asin(z3 / (2 * ARM_LENGTH)));
-}
 
 static int plate_servo_set_position(u8_t id, float angle)
 {
@@ -180,35 +160,6 @@ int plate_servo_update_position(u8_t id, float angle)
 	if ((err = plate_update_pw_stm32(servo.dev, id, pulse_width)) != 0)
 	{
 			LOG_ERR("pwm update fails");
-	}
-
-	return err;
-}
-
-int plate_set_angle(float theta_x, float theta_y)
-{
-	int err = 0;
-	float servo_angles[3] = { 0, 0, 0 };
-
-	//LOG_INF("setting plate angle to %d, %d", (int)theta_x, (int)theta_y);
-
-	plate_compute_servo_angles(theta_x, theta_y, &servo_angles[0]);
-
-	/* This was changed to update the "wrong" servos in order to rotate
-	everything 120 degrees */
-	if ((err = plate_servo_update_position(0, /*servo_angles[0]*/servo_angles[2])) != 0)
-	{
-		return err;
-	}
-
-	if ((err = plate_servo_update_position(1, /*servo_angles[1]*/servo_angles[0])) != 0)
-	{
-		return err;
-	}
-
-	if ((err = plate_servo_update_position(2, /*servo_angles[2]*/servo_angles[1])) != 0)
-	{
-		return err;
 	}
 
 	return err;
@@ -306,6 +257,8 @@ int plate_init(void)
 	plate_servos[2].dev = pwm_dev;
 	plate_servos[2].pwm_channel = 3;
 
+    // Need to start with some defaults. We tried removing
+    // but it's a load-bearing poster.
 	plate_servo_set_position(0, 150);
 	plate_servo_set_position(1, 150);
 	plate_servo_set_position(2, 150);
