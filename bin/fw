@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# vim:filetype=sh:
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+set -euo pipefail
+require() { hash "$@" || exit 127; }
+println() { printf '%s\n' "$*"; }
+die()     { ret=$?; printf "%s\n" "$@" >&2; exit "$ret"; }
+[[ $EUID -eq 0 ]] || die "$0 run as root. Try again with sudo"
+
+# Hat flashing procedure involves three GPIO pins: 20, 5, and 6
+# Hat enable pin	20
+# Boot mode pin		5
+# Hat reset		6
+
+# Using gpio readall
+# from v2.x flash.c code
+#define BOOT_EN   RPI_BPLUS_GPIO_J8_29      BCM 5
+#define HAT_EN    RPI_BPLUS_GPIO_J8_38      BCM 20
+#define HAT_RESET RPI_BPLUS_GPIO_J8_31      BCM 6
+
+# Enabling writing to these pins
+sudo raspi-gpio set 20 op
+sudo raspi-gpio set 5 op
+sudo raspi-gpio set 6 op
+
+# Putting firmware into upload mode...
+sudo raspi-gpio set 20 dh
+sudo raspi-gpio set 5 dh
+sudo raspi-gpio set 6 dh
+sleep 1
+sudo raspi-gpio set 6 dl
+
+FN=$1
+echo "Uploading $FN firmware now"
+mcumgr --conntype=serial --connstring=/dev/ttyAMA1,baud=115200 image upload $FN
+
+sudo raspi-gpio set 5 dl
+sudo raspi-gpio set 6 dh
+sleep 1
+sudo raspi-gpio set 6 dl

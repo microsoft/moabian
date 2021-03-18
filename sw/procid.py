@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys, os, signal, time, errno
 import psutil
 import logging as log
