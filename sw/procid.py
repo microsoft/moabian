@@ -1,5 +1,8 @@
 import sys, os, signal, time, errno
+import psutil
 import logging as log
+
+# p = psutil.Process(twin_pid)
 
 def kill_doppelganger(pid_path='/tmp/menu.pid'):
     our_pid=os.getpid()
@@ -23,7 +26,13 @@ def kill_doppelganger(pid_path='/tmp/menu.pid'):
         f.write(str(our_pid))
     return our_pid
 
+def sigterm_handler(_signum, _stack_frame):
+    # Raises SytemExit(0)
+    sys.exit(0)
+
 if __name__ == "__main__":
+    signal.signal(signal.SIGTERM, sigterm_handler)
+
     try:
         pid = kill_doppelganger()
         input(f'This pid={pid}. Press any key to quit...')
@@ -32,4 +41,6 @@ if __name__ == "__main__":
         for s in range(3,0,-1):
             print(s, end='.', flush=True)
             time.sleep(1)
-        sys.exit()
+        sys.exit(-signal.SIGINT)
+    finally:
+        print("Goodbye")
