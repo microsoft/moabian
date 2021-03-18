@@ -99,8 +99,8 @@ def _xy_offsets(
 
 
 def plate_angles_to_servo_positions(
-    theta_x: float,
-    theta_y: float,
+    pitch: float,
+    roll: float,
     arm_len: float = 55.0,
     side_len: float = 170.87,
     pivot_height: float = 80.0,
@@ -109,10 +109,10 @@ def plate_angles_to_servo_positions(
 ) -> Tuple[float, float, float]:
     servo_angles = [0.0, 0.0, 0.0]
 
-    z1 = pivot_height + np.sin(np.radians(-theta_y)) * (side_len / np.sqrt(3))
-    r = pivot_height - np.sin(np.radians(-theta_y)) * (side_len / (2 * np.sqrt(3)))
-    z2 = r + np.sin(np.radians(theta_x)) * (side_len / 2)
-    z3 = r - np.sin(np.radians(theta_x)) * (side_len / 2)
+    z1 = pivot_height + np.sin(np.radians(roll)) * (side_len / np.sqrt(3))
+    r = pivot_height - np.sin(np.radians(roll)) * (side_len / (2 * np.sqrt(3)))
+    z2 = r + np.sin(np.radians(-pitch)) * (side_len / 2)
+    z3 = r - np.sin(np.radians(-pitch)) * (side_len / 2)
 
     if z1 > 2 * arm_len:
         z1 = 2 * arm_len
@@ -238,8 +238,8 @@ class Hat:
         """ Disables the power to the servos. """
         self.transceive(pad(SendCommand.SERVO_DISABLE))
 
-    def set_angles(self, plate_x: float, plate_y: float):
-        s1, s2, s3 = plate_angles_to_servo_positions(-plate_x, -plate_y)
+    def set_angles(self, pitch: float, roll: float):
+        s1, s2, s3 = plate_angles_to_servo_positions(pitch, roll)
         s1 += self.servo_offsets[0]
         s2 += self.servo_offsets[1]
         s3 += self.servo_offsets[2]
