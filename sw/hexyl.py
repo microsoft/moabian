@@ -10,10 +10,13 @@ class color:
     green = '\033[38;5;40m'
     cyan = '\033[38;5;111m'
     red = '\033[31m'
-    yellow = '\033[33m'
+    yellow = '\033[38;5;40m'
+    string = '\033[38;5;40m'
+    string_cmd = '\033[38;5;34m'
     gray = '\033[38;5;242m'
     darkgray = '\033[38;5;238m'
     danger = '\033[38;5;196m'
+    servos = '\033[38;5;19m'
     end = '\033[0m'
 
 # TODO: use pythonic map/reduce itertools
@@ -91,26 +94,22 @@ def hexyl():
         b1 = np.uint8(l[0]);
         if b1 == 0x80:
             remainder = l[1:]
-            return(" ┊ " + color.yellow + ''.join(map(printable, remainder)) + color.end)
+            return(" ┊ " + color.string + ''.join(map(printable, remainder)) + color.end)
         elif b1 == 0x01:
-           return(" ┊ " + wrapstr(color.red, 'servo: enable'))
+           return(" ┊ " + wrapstr(color.red, 'servos: on'))
         elif b1 == 0x02:
-           return(" ┊ " + wrapstr(color.red, 'servo: disable'))
-        elif b1 == 0x03:
-           return(" ┊ " + wrapstr(color.green, 'control info'))
-        elif b1 == 0x04:
-           return(" ┊ " + wrapstr(color.red, 'servo: plate angles'))
+           return(" ┊ " + wrapstr(color.red, 'servos: off'))
         elif b1 == 0x05:
            s1 = ((l[1] << 8) + l[2]) / 100
            s2 = ((l[3] << 8) + l[4]) / 100
            s3 = ((l[5] << 8) + l[6]) / 100
 
            s = f'{s1:6.2f}, {s2:6.2f}, {s3:6.2f}'
-           return(" ┊ " + wrapstr(color.green, s))
+           return(" ┊ " + wrapstr(color.servos, s))
         elif b1 == 0x06:
            return(" ┊ " + wrapstr(color.green, 'text/icon'))
-        elif b1 == 0x81:
-           return(" ┊ " + wrapstr(color.red, 'display buffer'))
+        elif b1 >= 0x81 and b1 <= 0x85:
+           return(" ┊ " + wrapstr(color.string_cmd, '◊'))
         else:
             return('')
 
