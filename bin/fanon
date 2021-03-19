@@ -1,8 +1,0 @@
-#!/bin/bash
-# vim:filetype=sh:
-
-# Copyright (c) Microsoft Corporation.
-# Licensed under the MIT License.
-
-echo -n 26 > /sys/class/gpio/export 2>/dev/null
-echo -n 1 > /sys/class/gpio/gpio26/value

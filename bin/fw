@@ -72,6 +72,8 @@ main() {
     log ) fw_log;;
     shell ) fw_log;;
     ver | version ) fw_version;;
+    fanon ) fw_fanon;;
+    fanoff ) fw_fanoff;;
   esac
 }
 
@@ -87,6 +89,19 @@ fw_reset() {
 fw_log() { sudo minicom --device=/dev/ttyAMA0; }
 fw_shell() { sudo minicom --device=/dev/ttyAMA0; }
 fw_version() { fwversion; }
+
+fw_fanoff() {
+    raspi-gpio set 26 dl
+    # echo -n 26 > /sys/class/gpio/export 2>/dev/null
+    # echo -n 0 > /sys/class/gpio/gpio26/value
+}
+
+fw_fanon() {
+    raspi-gpio set 26 dh
+    # echo -n 26 > /sys/class/gpio/export 2>/dev/null
+    # echo -n 1 > /sys/class/gpio/gpio26/value
+}
+
 
 sourced? && return
 strict_mode on
