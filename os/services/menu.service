@@ -5,8 +5,9 @@ After=docker.service
 
 [Service]
 Environment="MOABIAN=3.0.20"
-ExecStart=/usr/bin/python3 menu.py --no-debug
+Environment="PYTHONUNBUFFERED=1"
 WorkingDirectory=/home/pi/moab/sw
+ExecStart=/usr/bin/python3 menu.py --no-debug
 Restart=no
 User=pi
 

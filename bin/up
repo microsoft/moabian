@@ -7,4 +7,4 @@
 readonly _D="$(dirname "$(readlink -f "$0")")" && cd $_D
 
 cd ..
-docker-compose up -d
+docker-compose up --remove-orphans -d

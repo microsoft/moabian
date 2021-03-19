@@ -51,11 +51,7 @@ class Mode:
 
 def update_icon_fn(hat):
     def update_icon(toggle: bool):
-        if toggle is True:
-            hat.update_icon(Icon.X)
-            log.warning(f"Alert: brain has a problem")
-        else:
-            hat.update_icon(Icon.DOT)
+        print(f"Alert: brain threw an error")
 
     return update_icon
 
