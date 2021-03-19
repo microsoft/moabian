@@ -1,7 +1,7 @@
 import psutil
 import time
 
-with open('/tmp/menu.pid') as f:
+with open('/tmp/menu.pid', 'r') as f:
     other_pid = int(f.read())
 
 p = psutil.Process(other_pid)

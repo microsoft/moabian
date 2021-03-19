@@ -3,17 +3,15 @@ import sys, os, signal, time, errno
 import psutil
 import logging as log
 
-# p = psutil.Process(twin_pid)
-
 def kill_doppelganger(pid_path='/tmp/menu.pid'):
-    our_pid=os.getpid()
+    my_pid=os.getpid()
 
     if os.path.isfile(pid_path):
         with open(pid_path, 'r') as f:
-            twin_pid = int(f.read())
+            other_pid = int(f.read())
             try:
-                print(f'Sending SIGINT to {twin_pid}...', end='')
-                os.kill(twin_pid, signal.SIGINT)
+                print(f'Sending SIGINT to {other_pid}...', end='')
+                os.kill(other_pid, signal.SIGINT)
                 print(f'sent.')
             except OSError as err:
                 if err.errno == errno.ESRCH:
@@ -24,8 +22,8 @@ def kill_doppelganger(pid_path='/tmp/menu.pid'):
                 print(f'Unexpected exception {e} which is ok')
 
     with open(pid_path, 'w') as f:
-        f.write(str(our_pid))
-    return our_pid
+        f.write(str(my_pid))
+    return my_pid
 
 def sigterm_handler(_signum, _stack_frame):
     # Raises SytemExit(0)
