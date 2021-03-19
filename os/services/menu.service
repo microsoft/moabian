@@ -6,8 +6,8 @@ After=docker.service
 [Service]
 Type=forking
 Environment="MOABIAN=3.0.19"
-ExecStart=/usr/bin/python3 menu.py --no-debug
-ExecStop=/bin/kill -s SIGINT $MAINPID
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/usr/bin/python3 /home/pi/moab/sw/menu.py --no-debug
 WorkingDirectory=/home/pi/moab/sw
 Restart=no
 User=pi

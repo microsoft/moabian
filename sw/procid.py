@@ -26,11 +26,13 @@ def kill_doppelganger(pid_path='/tmp/menu.pid'):
     return my_pid
 
 def sigterm_handler(_signum, _stack_frame):
+    print(f"caught {_signum} signal", flush=True)
     # Raises SytemExit(0)
     sys.exit(0)
 
 if __name__ == "__main__":
     signal.signal(signal.SIGTERM, sigterm_handler)
+    signal.signal(signal.SIGINT, sigterm_handler)
 
     try:
         pid = kill_doppelganger()

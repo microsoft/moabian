@@ -53,6 +53,9 @@ COMMANDS:
     bot reset           fast firmware reset/restart
     bot log             firwmare log stream (CTRL-A Q to quit)
     bot shell           firmware shell (advanced)
+    bot fanon           force fan on
+    bot fanoff          force fan off
+    bot csv             show csv file
 EOF
 
 
@@ -76,6 +79,7 @@ main() {
     ver | version ) fw_version;;
     fanon ) fw_fanon;;
     fanoff ) fw_fanoff;;
+    csv ) csv;;
   esac
 }
 
@@ -84,6 +88,8 @@ fw_shell()   { sudo minicom --device=/dev/ttyAMA0; }
 fw_version() { fwversion; }
 fw_fanoff()  { raspi-gpio set 26 dl; }
 fw_fanon()   { raspi-gpio set 26 dh; }
+fw_fanon()   { raspi-gpio set 26 dh; }
+csv()        { tail -f /tmp/log.csv; }
 
 fw_reset() { 
     raspi-gpio set 6 dh
