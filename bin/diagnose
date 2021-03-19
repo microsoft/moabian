@@ -51,7 +51,7 @@
     systemctl is-active stream.service
 }
 @test "brain.service running" {
-    systemctl is-active stream.service
+    systemctl is-active brain.service
 }
 
 @test "Docker is running" {
