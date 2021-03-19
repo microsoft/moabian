@@ -25,11 +25,12 @@ class MenuOption:
     name: str
     closure: Callable
     kwargs: dict
-    is_controller: bool
     # Some menu options are controllers (run a control loop), others are simply
     # blocking functions that return on menu press. These other functions are
     # for anything that does something to the bot (displaying info to the screen,
     # doing a calibration, running git pull, etc.)
+    is_controller: bool
+    require_servos: bool = True  # To not turn on servos unnecessarily
 
 
 class MenuState(Enum):
@@ -107,12 +108,14 @@ def get_menu_list(env, mode: Mode):
             closure=info_config_controller,
             kwargs={"env": env},
             is_controller=False,
+            require_servos=False,
         ),
         MenuOption(
             name="Bot Info",
             closure=info_screen_controller,
             kwargs={"env": env},
             is_controller=False,
+            require_servos=False,
         ),
     ]
 
@@ -223,8 +226,9 @@ def main(ctx, verbose, debug, hertz, stream, log, file, controller):
                     time.sleep(0.1)
 
             else:  # current == MenuState.second_level:
-                # Turn on the servos
-                env.hat.enable_servos()
+                if menu_list[index].require_servos:
+                    # Turn on the servos
+                    env.hat.enable_servos()
 
                 # Reset the controller
                 if menu_list[index].is_controller:
@@ -264,8 +268,9 @@ def main(ctx, verbose, debug, hertz, stream, log, file, controller):
                 current = MenuState.first_level
                 last_index = -1
 
-                # Turn off the servos for main menu (they make that crackling noise)
-                env.hat.disable_servos()
+                if menu_list[index].require_servos:
+                    # Turn off the servos for main menu (they make that crackling noise)
+                    env.hat.disable_servos()
 
 
 if __name__ == "__main__":
