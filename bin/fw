@@ -1,43 +1,100 @@
 #!/usr/bin/env bash
 # vim:filetype=sh:
 
-# Copyright (c) Microsoft Corporation.
-# Licensed under the MIT License.
+# http://www.binaryphile.com/bash/2018/07/26/approach-bash-like-a-developer-part-1-intro.html
+# https://github.com/MatthewZito/sh/pull/1
 
-set -euo pipefail
-require() { hash "$@" || exit 127; }
-println() { printf '%s\n' "$*"; }
-die()     { ret=$?; printf "%s\n" "$@" >&2; exit "$ret"; }
-[[ $EUID -eq 0 ]] || die "$0 run as root. Try again with sudo"
+IFS=$'\n'
+set -o noglob
+shopt -s nocasematch expand_aliases
+alias args?='(( $# ))'
+alias args_include?='include? "$*"'
+alias fewer_args_than?='fewer_than? $#'
 
-# Hat flashing procedure involves three GPIO pins: 20, 5, and 6
-# Hat enable pin	20
-# Boot mode pin		5
-# Hat reset		6
+this_script="$(basename "$0")"
+HERE=$(dirname "$BASH_SOURCE")
 
-# Using gpio readall
-# from v2.x flash.c code
-#define BOOT_EN   RPI_BPLUS_GPIO_J8_29      BCM 5
-#define HAT_EN    RPI_BPLUS_GPIO_J8_38      BCM 20
-#define HAT_RESET RPI_BPLUS_GPIO_J8_31      BCM 6
+die () {
+  local rc=$?
 
-# Enabling writing to these pins
-sudo raspi-gpio set 20 op
-sudo raspi-gpio set 5 op
-sudo raspi-gpio set 6 op
+  present? ${2:-}   && rc=$2
+  present? "${1:-}" && echo "$1" >&2
+  exit $rc
+}
 
-# Putting firmware into upload mode...
-sudo raspi-gpio set 20 dh
-sudo raspi-gpio set 5 dh
-sudo raspi-gpio set 6 dh
-sleep 1
-sudo raspi-gpio set 6 dl
+define ()      { IFS=$'\n' read -r -d '' ${1} || true; }
+blank? ()      { [[ -z ${1:-} ]]; }
+fewer_than? () { (( $1 < $2 )); }
+include? ()    { [[ $IFS$1$IFS == *"$IFS$2$IFS"* ]]; }
+present? ()    { [[ -n ${1:-} ]]; }
+sourced? ()    { [[ ${FUNCNAME[1]} == source ]]; }
 
-FN=$1
-echo "Uploading $FN firmware now"
-mcumgr --conntype=serial --connstring=/dev/ttyAMA1,baud=115200 image upload $FN
+split () {
+  local i
 
-sudo raspi-gpio set 5 dl
-sudo raspi-gpio set 6 dh
-sleep 1
-sudo raspi-gpio set 6 dl
+  for (( i = 0; i < ${#1}; i++ )); do
+    echo ${1:i:1}
+  done
+}
+
+strict_mode () {
+  case $1 in
+    on  ) set -euo pipefail;;
+    off ) set +euo pipefail;;
+  esac
+}
+
+define HELP <<EOF
+fw: Moab Hat firmware helpers
+  Usage:
+    fw version  
+    fw reset  
+    fw log
+    fw shell  
+EOF
+
+
+usage () {
+  local rc=0
+
+  present? ${1:-} && {
+    echo "$1$IFS"
+    rc=2
+  }
+  die "$HELP" $rc
+}
+
+main() {
+  blank? ${1:-} && die 0
+
+  case $1 in
+    reset  ) fw_reset;;
+    log ) fw_log;;
+    shell ) fw_log;;
+    ver | version ) fw_version;;
+  esac
+}
+
+fw_reset() { 
+    # Enabling writing to these pins
+    sudo raspi-gpio set 6 op
+
+    sudo raspi-gpio set 6 dh
+    sleep 0.1
+    sudo raspi-gpio set 6 dl
+}
+
+fw_log() { sudo minicom --device=/dev/ttyAMA0; }
+fw_shell() { sudo minicom --device=/dev/ttyAMA0; }
+fw_version() { fwversion; }
+
+sourced? && return
+strict_mode on
+
+args_include? --help  && usage
+args?                 || usage "Error: argument required"
+fewer_args_than? 2    || usage "Error: wrong number of arguments"
+
+[[ $TERM == "alacritty" ]] && TERM=xterm-256color 
+main $*
+
