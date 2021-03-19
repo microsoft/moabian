@@ -187,6 +187,11 @@ def main(ctx, verbose, debug, hertz, stream, log, file, controller):
         # Start the menu loop with the plate hovering
         env.hat.hover()
         buttons = env.hat.get_buttons()
+
+        # Start with servos disabled so there's no crackling noise in menu
+        time.sleep(1 / env.frequency)
+        env.hat.disable_servos()
+
         while True:
             time.sleep(1 / env.frequency)
 
@@ -212,8 +217,10 @@ def main(ctx, verbose, debug, hertz, stream, log, file, controller):
                     current = MenuState.second_level
                 elif buttons.joy_y < -0.8:  # Flicked joystick down
                     index = min(index + 1, len(menu_list) - 1)
+                    time.sleep(0.1)
                 elif buttons.joy_y > 0.8:  # Flicked joystick up
                     index = max(index - 1, 0)
+                    time.sleep(0.1)
 
             else:  # current == MenuState.second_level:
                 # Turn on the servos
