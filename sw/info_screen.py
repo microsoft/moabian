@@ -38,7 +38,7 @@ def info_screen_controller(env, **kwargs):
     def wait_for_menu():
         menu_button = False
         while not menu_button:
-            sleep(1/30)
+            sleep(1 / env.frequency)
             env.hat.noop()
             menu_button, joy_button, joy_x, joy_y = env.hat.get_buttons()
 
@@ -47,31 +47,32 @@ def info_screen_controller(env, **kwargs):
 
 def info_config_controller(env, **kwargs):
     so = ",".join(map(str, env.servo_offsets))
-    s = f"HUE {env.hue}\n"
-    #s += f"X,Y {env.plate_offsets_pixels[0]},{env.plate_offsets_pixels[1]}\n"
-    s += f"SO {so}"
+    s = f"HUE {env.hue}"
+    s += f"\nX,Y {env.plate_offsets_pixels[0]},{env.plate_offsets_pixels[1]}"
+    # s += f"\nSO {so}"
     env.hat.display_long_string(s)
 
     def wait_for_menu():
         menu_button = False
         while not menu_button:
-            sleep(1/30)
+            sleep(1 / env.frequency)
             env.hat.noop()
             menu_button, joy_button, joy_x, joy_y = env.hat.get_buttons()
 
     return wait_for_menu
 
-def sequence(env, msec=1/20):
-        env.hat.display_string_icon("BOT INFO", Icon.UP_DOWN)
 
-        for x in range(randint(1, 5)):
-            sleep(msec)
-            env.hat.noop()
+def sequence(env, msec=1 / 20):
+    env.hat.display_string_icon("BOT INFO", Icon.UP_DOWN)
 
-        info_config_controller(env)
-        for x in range(randint(1, 15)):
-            sleep(msec)
-            env.hat.noop()
+    for x in range(randint(1, 5)):
+        sleep(msec)
+        env.hat.noop()
+
+    info_config_controller(env)
+    for x in range(randint(1, 15)):
+        sleep(msec)
+        env.hat.noop()
 
 
 def main():
@@ -80,6 +81,7 @@ def main():
             sequence(env)
 
         env.hat.display_string("done")
+
 
 if __name__ == "__main__":
     main()

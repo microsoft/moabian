@@ -100,6 +100,13 @@ def hexyl():
            return(" ┊ " + wrapstr(color.green, 'control info'))
         elif b1 == 0x04:
            return(" ┊ " + wrapstr(color.red, 'servo: plate angles'))
+        elif b1 == 0x05:
+           s1 = ((l[1] << 8) + l[2]) / 100
+           s2 = ((l[3] << 8) + l[4]) / 100
+           s3 = ((l[5] << 8) + l[6]) / 100
+
+           s = f'{s1:6.2f}, {s2:6.2f}, {s3:6.2f}'
+           return(" ┊ " + wrapstr(color.green, s))
         elif b1 == 0x06:
            return(" ┊ " + wrapstr(color.green, 'text/icon'))
         elif b1 == 0x81:
@@ -132,22 +139,10 @@ def hexyl():
 
 
 def main():
-    tx1 = [0x80,  0x4c, 0x6f, 0x61, 0x64,  0x2d, 0x62, 0x65]
-    tx2 = [0x80,  0x72, 0x69, 0x6e, 0x67,  0x0a, 0x50, 0x6f]
-    tx3 = [0x80,  0x74, 0x65, 0x72, 0x00,  0x00, 0x00, 0x00]
+    tx1 = [0x05, 0x32, 0x6f, 0x2c, 0x64,  0x35, 0x62, 0x00]
 
     t = hexyl()
     t(tx1, np.random.randint(255, size=8))
-    t(tx2, np.random.randint(255, size=8))
-    t(tx3, np.random.randint(255, size=8))
-
-    tx = np.random.randint(255, size=8)
-    rx = np.random.randint(255, size=8)
-    t(tx, rx)
-
-    tx = np.random.randint(255, size=8)
-    rx = np.random.randint(10, size=8)
-    t(tx, rx)
 
 if __name__ == "__main__":
     main()

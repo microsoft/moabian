@@ -231,6 +231,12 @@ def main(ctx, verbose, debug, hertz, stream, log, file, controller):
                 else:
                     controller = controller_closure(**kwargs)
 
+                # Ensure there's enough time to process the display command on
+                # the hat side (if a control command happens too soon after a
+                # display command the hat may not have enough time to read the
+                # next command, which will mess with SPI)
+                time.sleep(1 / env.frequency)
+
                 if menu_list[index].is_controller:
                     # If it's a controller run the control loop
                     while not buttons.menu_button:

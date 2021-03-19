@@ -40,7 +40,6 @@ class MoabEnv:
         self,
         frequency=30,
         debug=False,
-        use_plate_angles=False,
         derivative_fn=derivative,
         calibration_file="bot.json",
     ):
@@ -51,7 +50,7 @@ class MoabEnv:
         self.vel_y = self.derivative_fn(frequency)
         self.sum_x, self.sum_y = 0, 0
 
-        self.hat = Hat(use_plate_angles=use_plate_angles, debug=debug)
+        self.hat = Hat(debug=debug)
         self.hat.open()
         self.camera = OpenCVCameraSensor(frequency=frequency)
         self.detector = hsv_detector(debug=debug)

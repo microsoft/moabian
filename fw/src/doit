@@ -37,8 +37,10 @@ exec 2> >(tee "/tmp/stderr.log")
 # 3.0.15: merge into moabian
 # 3.0.16: off-by-one icon errors
 # 3.0.17: Testing new MUTEX protected display.c code in MUTEX branch
+# 3.0.19: Arbitrary version bump to be in sync with the software stack
+# 3.0.20: Pitch/roll to servo 1/2/3 coordinate transform removed (now in hat.py)
 
-VERSION="3.0.19"
+VERSION="3.0.20"
 
 # YRDDDHR: 2103908. 2021, 39th day of the year, 08th hour (PDT)
 TIMESTAMP=$(TZ='America/Los_Angeles' date +"%j%H%M")

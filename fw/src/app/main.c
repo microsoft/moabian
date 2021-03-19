@@ -82,10 +82,6 @@ void main(void)
                     plate_servo_enable(false);
                     break;
 
-                case SET_PLATE_ANGLES:
-                    plate_set_angle(rx.data.plate_angle1, rx.data.plate_angle2);
-                    break;
-
                 case SET_SERVOS:
                     // Convert bytes to uint16
                     servo1_pos_centi_deg = ((rx.data.servo1_pos_centi_deg_high_byte << 8) + rx.data.servo1_pos_centi_deg_low_byte);
@@ -95,6 +91,7 @@ void main(void)
                     servo1_pos = ((float) servo1_pos_centi_deg) / 100.0;
                     servo2_pos = ((float) servo2_pos_centi_deg) / 100.0;
                     servo3_pos = ((float) servo3_pos_centi_deg) / 100.0;
+
                     plate_servo_update_position(0, servo1_pos);
                     plate_servo_update_position(1, servo2_pos);
                     plate_servo_update_position(2, servo3_pos);

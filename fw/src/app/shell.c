@@ -25,19 +25,14 @@ volatile uint32_t * flash_sr = (uint32_t *)0x40023C0C;
 
 // Plate commands
 
-static int cmd_plate_enable(const struct shell *shell, size_t argc, char **argv)
+static int cmd_plate_enable(const struct shell *shell)
 {
-    u8_t enable = 0;
+    return plate_servo_enable(1);
+}
 
-    if (argc < 2)
-    {
-        shell_error(shell, "Invalid number of arguments.");
-        return -EINVAL;
-    }
-
-    enable = atoi(argv[1]);
-
-    return plate_servo_enable(enable);
+static int cmd_plate_disable(const struct shell *shell)
+{
+    return plate_servo_enable(0);
 }
 
 static int cmd_plate_servo_angle(const struct shell *shell, size_t argc, char **argv)
@@ -76,33 +71,10 @@ static int cmd_plate_servo_angle(const struct shell *shell, size_t argc, char **
     return err;
 }
 
-static int cmd_plate_set_angle(const struct shell *shell, size_t argc, char **argv)
-{
-    int err = 0;
-    float theta_x, theta_y;
-
-    if (argc < 3)
-    {
-        shell_error(shell, "Invalid number of arguments.");
-        return -EINVAL;
-    }
-
-    theta_x = atof(argv[1]);
-    theta_y = atof(argv[2]);
-
-    if ((err = plate_set_angle(theta_x, theta_y)) != 0)
-    {
-        shell_error(shell, "Failed to set plate angle.  Err = %d", err);
-    }
-
-    return err;
-}
-
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_plate,
-    SHELL_CMD(enable, NULL, "Enable plate servos. ", cmd_plate_enable),
+    SHELL_CMD(enable, NULL, "Enable servos.", cmd_plate_enable),
+    SHELL_CMD(enable, NULL, "Disable servos.", cmd_plate_disable),
     SHELL_CMD(servo, NULL, "Set the angle of a servo. ", cmd_plate_servo_angle),
-    //SHELL_CMD(servo_sync, NULL, "Sweep angle of a servo to a target. ", cmd_plate_servo_sweep_angle),
-    SHELL_CMD(angle, NULL, "Set the angle of the plate. ", cmd_plate_set_angle),
     SHELL_SUBCMD_SET_END /* Array terminated. */
 );
 SHELL_CMD_REGISTER(plate, &sub_plate, "Plate control commands", NULL);
