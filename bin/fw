@@ -77,29 +77,16 @@ main() {
   esac
 }
 
-fw_reset() { 
-    # Enabling writing to these pins
-    sudo raspi-gpio set 6 op
-
-    sudo raspi-gpio set 6 dh
-    sleep 0.1
-    sudo raspi-gpio set 6 dl
-}
-
-fw_log() { sudo minicom --device=/dev/ttyAMA0; }
-fw_shell() { sudo minicom --device=/dev/ttyAMA0; }
+fw_log()     { sudo minicom --device=/dev/ttyAMA0; }
+fw_shell()   { sudo minicom --device=/dev/ttyAMA0; }
 fw_version() { fwversion; }
+fw_fanoff()  { raspi-gpio set 26 dl; }
+fw_fanon()   { raspi-gpio set 26 dh; }
 
-fw_fanoff() {
-    raspi-gpio set 26 dl
-    # echo -n 26 > /sys/class/gpio/export 2>/dev/null
-    # echo -n 0 > /sys/class/gpio/gpio26/value
-}
-
-fw_fanon() {
-    raspi-gpio set 26 dh
-    # echo -n 26 > /sys/class/gpio/export 2>/dev/null
-    # echo -n 1 > /sys/class/gpio/gpio26/value
+fw_reset() { 
+    raspi-gpio set 6 dh
+    sleep 0.1
+    raspi-gpio set 6 dl
 }
 
 
