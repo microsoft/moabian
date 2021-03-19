@@ -45,12 +45,14 @@ strict_mode () {
 }
 
 define HELP <<EOF
-fw: Moab Hat firmware helpers
-  Usage:
-    fw version  
-    fw reset  
-    fw log
-    fw shell  
+Usage:
+    bot [command]
+
+COMMANDS:
+    bot version         display firmware version string
+    bot reset           fast firmware reset/restart
+    bot log             firwmare log stream (CTRL-A Q to quit)
+    bot shell           firmware shell (advanced)
 EOF
 
 
@@ -94,7 +96,7 @@ sourced? && return
 strict_mode on
 
 args_include? --help  && usage
-args?                 || usage "Error: argument required"
+args?                 || usage "bot • Moab command-line tools"
 fewer_args_than? 2    || usage "Error: wrong number of arguments"
 
 [[ $TERM == "alacritty" ]] && TERM=xterm-256color 
