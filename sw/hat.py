@@ -24,7 +24,6 @@ class SendCommand(IntEnum):
     NOOP                    = 0x00  # Import for polling the state of the buttons and joystick
     SERVO_ENABLE            = 0x01  # The servos should be turned off
     SERVO_DISABLE           = 0x02  # The servos should be turned on
-    SET_PLATE_ANGLES        = 0x04  # Set the plate angles (pitch and roll)
     SET_SERVOS              = 0x05  # Set the servo positions manually (s1, s2, s3)
     COPY_STRING             = 0x80  # Pass a variable length string (max 240 bytes). Requires DISPLAY_ after.
     DISPLAY_BIG_TEXT_ICON   = 0x81  # Display buffer (large font) with icon. Does not scroll.
@@ -100,8 +99,8 @@ def _xy_offsets(
 
 
 def plate_angles_to_servo_positions(
-    theta_x: float,
-    theta_y: float,
+    pitch: float,
+    roll: float,
     arm_len: float = 55.0,
     side_len: float = 170.87,
     pivot_height: float = 80.0,
@@ -110,10 +109,10 @@ def plate_angles_to_servo_positions(
 ) -> Tuple[float, float, float]:
     servo_angles = [0.0, 0.0, 0.0]
 
-    z1 = pivot_height + np.sin(np.radians(-theta_y)) * (side_len / np.sqrt(3))
-    r = pivot_height - np.sin(np.radians(-theta_y)) * (side_len / (2 * np.sqrt(3)))
-    z2 = r + np.sin(np.radians(theta_x)) * (side_len / 2)
-    z3 = r - np.sin(np.radians(theta_x)) * (side_len / 2)
+    z1 = pivot_height + np.sin(np.radians(roll)) * (side_len / np.sqrt(3))
+    r = pivot_height - np.sin(np.radians(roll)) * (side_len / (2 * np.sqrt(3)))
+    z2 = r + np.sin(np.radians(-pitch)) * (side_len / 2)
+    z3 = r - np.sin(np.radians(-pitch)) * (side_len / 2)
 
     if z1 > 2 * arm_len:
         z1 = 2 * arm_len
@@ -142,13 +141,11 @@ class Hat:
     def __init__(
         self,
         servo_offsets: Tuple[float, float, float] = (0, 0, 0),
-        use_plate_angles=False,
         debug=False,
     ):
         self.servo_offsets: Tuple[float, float, float] = servo_offsets
         self.buttons = Buttons(False, False, 0.0, 0.0)
 
-        self.use_plate_angles = use_plate_angles
         self.debug = debug
         if debug:
             self.hex_printer = hexyl()
@@ -241,22 +238,12 @@ class Hat:
         """ Disables the power to the servos. """
         self.transceive(pad(SendCommand.SERVO_DISABLE))
 
-    def set_angles(self, plate_x: float, plate_y: float):
-        # If set_plate_angles flag is set, use the plate to servo conversion on
-        # the hat, otherwise use the one in Python
-
-        if self.use_plate_angles:
-            # Take into account offsets when converting from degrees to values sent to hat
-            plate_x, plate_y = _xy_offsets(plate_x, plate_y, self.servo_offsets)
-            plate_x, plate_y = -plate_x, -plate_y
-            self.transceive(pad(SendCommand.SET_PLATE_ANGLES, plate_x, plate_y))
-
-        else:
-            s1, s2, s3 = plate_angles_to_servo_positions(-plate_x, -plate_y)
-            s1 += self.servo_offsets[0]
-            s2 += self.servo_offsets[1]
-            s3 += self.servo_offsets[2]
-            self.set_servos(s1, s2, s3)
+    def set_angles(self, pitch: float, roll: float):
+        s1, s2, s3 = plate_angles_to_servo_positions(pitch, roll)
+        s1 += self.servo_offsets[0]
+        s2 += self.servo_offsets[1]
+        s3 += self.servo_offsets[2]
+        self.set_servos(s1, s2, s3)
 
     def set_servos(self, servo1: float, servo2: float, servo3: float):
         # Note the off by 1 for indexing
