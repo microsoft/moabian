@@ -33,6 +33,7 @@ def meters_to_pixels(vec, frame_size=256, field_of_view=1.05):
 
 def draw_ball(img, center, radius, hue):
     bgr = hue_to_bgr(hue)
+    print(f"draw_ball hue:{hue} bgr:{bgr}")
     cv2.circle(img, center, 2, bgr, 2)
     cv2.circle(img, center, int(radius), bgr, 2)
     return img
