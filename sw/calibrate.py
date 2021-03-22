@@ -126,7 +126,7 @@ def calibrate_pos(camera_fn, detector_fn, hue, is_menu_down_fn):
 
 
 # TODO: optimize this calibration
-def calibrate_servo_offsets(pid_fn, env, stationary_vel=0.001, time_limit=20):
+def calibrate_servo_offsets(pid_fn, env, stationary_vel=0.005, time_limit=20):
     start_time = time.time()
     action = Vector2(0, 0)
 
@@ -148,8 +148,9 @@ def calibrate_servo_offsets(pid_fn, env, stationary_vel=0.001, time_limit=20):
         if ball_detected:
             vel_x_hist.append(vel_x)
             vel_y_hist.append(vel_y)
-            prev_100_x = np.mean(vel_x_hist[-100:])
-            prev_100_y = np.mean(vel_y_hist[-100:])
+            prev_100_x = np.mean(np.abs(vel_x_hist[-100:]))
+            prev_100_y = np.mean(np.abs(vel_y_hist[-100:]))
+            print("Prev 100: ", (prev_100_x, prev_100_y))
 
             # If the average velocity for the last 100 timesteps is under the limit
             if (prev_100_x < stationary_vel) and (prev_100_y < stationary_vel):
@@ -248,30 +249,11 @@ def run_calibration(env, pid_fn, calibration_file):
         hat.hover()
         return
 
-    # # Calibrate servo offsets
-    # hat.display_long_string(
-    #     "Calibarating\noffsets\n\n"
-    #     "Place ball in\ncenter using\nclear stand.\n\n"
-    #     "Click joystick\nto continue."
-    # )
-    # buttons = wait_for_joystick_or_menu(hat)
-    # if buttons.menu_button:  # Early quit
-    #     hat.hover()
-    #     return
-    #
-    # hat.display_long_string("Running auto-\ncalibrate servos...")
-    # servos = calibrate_servo_offsets(pid_fn, env)
-    # if servo_calib.early_quit:
-    #     hat.hover()
-    #     return
-
     # Save calibration
     calibration_dict = read_calibration(calibration_file)
     calibration_dict["ball_hue"] = hue_calib.hue
     calibration_dict["plate_offsets"] = pos_calib.position
     x_offset, y_offset = pos_calib.position
-    # calibration_dict["servo_offsets"] = servo_calib.servos
-    # s1, s2, s3 = servo_calib.servos
     write_calibration(calibration_dict)
 
     # Update the environment to use the new calibration
@@ -283,10 +265,9 @@ def run_calibration(env, pid_fn, calibration_file):
             "Calibration\nsuccessful\n\n"
             f"Ball hue = {hue_calib.hue}\n\n"
             f"Position = \n({100*x_offset:.1f}, {100*y_offset:.1f}) cm\n\n"
-            # f"servo offsets = ({s1:.2f}, {s2:.2f}, {s3:.2f})\n\n"
             "Click menu\nto return...\n"
         )
-    elif not (pos_calib.success or hue_calib.success):  # or servo_calib.success):
+    elif not (pos_calib.success or hue_calib.success):
         hat.display_long_string("Calibration\nfailed\n\nClick menu\nto return...")
     else:
         hue_str = (
@@ -319,6 +300,53 @@ def run_calibration(env, pid_fn, calibration_file):
     hat.hover()
 
 
+def run_servo_calibration(env, pid_fn, calibration_file):
+    # Get some hidden things from env
+    hat = env.hat
+    camera_fn = env.camera
+    detector_fn = env.detector
+
+    # Start the calibration with uncalibrated servos
+    hat.set_servo_offsets(0, 0, 0)
+    # lift plate up fist
+    hat.set_angles(0, 0)
+
+    # Calibrate servo offsets
+    hat.display_long_string(
+        "Calibarating\nservos\n\n"
+        "Place ball in\ncenter without\n stand.\n\n"
+        "Click joystick\nto continue."
+    )
+    buttons = wait_for_joystick_or_menu(hat)
+    if buttons.menu_button:  # Early quit
+        hat.hover()
+        return
+
+    hat.display_long_string("Calibrating\nservos...")
+    servo_calib = calibrate_servo_offsets(pid_fn, env)
+
+    # Save calibration
+    calibration_dict = read_calibration(calibration_file)
+    calibration_dict["servo_offsets"] = servo_calib.servos
+    s1, s2, s3 = servo_calib.servos
+    write_calibration(calibration_dict)
+
+    # Update the environment to use the new calibration
+    # Warning! This mutates the state!
+    env.reset_calibration(calibration_file=calibration_file)
+
+    if servo_calib.success:
+        hat.display_long_string(
+            f"servo offsets =\n({s1:.2f}, {s2:.2f}, {s3:.2f})\n\n"
+            "Click menu\nto return...\n"
+        )
+        print(f"servo offsets =\n({s1:.2f}, {s2:.2f}, {s3:.2f})")
+    else:
+        hat.display_long_string("Calibration\nfailed\n\nClick menu\nto return...")
+
+    hat.hover()
+
+
 def calibrate_controller(**kwargs):
     run_calibration(
         kwargs["env"],
@@ -342,8 +370,7 @@ def main(calibration_file, frequency=30, debug=True):
     with MoabEnv(frequency=frequency, debug=debug) as env:
         env.step((0, 0))
         time.sleep(0.2)
-        run_calibration(env, pid_fn, calibration_file)
-        wait_for_menu(env.hat)
+        run_servo_calibration(env, pid_fn, calibration_file)
 
 
 if __name__ == "__main__":  # Parse command line args
