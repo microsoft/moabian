@@ -59,8 +59,6 @@ class MoabEnv:
         self.reset_calibration()
 
     def __enter__(self):
-        # TODO: only enable if necessary, not on enter/exit
-        self.hat.enable_servos()
         self.camera.start()
         return self
 
