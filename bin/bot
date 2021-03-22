@@ -56,6 +56,7 @@ COMMANDS:
     bot fanon           force fan on
     bot fanoff          force fan off
     bot csv             show csv file
+    bot console         4-up tmux console window (CTRL-O Q to quit)
 EOF
 
 
@@ -80,6 +81,7 @@ main() {
     fanon ) fw_fanon;;
     fanoff ) fw_fanoff;;
     csv ) csv;;
+    console ) console;;
   esac
 }
 
@@ -95,6 +97,19 @@ fw_reset() {
     raspi-gpio set 6 dh
     sleep 0.1
     raspi-gpio set 6 dl
+}
+
+console() {
+    tmux -2 new-session -A -s "console" \; \
+        send-keys 'cd ~/moab/sw' 'C-m' \; \
+        split-window -v -p 50 \; \
+        send-keys 'tail -F /tmp/log.csv' 'C-m' \; \
+        split-window -h -p 50 \; \
+        send-keys 'bot log' 'C-m' \; \
+        select-pane -t 0 \; \
+        split-window -h -p 50 \; \
+        send-keys 'journalctl -f -u menu' 'C-m' \; \
+        select-pane -t 0 \; 
 }
 
 

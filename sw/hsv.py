@@ -1,3 +1,5 @@
+import colorsys
+
 def hsv_to_rgb(h, s, v):
     if s == 0.0: return (v, v, v)
     i = int(h*6.) # XXX assume int() truncates!
@@ -10,24 +12,40 @@ def hsv_to_rgb(h, s, v):
     if i == 5: return (v, p, q)
 
 def rgb_to_bgr(rgb):
-    return (rgb[2], rgb[0], rgb[1])
+    return (rgb[2], rgb[1], rgb[0])
 
-def hue_to_bgr(hue):
+def hue_to_bgr(hue, s=.75, v=.75):
     assert(hue >= 0 and hue <= 360)
 
-    v = hsv_to_rgb(hue/360., 1., 1.)
-    y = [int(s*255) for s in v]
-    return y
+    rgb = hsv_to_rgb(hue/360., s, v)
+    rgb = [int(c*255) for c in rgb]
+    return rgb_to_bgr(rgb)
 
-def test_code(t, l):
+def hsv_normalized_to_bgr(h, s, v):
+    assert(0 <= h <= 1.0)
+    assert(0 <= s <= 1.0)
+    assert(0 <= v <= 1.0)
+
+    def h2r(h,s,v):
+        return tuple(round(i*255) for i in colorsys.hsv_to_rgb(h,s,v))
+
+    return rgb_to_bgr(h2r(h,s,v))
+
+# HSV was invented by Alvy Ray Smith (cool!)
+
+def test_code(t, e):
     v = hsv_to_rgb(*t)
     y = [int(s*255) for s in v]
-    print(f'f({t}) = {y} ~= {l}')
-    return y == l
+    print(f'f({t}) = {y} ~= expected: {e}')
+    return y == e
 
 if __name__ == "__main__":
+
     # 45 = orange
     test_code((45/360., 1., .5), [128, 96, 0])
+
+    # 45 = orange
+    test_code((45/360., .75, .5), [218, 165, 32])
 
     # 157 = green
     test_code((45/360., 1., .5), [128, 96, 0])

@@ -3,13 +3,18 @@ Description=Moab Menu
 DefaultDependencies=false
 After=docker.service
 
+StartLimitIntervalSec=100
+StartLimitBurst=5
+
 [Service]
-Environment="MOABIAN=3.0.20"
+Environment="MOABIAN=3.0.21"
 Environment="PYTHONUNBUFFERED=1"
 WorkingDirectory=/home/pi/moab/sw
 ExecStart=/usr/bin/python3 menu.py --no-debug
-Restart=no
 User=pi
+
+Restart=on-failure
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target

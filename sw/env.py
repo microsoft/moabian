@@ -40,27 +40,27 @@ class MoabEnv:
         self,
         frequency=30,
         debug=False,
+        verbose=0,
         derivative_fn=derivative,
         calibration_file="bot.json",
     ):
         self.debug = debug
+        self.verbose=0
         self.frequency = frequency
         self.derivative_fn = derivative
         self.vel_x = self.derivative_fn(frequency)
         self.vel_y = self.derivative_fn(frequency)
         self.sum_x, self.sum_y = 0, 0
 
-        self.hat = Hat(debug=debug)
+        self.hat = Hat(debug=debug, verbose=verbose)
         self.hat.open()
         self.camera = OpenCVCameraSensor(frequency=frequency)
-        self.detector = hsv_detector(debug=debug)
 
         self.calibration_file = calibration_file
         self.reset_calibration()
+        self.detector = hsv_detector(debug=debug, hue=self.hue)
 
     def __enter__(self):
-        # TODO: only enable if necessary, not on enter/exit
-        self.hat.enable_servos()
         self.camera.start()
         return self
 

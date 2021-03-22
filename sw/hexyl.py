@@ -117,11 +117,23 @@ def hexyl():
         c = {0: color.green, 1: color.green, 2: color.cyan, 3: color.cyan}
         return ' '.join(enum_bytes_rx(l, c))
 
-    def hfn(tx, rx):
+# verbosity spi debug
+# 0: nothing 
+# 1: mode changes
+# 2: include servo settings (0x05)
+# 3: include noops (0x00) (useful to show menu/joystick state)
+
+    def hfn(tx, rx,verbose=0):
         nonlocal tick
         tick = tick + 1
 
-        if np.uint8(tx[0]) == 0x00:
+        if verbose==0:
+            return
+
+        if np.uint8(tx[0]) == 0x05 and verbose < 2:
+            return
+
+        if np.uint8(tx[0]) == 0x00 and verbose < 3:
             return
 
         print(f'{color.gray}{tick:05d}{color.end}', end='')

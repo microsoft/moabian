@@ -11,7 +11,6 @@ import numpy as np
 import logging as log
 import RPi.GPIO as gpio
 
-from procid import kill_doppelganger
 from hexyl import hexyl
 from enum import IntEnum
 from typing import Union, List, Tuple
@@ -143,20 +142,19 @@ class Hat:
         self,
         servo_offsets: Tuple[float, float, float] = (0, 0, 0),
         debug=False,
+        verbose=0
     ):
         self.servo_offsets: Tuple[float, float, float] = servo_offsets
         self.buttons = Buttons(False, False, 0.0, 0.0)
 
-        self.debug = debug
+        self.debug=debug
+        self.verbose=verbose
         if debug:
             self.hex_printer = hexyl()
 
         self.spi = None
 
     def open(self):
-        # Ensure we are the only processing since SPI bus is a singleton
-        kill_doppelganger()
-
         # Attempt to open the spidev bus
         try:
             self.spi = spidev.SpiDev()
@@ -183,7 +181,7 @@ class Hat:
             raise IOError(f"Could not setup GPIO pins")
 
     def close(self):
-        self.display_power_symbol("WAKE", PowerIcon.POWER)
+        self.display_power_symbol("TO WAKE", PowerIcon.POWER)
         if self.spi is not None:
             self.spi.close()
 
@@ -205,7 +203,7 @@ class Hat:
         time.sleep(0.005)
 
         if self.debug:
-            self.hex_printer(packet.tolist(), hat_to_pi)
+            self.hex_printer(packet.tolist(), hat_to_pi, self.verbose)
 
         # Check if buttons are pressed
         self.buttons.menu_button = hat_to_pi[0] == 1

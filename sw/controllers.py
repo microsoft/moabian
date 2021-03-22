@@ -15,7 +15,7 @@ def pid_controller(
     Kp=75,  # Proportional coefficient
     Ki=0.5,  # Integral coefficient
     Kd=45,  # Derivative coefficient
-    max_angle=20,
+    max_angle=22,
     **kwargs,
 ):
     def next_action(state):

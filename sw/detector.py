@@ -33,6 +33,7 @@ def meters_to_pixels(vec, frame_size=256, field_of_view=1.05):
 
 def draw_ball(img, center, radius, hue):
     bgr = hue_to_bgr(hue)
+    # 45 -> hsl(45°, 75%, 50%)
     cv2.circle(img, center, 2, bgr, 2)
     cv2.circle(img, center, int(radius), bgr, 2)
     return img
@@ -61,9 +62,6 @@ def hsv_detector(
     ball_min=0.06,
     ball_max=0.22,
     hue=None,  # hue [0..255]
-    sigma=0.05,  # narrow: 0.01, wide: 0.1
-    bandpass_gain=12.0,
-    mask_gain=4.0,
     debug=False,
 ):
     if calibration is None:
@@ -75,19 +73,19 @@ def hsv_detector(
 
     def detect_features(img, hue=hue, debug=debug, filename="/tmp/camera/frame.jpg"):
         # covert to HSV space
-        color = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
         # The hue_mask function follows CV2 convention and hue is in the range
         # [0, 180] instead of [0, 360]
-        hue /= 2
 
         # run through each triplet and perform our masking filter on it.
         # hue_mask coverts the hsv image into a grayscale image with a
         # bandpass applied centered around hue, with width sigma
-        hue_mask(color, hue, sigma, bandpass_gain, mask_gain)
+        # TODO: hue / 2 is odd: [0..180]?
+        hue_mask(img_hsv, hue / 2, 0.05, 12.0, 4.0)
 
         # convert to b&w mask from grayscale image
-        mask = cv2.inRange(color, np.array((200, 200, 200)), np.array((255, 255, 255)))
+        mask = cv2.inRange(img_hsv, np.array((200, 200, 200)), np.array((255, 255, 255)))
 
         # expand b&w image with a dialation filter
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)

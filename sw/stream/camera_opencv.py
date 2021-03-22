@@ -21,8 +21,8 @@ class CameraOpenCV(BaseCamera):
         y = int((h / 2 - d / 2))
 
         # TODO: See if these x/y offsets are universal across Mark 2 & 3
-        x += -12
-        y +=  4
+        # x += -12
+        # y +=  4
 
         camera.set(cv2.CAP_PROP_FRAME_WIDTH, w)
         camera.set(cv2.CAP_PROP_FRAME_HEIGHT, h)
