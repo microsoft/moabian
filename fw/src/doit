@@ -39,6 +39,7 @@ exec 2> >(tee "/tmp/stderr.log")
 # 3.0.17: Testing new MUTEX protected display.c code in MUTEX branch
 # 3.0.19: Arbitrary version bump to be in sync with the software stack
 # 3.0.20: Pitch/roll to servo 1/2/3 coordinate transform removed (now in hat.py)
+# 3.0.21: Tighten up the log info messages
 
 VERSION="3.0.21"
 

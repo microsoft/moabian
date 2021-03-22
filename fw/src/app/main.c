@@ -47,38 +47,38 @@ void main(void)
                 case DISPLAY_BIG_TEXT_ICON:
                     message_buffer[mb_idx] = '\0';  // Add a termination char just in case
                     mb_idx = 0;
-                    LOG_INF("Icon idx is %d", (u8_t) rx.data.icon);
-                    LOG_HEXDUMP_INF((const u8_t *) message_buffer, 32, "buffer_bt_i");
+                    LOG_INF("icon(%d) TEXT=%s", (u8_t) rx.data.icon, log_strdup(message_buffer));
                     display_big_text_icon(message_buffer, (disp_icon_t) rx.data.icon);
                     break;
 
                 case DISPLAY_BIG_TEXT:
                     message_buffer[mb_idx] = '\0';  // Add a termination char just in case
                     mb_idx = 0;
-                    LOG_HEXDUMP_INF((const u8_t *) message_buffer, 32, "buffer_bt");
+                    LOG_INF("TEXT=%s", log_strdup(message_buffer));
                     display_big_text(message_buffer);
                     break;
 
                 case DISPLAY_SMALL_TEXT:
                     message_buffer[mb_idx] = '\0';  // Add a termination char just in case
                     mb_idx = 0;
-                    LOG_HEXDUMP_INF((const u8_t *) message_buffer, 32, "buffer_st");
+                    LOG_INF("text=%s", log_strdup(message_buffer));
                     display_small_text(message_buffer);
                     break;
 
                 case DISPLAY_POWER_SYMBOL:
                     message_buffer[mb_idx] = '\0';  // Add a termination char just in case
                     mb_idx = 0;
-                    LOG_INF("power icon index is %d", (u8_t) rx.data.icon);
-                    LOG_HEXDUMP_INF((const u8_t *) message_buffer, 32, "buffer_ps");
+                    LOG_INF("power(%d) TEXT=%s", (u8_t) rx.data.icon, log_strdup(message_buffer));
                     display_big_text_power_icon(message_buffer, (disp_power_icon_t) rx.data.icon);
                     break;
 
                 case SERVO_ENABLE:
+                    LOG_INF("servos: on");
                     plate_servo_enable(true);
                     break;
 
                 case SERVO_DISABLE: 
+                    LOG_INF("servos: off");
                     plate_servo_enable(false);
                     break;
 
