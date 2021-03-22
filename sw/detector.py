@@ -113,6 +113,7 @@ def hsv_detector(
 
                 if debug:
                     ball_center_pixels = (int(x_obs), int(y_obs))
+                    # TODO: scott validate this hue will work if [0,180] or [0,360]
                     draw_ball(img, ball_center_pixels, radius, hue)
                     save_img(filename, img, rotated=False, quality=80)
 

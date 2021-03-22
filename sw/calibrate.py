@@ -369,7 +369,7 @@ def calibrate_controller(**kwargs):
             hat.noop()
             menu_button, joy_button, joy_x, joy_y = hat.get_buttons()
 
-    return wait_for_menu
+    return wait_for_menu_and_stream
 
 
 def main(calibration_file, frequency=30, debug=True):
