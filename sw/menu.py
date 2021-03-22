@@ -47,7 +47,6 @@ class Mode:
     verbose: int
     debug: bool
     frequency: int
-    stream: bool
     log: bool
     logfile: str
 
@@ -103,7 +102,7 @@ def get_menu_list(env, mode: Mode):
             is_controller=False,
         ),
         MenuOption(
-            name="Hue Info",
+            name="Hue",
             closure=info_config_controller,
             kwargs={"env": env},
             is_controller=False,
@@ -136,11 +135,10 @@ def _handle_debug(ctx, param, debug):
 # -f logfile
 # -h hertz
 # -l log on/off
-# -s stream
 # -v verbose
 
 @click.command()
-@click.version_option(version="3.0")
+@click.version_option(version="3.0.20")
 @click.option(
     "-c",
     "--cont",
@@ -181,12 +179,6 @@ def _handle_debug(ctx, param, debug):
     default=True,
     help=("Enables or disables the logging as specified by -f/--file"),
 )
-@click.option(
-    "-s",
-    "--stream/--no-stream",
-    default=True,
-    help=("Stream a live view of the camera to http://moab.local"),
-)
 
 # verbosity spi debug
 # 0: nothing 
@@ -198,22 +190,20 @@ def _handle_debug(ctx, param, debug):
     "-v",
     "--verbose",
     count=True,
-    default=0,
-    help="level of verbosity",
+    default=1,
+    help="verbose tx/rx (1=OLED changes, 2=servo commands, 3=NOOPs)"
 )
 @click.pass_context
 def main(ctx: click.core.Context, **kwargs: Any) -> None:
     err(f"Starting {sys.argv[0]}")
     out(f"Starting {kwargs}")
 
-    #def main(ctx, verbose, debug, hertz, cont, stream, log, file, extra):
-    # mode = Mode(verbose, debug, hertz, stream, log, file)
     main_menu(**kwargs)
 
-def main_menu(cont, debug, file, hertz, log, stream, verbose):
+def main_menu(cont, debug, file, hertz, log, verbose):
 
-    mode = Mode(verbose, debug, hertz, stream, log, file)
-    with MoabEnv(hertz, debug=debug) as env:
+    mode = Mode(verbose, debug, hertz, log, file)
+    with MoabEnv(hertz, debug=debug, verbose=verbose) as env:
         menu_list = get_menu_list(env, mode)
 
         if cont == -1:

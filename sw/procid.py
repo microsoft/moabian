@@ -42,7 +42,6 @@ def setup_signal_handlers():
     # raises SystemExit(0) for controlled shutdown if run under systemd
     # /bin/kill -s TERM $(cat /tmp/menu.pid)
     def handler(signum, stack):
-        print(f"Caught {signum}", flush=True)
         sys.exit(0)
 
     signal.signal(signal.SIGTERM, handler)
