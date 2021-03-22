@@ -9,7 +9,6 @@ import click
 import procid
 import logging
 
-from app import App
 from procid import *
 from hat import Icon
 from enum import Enum
