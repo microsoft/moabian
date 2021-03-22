@@ -290,12 +290,17 @@ def run_calibration(env, pid_fn, calibration_file):
     # When the calibration is complete, save the image of what the moab camera
     # sees (useful for debugging when the hue calibration fails)
     # Have a nice filename with the time and whether it succeeded or failed
+    # TODO: put the hue in the image name
+
     time_of_day = datetime.datetime.now().strftime("%H%M%S")
-    filename = f"/tmp/hue.{time_of_day}."
-    filename += "success" if hue_calib.success else "fail"
-    filename += ".jpg"
+    filename = "/tmp/hue"
+    if hue_calib.success:
+        filename += f".{hue_calib.hue}.{time_of_day}.jpg"
+    else:
+        filename += f".999.{time_of_day}.jpg"
+
     img_frame, _ = camera_fn()
-    detector_fn(img_frame, debug=True, filename=filename)
+    detector_fn(img_frame, hue_calib.hue, debug=True, filename=filename)
 
     hat.hover()
 
