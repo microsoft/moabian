@@ -354,10 +354,18 @@ def calibrate_controller(**kwargs):
         kwargs["calibration_file"],
     )
 
-    def wait_for_menu():
-        hat = kwargs["env"].hat
+    def wait_for_menu_and_stream():
+        # Get some hidden things from env to be able to stream the calib results
+        env = kwargs["env"]
+        hat = env.hat
+        camera_fn = env.camera
+        detector_fn = env.detector
+
         menu_button = False
         while not menu_button:
+            img_frame, _ = camera_fn()
+            detector_fn(img_frame, debug=True)  # Save to streaming
+
             hat.noop()
             menu_button, joy_button, joy_x, joy_y = hat.get_buttons()
 
@@ -370,7 +378,7 @@ def main(calibration_file, frequency=30, debug=True):
     with MoabEnv(frequency=frequency, debug=debug) as env:
         env.step((0, 0))
         time.sleep(0.2)
-        run_servo_calibration(env, pid_fn, calibration_file)
+        run_calibration(env, pid_fn, calibration_file)
 
 
 if __name__ == "__main__":  # Parse command line args
