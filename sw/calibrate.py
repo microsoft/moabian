@@ -77,7 +77,7 @@ def calibrate_hue(
             return CalibHue(early_quit=True)
 
         img_frame, elapsed_time = camera_fn()
-        ball_detected, ((x, y), radius) = detector_fn(img_frame, hue=hue)
+        ball_detected, ((x, y), radius) = detector_fn(img_frame, hue=hue, debug=True)
 
         # If we found a ball roughly in the center that is large enough
         if ball_detected and ball_close_enough(x, y, radius):
@@ -97,7 +97,7 @@ def calibrate_hue(
 
         print(f"Hues are: {detected_hues}")
         print(f"Hue calibrated: {avg_hue:0.3f}")
-        print(f"\n\n\n\n\n\n {avg_hue} \n\n\n\n\n\n\n")
+        print(f"Avg hue: {avg_hue}")
         return CalibHue(hue=int(avg_hue), success=True)
 
     else:
@@ -378,7 +378,13 @@ def main(calibration_file, frequency=30, debug=True):
     with MoabEnv(frequency=frequency, debug=debug) as env:
         env.step((0, 0))
         time.sleep(0.2)
+        env.hat.enable_servos()
+        time.sleep(0.2)
+        env.hat.set_servos(133,133,133)
+
         run_calibration(env, pid_fn, calibration_file)
+
+        env.hat.disable_servos()
 
 
 if __name__ == "__main__":  # Parse command line args
