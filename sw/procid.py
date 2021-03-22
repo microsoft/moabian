@@ -4,11 +4,12 @@ import psutil
 import logging as log
 from psutil import Process, signal
 
-def stop_doppelgänger(pid_path='/tmp/menu.pid'):
+
+def stop_doppelgänger(pid_path="/tmp/menu.pid"):
 
     if os.path.isfile(pid_path):
         if os.path.isfile(pid_path):
-            with open(pid_path, 'r') as f:
+            with open(pid_path, "r") as f:
                 pid = int(f.read())
 
             try:
@@ -24,16 +25,17 @@ def stop_doppelgänger(pid_path='/tmp/menu.pid'):
             except OSError as e:
                 # errno.ESRCH unimportant: sometimes the /tmp/menu.pid is stale
                 if e.errno == errno.ESRCH:
-                    print(f'no such process which is ok.')
+                    print(f"no such process which is ok.")
                 else:
-                    print(f'Unexpected OSError {e}')
+                    print(f"Unexpected OSError {e}")
             except Exception as e:
-                print(f'Unexpected exception {e}')
+                print(f"Unexpected exception {e}")
 
     this_pid = psutil.Process()
-    with open(pid_path, 'w') as f:
+    with open(pid_path, "w") as f:
         f.write(str(this_pid.pid))
     return this_pid.pid
+
 
 def setup_signal_handlers():
 
@@ -49,16 +51,14 @@ def setup_signal_handlers():
 
 if __name__ == "__main__":
 
-    #setup_signal_handlers()
-
     def int_handler(signum, stack):
         print(f"Caught {signum}", flush=True)
         sys.exit(0)
 
     def term_handler(signum, stack):
-        print(f'\nCaught SIGTERM...simulating slow exit in 3.', end='', flush=True)
-        for s in range(2,0,-1):
-            print(s, end='.', flush=True)
+        print(f"\nCaught SIGTERM...simulating slow exit in 3.", end="", flush=True)
+        for s in range(2, 0, -1):
+            print(s, end=".", flush=True)
             time.sleep(1)
         sys.exit(0)
 
@@ -67,6 +67,6 @@ if __name__ == "__main__":
 
     try:
         mypid = stop_doppelgänger()
-        input(f'This pid={mypid}.\nPress any key to quit...')
+        input(f"This pid={mypid}.\nPress any key to quit...")
     finally:
         print("Goodbye")

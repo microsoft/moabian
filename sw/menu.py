@@ -7,13 +7,14 @@ import sys
 import time
 import click
 import procid
-import logging as log
+import logging
 
+from app import App
 from procid import *
 from hat import Icon
 from enum import Enum
 from env import MoabEnv
-from typing import Callable
+from typing import Callable, Any, Union
 from functools import partial
 from dataclasses import dataclass
 from log_csv import log_decorator
@@ -21,6 +22,7 @@ from calibrate import calibrate_controller
 from info_screen import info_screen_controller, info_config_controller
 from controllers import pid_controller, brain_controller, joystick_controller
 
+LOG = logging.getLogger(__name__)
 
 @dataclass
 class MenuOption:
@@ -121,21 +123,49 @@ def get_menu_list(env, mode: Mode):
 out = partial(click.secho, bold=False, err=True)
 err = partial(click.secho, fg="red", err=True)
 
+def _handle_debug(ctx, param, debug):
+    log_level = logging.DEBUG if debug else logging.INFO
+    logging.basicConfig(
+        format="[%(asctime)s] %(levelname)s: %(message)s",
+        level=log_level,
+    )
+    return debug
+
+# -c controller
+# -d debug
+# -f logfile
+# -h hertz
+# -l log on/off
+# -s stream
+# -v verbose
 
 @click.command()
 @click.version_option(version="3.0")
 @click.option(
-    "-v",
-    "--verbose",
-    count=True,
-    default=0,
-    help="level of verbosity",
+    "-c",
+    "--cont",
+    type=click.IntRange(-1, 7),
+    default=-1,
+    help="Default startup controller index",
+    show_default=True,
 )
 @click.option(
     "-d",
     "--debug/--no-debug",
     default=True,
     help="programmer details showing Tx/Rx buffers",
+)
+@click.option(
+    "-f",
+    "--file",
+    default="/tmp/log.csv",
+    help=("If --log, then save CSV to this file"),
+    type=click.Path(
+        exists=False,
+        dir_okay=False,
+        writable=True,
+        resolve_path=True,
+    ),
 )
 @click.option(
     "-h",
@@ -146,12 +176,10 @@ err = partial(click.secho, fg="red", err=True)
     show_default=True,
 )
 @click.option(
-    "-c",
-    "--cont",
-    type=click.IntRange(-1, 7),
-    default=-1,
-    help="Default startup controller index",
-    show_default=True,
+    "-l",
+    "--log/--no-log",
+    default=True,
+    help=("Enables or disables the logging as specified by -f/--file"),
 )
 @click.option(
     "-s",
@@ -159,30 +187,32 @@ err = partial(click.secho, fg="red", err=True)
     default=True,
     help=("Stream a live view of the camera to http://moab.local"),
 )
+
+# verbosity spi debug
+# 0: nothing 
+# 1: mode changes
+# 2: include servo settings (0x05)
+# 3: include noops (0x00) (useful to show menu/joystick state)
+
 @click.option(
-    "-l",
-    "--log/--no-log",
-    default=True,
-    help=("Enables or disables the logging as specified by -f/--file"),
+    "-v",
+    "--verbose",
+    count=True,
+    default=0,
+    help="level of verbosity",
 )
-@click.option(
-    "-f",
-    "--file",
-    default="/tmp/log.csv",
-    help=("Set the logfile"),
-    type=click.Path(
-        exists=False,
-        dir_okay=False,
-        writable=True,
-        resolve_path=True,
-    ),
-)
-@click.argument("extra", nargs=-1)
 @click.pass_context
+def main(ctx: click.core.Context, **kwargs: Any) -> None:
+    err(f"Starting {sys.argv[0]}")
+    out(f"Starting {kwargs}")
 
-def main(ctx, verbose, debug, hertz, cont, stream, log, file, extra):
+    #def main(ctx, verbose, debug, hertz, cont, stream, log, file, extra):
+    # mode = Mode(verbose, debug, hertz, stream, log, file)
+    main_menu(**kwargs)
+
+def main_menu(cont, debug, file, hertz, log, stream, verbose):
+
     mode = Mode(verbose, debug, hertz, stream, log, file)
-
     with MoabEnv(hertz, debug=debug) as env:
         menu_list = get_menu_list(env, mode)
 
