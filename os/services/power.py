@@ -36,10 +36,11 @@ def shutdown():
     global too_late
     too_late = True
 
-    # Send SIGINT to moab/control container; when caught, Moab 
+    # Send SIGTERM to moab/control container; when caught, Moab 
     # will drop the plate, kill the servo power and clear the screen
 
-    os.system("docker kill --signal=2 control &> /dev/null")
+    cmd = "/bin/kill -s TERM $(cat /tmp/menu.pid) &> /dev/null"
+    os.system(cmd)
     os.system("sudo shutdown now")
 
 
@@ -54,8 +55,9 @@ def power_button_event(pin):
     else:
         # kill the timer before it kills us
         if T is not None and too_late is False:
-            print("Countdown canceled", flush=True)
             T.cancel()
+            print("Tapped. Starting menu.", flush=True)
+            os.system("sudo systemctl start menu")
 
 
 def sigint(signal_received, frame):
