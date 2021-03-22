@@ -42,15 +42,6 @@ class MenuState(Enum):
     second_level = 2  # Inside a controller or 'modal' (running the fn from MenuOption)
 
 
-@dataclass
-class Mode:
-    verbose: int
-    debug: bool
-    frequency: int
-    log: bool
-    logfile: str
-
-
 def update_icon_fn(hat):
     def update_icon(toggle: bool):
         print(f"Alert: brain threw an error")
@@ -58,7 +49,7 @@ def update_icon_fn(hat):
     return update_icon
 
 
-def get_menu_list(env, mode: Mode):
+def get_menu_list(env):
     update_icon = update_icon_fn(env.hat)
     return [
         MenuOption(
@@ -179,13 +170,6 @@ def _handle_debug(ctx, param, debug):
     default=True,
     help=("Enables or disables the logging as specified by -f/--file"),
 )
-
-# verbosity spi debug
-# 0: nothing 
-# 1: mode changes
-# 2: include servo settings (0x05)
-# 3: include noops (0x00) (useful to show menu/joystick state)
-
 @click.option(
     "-v",
     "--verbose",
@@ -195,16 +179,17 @@ def _handle_debug(ctx, param, debug):
 )
 @click.pass_context
 def main(ctx: click.core.Context, **kwargs: Any) -> None:
-    err(f"Starting {sys.argv[0]}")
-    out(f"Starting {kwargs}")
+    if kwargs["verbose"] == 2:
+        err(f"Starting {sys.argv[0]}")
+        out(f"Starting {kwargs}")
 
     main_menu(**kwargs)
 
+
 def main_menu(cont, debug, file, hertz, log, verbose):
 
-    mode = Mode(verbose, debug, hertz, log, file)
     with MoabEnv(hertz, debug=debug, verbose=verbose) as env:
-        menu_list = get_menu_list(env, mode)
+        menu_list = get_menu_list(env)
 
         if cont == -1:
             # normal startup state
