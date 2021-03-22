@@ -82,6 +82,7 @@ main() {
     fanoff ) fw_fanoff;;
     csv ) csv;;
     console ) console;;
+    2up ) 2up;;
   esac
 }
 
@@ -111,6 +112,15 @@ console() {
         send-keys 'journalctl -f -u menu' 'C-m' \; \
         select-pane -t 0 \; 
 }
+
+2up() {
+    tmux -2 new-session -A -s "console" \; \
+        send-keys 'cd ~/moab/sw' 'C-m' \; \
+        split-window -v -p 30 \; \
+        send-keys 'bot log' 'C-m' \; \
+        select-pane -t 0 \; 
+}
+
 
 
 sourced? && return
