@@ -23,9 +23,9 @@ with Hat() as hat:
     input("Confirm: ⏾ SLEEP")
 
     menus = {
-        0: "Berkeley\nCalifornia",
-        1: "Sacramento\nVacaville\nBerkeley\nSan Luis Obispo",
-        2: "Sacramento Vacaville\nKansas City\nBerkeley San Luis Obispo CA",
+        0: "§ Berkeley\nCalifornia",
+        1: "Albany\nKansas City\nBerkeley",
+        2: "Vancouver, Canada...Albany, NY\nKansas City, MO...Berkeley, CA",
     }
 
     hat.display_long_string(menus[0])
