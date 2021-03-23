@@ -174,7 +174,7 @@ def _handle_debug(ctx, param, debug):
     "--verbose",
     count=True,
     default=1,
-    help="verbose tx/rx (1=OLED changes, 2=servo commands, 3=NOOPs)"
+    help="verbose tx/rx (-v=OLED changes, -vv=servo commands, -vvv=NOOPs)"
 )
 @click.pass_context
 def main(ctx: click.core.Context, **kwargs: Any) -> None:
