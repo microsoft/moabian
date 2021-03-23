@@ -65,9 +65,9 @@ def ball_close_enough(x, y, radius, max_ball_dist=0.045, min_ball_dist=0.01):
 
 
 def calibrate_hue(camera_fn, detector_fn, is_menu_down_fn):
-    hue_low=0
-    hue_high=360
-    hue_steps=41            # TODO: why 41? Why not, say 40?
+    hue_low = 0
+    hue_high = 360
+    hue_steps = 41  # TODO: why 41? Why not, say 40?
 
     img_frame, elapsed_time = camera_fn()
     hue_options = list(np.linspace(hue_low, hue_high, hue_steps))
@@ -228,8 +228,7 @@ def run_calibration(env, pid_fn, calibration_file):
 
     # Display message and wait for joystick
     hat.display_long_string(
-        "Place ball in\ncenter using\nclear stand.\n\n"
-        "Click joystick\nwhen ready."
+        "Place ball in\ncenter using\nclear stand.\n\n" "Click joystick\nwhen ready."
     )
     buttons = wait_for_joystick_or_menu(hat)
     if buttons.menu_button:  # Early quit
@@ -261,7 +260,6 @@ def run_calibration(env, pid_fn, calibration_file):
 
     if pos_calib.success and hue_calib.success:  # and servo_calib.success:
         hat.display_long_string(
-<<<<<<< HEAD
             f"Ok! Ball hue = {hue_calib.hue}\n"
             # f"Position = \n({100*x_offset:.1f}, {100*y_offset:.1f}) cm\n\n"
             # f"servo offsets = ({s1:.2f}, {s2:.2f}, {s3:.2f})\n\n"
@@ -269,15 +267,6 @@ def run_calibration(env, pid_fn, calibration_file):
         )
     elif not (pos_calib.success or hue_calib.success):  # or servo_calib.success):
         hat.display_long_string("Calibration failed.\nClick menu...")
-=======
-            "Calibration\nsuccessful\n\n"
-            f"Ball hue = {hue_calib.hue}\n\n"
-            f"Position = \n({100*x_offset:.1f}, {100*y_offset:.1f}) cm\n\n"
-            "Click menu\nto return...\n"
-        )
-    elif not (pos_calib.success or hue_calib.success):
-        hat.display_long_string("Calibration\nfailed\n\nClick menu\nto return...")
->>>>>>> calib
     else:
         hue_str = (
             f"Hue calib:\nsuccessful\nBall hue = {hue_calib.hue}\n\n"
@@ -384,7 +373,7 @@ def calibrate_controller(**kwargs):
             detector_fn(img_frame, debug=True)  # Save to streaming
 
             hat.noop()
-            menu, joy, _, _= hat.get_buttons()
+            menu, joy, _, _ = hat.get_buttons()
             if menu or joy:
                 break
         hat.hover()
@@ -400,7 +389,7 @@ def main(calibration_file, frequency=30, debug=True):
         time.sleep(0.2)
         env.hat.enable_servos()
         time.sleep(0.2)
-        env.hat.set_servos(133,133,133)
+        env.hat.set_servos(133, 133, 133)
 
         run_calibration(env, pid_fn, calibration_file)
 
