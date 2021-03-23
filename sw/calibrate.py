@@ -67,7 +67,7 @@ def ball_close_enough(x, y, radius, max_ball_dist=0.045, min_ball_dist=0.01):
 def calibrate_hue(camera_fn, detector_fn, is_menu_down_fn):
     hue_low = 0
     hue_high = 360
-    hue_steps = 41  # TODO: why 41? Why not, say 40?
+    hue_steps = 41  # Is 41 instead of 40 so that the steps are even
 
     img_frame, elapsed_time = camera_fn()
     hue_options = list(np.linspace(hue_low, hue_high, hue_steps))

@@ -15,7 +15,6 @@ from env import MoabEnv
 from functools import partial
 from dataclasses import dataclass
 from log_csv import log_decorator
-from common import low_pass_filter
 from calibrate import calibrate_controller
 from typing import Callable, Any, Union, Optional, List
 from procid import setup_signal_handlers, stop_doppelgänger
@@ -273,13 +272,9 @@ def main_menu(cont, debug, file, hertz, log, verbose):
                 # Initialize the controller
                 controller_closure = menu_list[index].closure
                 kwargs = menu_list[index].kwargs
-                if log and menu_list[index].is_controller:  # Use the log decorator
-                    controller = log_decorator(
-                        controller_closure(**kwargs), logfile=file
-                    )
-                else:
-                    controller = controller_closure(**kwargs)
+                controller = controller_closure(**kwargs)
 
+                # Wrap a decorator if it has one
                 if menu_list[index].decorators:
                     for decorator in menu_list[index].decorators:
                         controller = decorator(controller)
