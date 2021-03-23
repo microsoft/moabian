@@ -337,7 +337,7 @@ class Hat:
         self.transceive(pad(SendCommand.DISPLAY_POWER_SYMBOL, icon_idx))
 
     def display_string_icon(self, text: str, icon_idx: Icon):
-        assert len(text) <= 12, "String is too long to display with icon"
+       # assert len(text) <= 12, "String is too long to display with icon"
 
         # Copy the text into a buffer in the firmware
         self._copy_buffer(text)
