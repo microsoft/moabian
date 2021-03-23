@@ -9,19 +9,21 @@ import click
 import procid
 import logging
 
-from procid import *
 from hat import Icon
 from enum import Enum
 from env import MoabEnv
-from typing import Callable, Any, Union
 from functools import partial
 from dataclasses import dataclass
 from log_csv import log_decorator
+from common import low_pass_filter
 from calibrate import calibrate_controller
+from typing import Callable, Any, Union, Optional, List
+from procid import setup_signal_handlers, stop_doppelgänger
 from info_screen import info_screen_controller, info_config_controller
 from controllers import pid_controller, brain_controller, joystick_controller
 
 LOG = logging.getLogger(__name__)
+
 
 @dataclass
 class MenuOption:
@@ -32,7 +34,8 @@ class MenuOption:
     # blocking functions that return on menu press. These other functions are
     # for anything that does something to the bot (displaying info to the screen,
     # doing a calibration, running git pull, etc.)
-    is_controller: bool
+    is_controller: bool = True
+    decorators: Optional[List[Callable]] = None  # List of functions to decorate
     require_servos: bool = True  # To not turn on servos unnecessarily
 
 
@@ -41,45 +44,59 @@ class MenuState(Enum):
     second_level = 2  # Inside a controller or 'modal' (running the fn from MenuOption)
 
 
-def update_icon_fn(hat):
-    def update_icon(toggle: bool):
-        print(f"Alert: brain threw an error")
+def squash_small_angles_decorator(controller_fn, min_angle=1.0):
+    """
+    Decorates a controller that sets actions smaller than a certain angle to 0.
+    """
+    # Acts like a normal controller function
+    def decorated_controller(state):
+        action, info = controller_fn(state)  # The actual controller
+        (pitch, roll) = action
 
-    return update_icon
+        if abs(pitch) < min_angle:
+            pitch = 0
+        if abs(roll) < min_angle:
+            roll = 0
+
+        action = (pitch, roll)
+        return (action), info
+
+    return decorated_controller
 
 
-def get_menu_list(env):
-    update_icon = update_icon_fn(env.hat)
+def get_menu_list(env, log, file):
+    log_csv = lambda fn: log_decorator(fn, file)
+
     return [
         MenuOption(
             name="Joystick",
             closure=joystick_controller,
             kwargs={},
-            is_controller=True,
+            decorators=[squash_small_angles_decorator],
         ),
         MenuOption(
             name="PID",
             closure=pid_controller,
             kwargs={},
-            is_controller=True,
+            decorators=[log_csv] if log else None,
         ),
         MenuOption(
             name="Brain",
             closure=brain_controller,
             kwargs={"port": 5000},
-            is_controller=True,
+            decorators=[log_csv] if log else None,
         ),
         MenuOption(
             name="Custom1",
             closure=brain_controller,
             kwargs={"port": 5001},
-            is_controller=True,
+            decorators=[log_csv] if log else None,
         ),
         MenuOption(
             name="Custom2",
             closure=brain_controller,
             kwargs={"port": 5002},
-            is_controller=True,
+            decorators=[log_csv] if log else None,
         ),
         MenuOption(
             name="Calibrate",
@@ -112,6 +129,7 @@ def get_menu_list(env):
 out = partial(click.secho, bold=False, err=True)
 err = partial(click.secho, fg="red", err=True)
 
+
 def _handle_debug(ctx, param, debug):
     log_level = logging.DEBUG if debug else logging.INFO
     logging.basicConfig(
@@ -120,12 +138,14 @@ def _handle_debug(ctx, param, debug):
     )
     return debug
 
+
 # -c controller
 # -d debug
 # -f logfile
 # -h hertz
 # -l log on/off
 # -v verbose
+
 
 @click.command()
 @click.version_option(version="3.0.21")
@@ -174,7 +194,7 @@ def _handle_debug(ctx, param, debug):
     "--verbose",
     count=True,
     default=1,
-    help="verbose tx/rx (1=OLED changes, 2=servo commands, 3=NOOPs)"
+    help="verbose tx/rx (1=OLED changes, 2=servo commands, 3=NOOPs)",
 )
 @click.pass_context
 def main(ctx: click.core.Context, **kwargs: Any) -> None:
@@ -188,7 +208,7 @@ def main(ctx: click.core.Context, **kwargs: Any) -> None:
 def main_menu(cont, debug, file, hertz, log, verbose):
 
     with MoabEnv(hertz, debug=debug, verbose=verbose) as env:
-        menu_list = get_menu_list(env)
+        menu_list = get_menu_list(env, log, file)
 
         if cont == -1:
             # normal startup state
@@ -200,7 +220,6 @@ def main_menu(cont, debug, file, hertz, log, verbose):
             current = MenuState.second_level
             index = cont
             last_index = -1
-
 
         # Default menu raises the servo to alert the user the system is ready
         if cont == -1:
@@ -261,6 +280,10 @@ def main_menu(cont, debug, file, hertz, log, verbose):
                 else:
                     controller = controller_closure(**kwargs)
 
+                if menu_list[index].decorators:
+                    for decorator in menu_list[index].decorators:
+                        controller = decorator(controller)
+
                 # Ensure there's enough time to process the display command on
                 # the hat side (if a control command happens too soon after a
                 # display command the hat may not have enough time to read the
@@ -286,7 +309,6 @@ def main_menu(cont, debug, file, hertz, log, verbose):
                 if menu_list[index].require_servos:
                     # Turn off the servos for main menu (they make that crackling noise)
                     env.hat.disable_servos()
-
 
 
 if __name__ == "__main__":
