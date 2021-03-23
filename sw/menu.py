@@ -18,6 +18,7 @@ from log_csv import log_decorator
 from calibrate import calibrate_controller
 from info_screen import info_screen_controller, info_config_controller
 from controllers import pid_controller, brain_controller, joystick_controller
+from menu_list import build_menu_list
 
 
 @dataclass
@@ -56,63 +57,12 @@ def update_icon_fn(hat):
     return update_icon
 
 
+
+
 def get_menu_list(env, mode: Mode):
     update_icon = update_icon_fn(env.hat)
     return [
-        MenuOption(
-            name="Joystick",
-            closure=joystick_controller,
-            kwargs={},
-            is_controller=True,
-        ),
-        MenuOption(
-            name="PID",
-            closure=pid_controller,
-            kwargs={},
-            is_controller=True,
-        ),
-        MenuOption(
-            name="Brain",
-            closure=brain_controller,
-            kwargs={"port": 5000},
-            is_controller=True,
-        ),
-        MenuOption(
-            name="Custom1",
-            closure=brain_controller,
-            kwargs={"port": 5001},
-            is_controller=True,
-        ),
-        MenuOption(
-            name="Custom2",
-            closure=brain_controller,
-            kwargs={"port": 5002},
-            is_controller=True,
-        ),
-        MenuOption(
-            name="Calibrate",
-            closure=calibrate_controller,
-            kwargs={
-                "env": env,
-                "pid_fn": pid_controller(),
-                "calibration_file": "bot.json",
-            },
-            is_controller=False,
-        ),
-        MenuOption(
-            name="Calib Info",
-            closure=info_config_controller,
-            kwargs={"env": env},
-            is_controller=False,
-            require_servos=False,
-        ),
-        MenuOption(
-            name="Bot Info",
-            closure=info_screen_controller,
-            kwargs={"env": env},
-            is_controller=False,
-            require_servos=False,
-        ),
+        build_menu_list()
     ]
 
 
