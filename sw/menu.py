@@ -103,7 +103,7 @@ def build_menu(env, log_on, logfile):
             else:
                 slashes = info["image"].split("/")
                 # if image tag or no slashes, use the image name
-                if slashes is not none and len(slashes) == 1:
+                if slashes is not None and len(slashes) == 1:
                     menu_name = info["image"]
                 else:
                     colon = slashes[-1].split(":")
