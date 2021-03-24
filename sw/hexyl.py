@@ -127,7 +127,7 @@ def hexyl():
             or abs(np.int8(l[2])) > 100
             or abs(np.int8(l[3]) > 100)
         ):
-            return wrapstr(color.red, " FATAL") + f"{l}"
+            return wrapstr(color.red, " FATAL")
         else:
             return ""
 
