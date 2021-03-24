@@ -8,6 +8,7 @@ import time
 import click
 import procid
 import logging
+import yaml
 
 from procid import *
 from hat import Icon
@@ -47,10 +48,96 @@ def update_icon_fn(hat):
 
     return update_icon
 
+def getFromDict(dataDict, mapList):
+    for k in mapList: dataDict = dataDict[k]
+    return dataDict
+   
+def build_menu_list(env):
+    menu_name = ""
+    port = 0
+    top_part = [
+        MenuOption(
+            name="Joystick",
+            closure=joystick_controller,
+            kwargs={},
+            is_controller=True,
+        ),
+        MenuOption(
+            name="PID",
+            closure=pid_controller,
+            kwargs={},
+            is_controller=True,
+        ),
+        ]
+    custom_menu_list = []
+    bottom_part = [
+        MenuOption(
+            name="Calibrate",
+            closure=calibrate_controller,
+            kwargs={
+                "env": env,
+                "pid_fn": pid_controller(),
+                "calibration_file": "bot.json",
+            },
+            is_controller=False,
+        ),
+        MenuOption(
+            name="Hue",
+            closure=info_config_controller,
+            kwargs={"env": env},
+            is_controller=False,
+            require_servos=False,
+        ),
+        MenuOption(
+            name="Bot Info",
+            closure=info_screen_controller,
+            kwargs={"env": env},
+            is_controller=False,
+            require_servos=False,
+        ),
+        ]
+    dc_file = "../docker-compose.yml"
+
+    if os.path.isfile(dc_file):
+        with open(dc_file, 'r') as ymlfile:
+            docker_compose = yaml.load(ymlfile, Loader=yaml.FullLoader)
+    
+        # limit to services node in docker compose
+        services = getFromDict(docker_compose,["services"])
+        
+        for service, info in services.items():
+            
+            #split out port
+            splitports = info['ports']
+            ports = splitports[0].split(":")
+            port = ports[0]
+
+            # if container name exists, use it, else use image name
+            if "container_name" in info.keys():
+                menu_name = info['container_name']  
+            else:
+                slashes = info['image'].split("/")
+                #if image tag or no slashes, use the image name 
+                if slashes is not None and len(slashes) == 1:
+                    menu_name = info['image']
+                else:
+                    colon = slashes[-1].split(":")
+                    menu_name = colon[0]
+                     
+
+            menuOption = MenuOption(menu_name, brain_controller,{"port": port},True)
+            custom_menu_list.append(menuOption)
+
+        menu_list = top_part + custom_menu_list + bottom_part
+        return menu_list
+
 
 def get_menu_list(env):
     update_icon = update_icon_fn(env.hat)
-    return [
+    menu_list = build_menu_list(env)
+    return menu_list
+    
+    """ [
         MenuOption(
             name="Joystick",
             closure=joystick_controller,
@@ -105,7 +192,7 @@ def get_menu_list(env):
             is_controller=False,
             require_servos=False,
         ),
-    ]
+    ] """
 
 
 # color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
@@ -174,7 +261,7 @@ def _handle_debug(ctx, param, debug):
     "--verbose",
     count=True,
     default=1,
-    help="verbose tx/rx (-v=OLED changes, -vv=servo commands, -vvv=NOOPs)"
+    help="verbose tx/rx (1=OLED changes, 2=servo commands, 3=NOOPs)"
 )
 @click.pass_context
 def main(ctx: click.core.Context, **kwargs: Any) -> None:
