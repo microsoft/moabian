@@ -76,7 +76,7 @@ def sequence(env, msec=1 / 20):
 
 
 def main():
-    with MoabEnv(debug=True) as env:
+    with MoabEnv(debug=True, verbose=3) as env:
         for x in range(10):
             sequence(env)
 
