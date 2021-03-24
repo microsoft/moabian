@@ -31,6 +31,14 @@ def meters_to_pixels(vec, frame_size=256, field_of_view=1.05):
     return np.int_(np.asarray(vec) / conversion)  # Note: pixels are only ever ints
 
 
+def pixel_to_meter_ratio(frame_size=256, field_of_view=1.05):
+    # The plate is default roughly 105% of the field of view
+    plate_diameter_meters = 0.225
+    plate_diameter_pixels = frame_size * field_of_view
+    conversion = plate_diameter_meters / plate_diameter_pixels
+    return conversion
+
+
 def draw_ball(img, center, radius, hue):
     bgr = hue_to_bgr(hue)
     # 45 -> hsl(45°, 75%, 50%)
@@ -77,15 +85,15 @@ def hsv_detector(
 
         # The hue_mask function follows CV2 convention and hue is in the range
         # [0, 180] instead of [0, 360]
-
         # run through each triplet and perform our masking filter on it.
         # hue_mask coverts the hsv image into a grayscale image with a
         # bandpass applied centered around hue, with width sigma
-        # TODO: hue / 2 is odd: [0..180]?
         hue_mask(img_hsv, hue / 2, 0.05, 12.0, 4.0)
 
         # convert to b&w mask from grayscale image
-        mask = cv2.inRange(img_hsv, np.array((200, 200, 200)), np.array((255, 255, 255)))
+        mask = cv2.inRange(
+            img_hsv, np.array((200, 200, 200)), np.array((255, 255, 255))
+        )
 
         # expand b&w image with a dialation filter
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
@@ -111,6 +119,7 @@ def hsv_detector(
 
                 if debug:
                     ball_center_pixels = (int(x_obs), int(y_obs))
+                    # TODO: scott validate this hue will work if [0,180] or [0,360]
                     draw_ball(img, ball_center_pixels, radius, hue)
                     save_img(filename, img, rotated=False, quality=80)
 
@@ -124,5 +133,33 @@ def hsv_detector(
         if debug:
             save_img(filename, img, rotated=False, quality=80)
         return ball_detected, (Vector2(0, 0), 0.0)
+
+    return detect_features
+
+
+def circle_test_detector(hue=44, debug=False, *args, **kwargs):
+    angle = 0
+    time = 1
+    frequency = 30  # in Hz
+    scale = pixel_to_meter_ratio()
+    radius = 256 * 0.4
+    ball_radius_pixels = 256 * 0.1
+
+    def detect_features(img, hue=hue, debug=debug, filename="/tmp/camera/frame.jpg"):
+        nonlocal angle
+        angle += (1 / (time * frequency)) * (2 * np.pi)
+        x_pixels, y_pixels = (radius * np.sin(angle), radius * np.cos(angle))
+        x_pixels += 256 / 2
+        y_pixels += 256 / 2
+
+        if debug:
+            ball_center_pixels = (int(x_pixels), int(y_pixels))
+            print(ball_center_pixels)
+            draw_ball(img, ball_center_pixels, ball_radius_pixels, hue)
+            save_img(filename, img, rotated=False, quality=80)
+
+        x, y = x_pixels * scale, y_pixels * scale
+        ball_detected = True
+        return ball_detected, (Vector2(x, y), ball_radius_pixels * scale)
 
     return detect_features

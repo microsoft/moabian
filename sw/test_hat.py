@@ -16,5 +16,6 @@ def test_display():
             hat.set_angles(angle[0], angle[1])
             sleep(0.5)
 
+
 if __name__ == "__main__":
     print(test_display())

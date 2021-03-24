@@ -17,9 +17,10 @@ def high_pass_filter(frequency, fc=50):
     return hpf
 
 
-def low_pass_filter(frequency, tau=50):
-    y_prev = 0
+def low_pass_filter(frequency, fc=50):
+    y_prev = 0.0
     dt = 1 / frequency
+    tau = 1 / (2 * math.pi * fc)
     alpha = dt / (tau + dt)
 
     def lpf(x):

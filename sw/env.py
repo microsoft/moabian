@@ -45,7 +45,7 @@ class MoabEnv:
         calibration_file="bot.json",
     ):
         self.debug = debug
-        self.verbose=0
+        self.verbose = verbose
         self.frequency = frequency
         self.derivative_fn = derivative
         self.vel_x = self.derivative_fn(frequency)
@@ -55,10 +55,10 @@ class MoabEnv:
         self.hat = Hat(debug=debug, verbose=verbose)
         self.hat.open()
         self.camera = OpenCVCameraSensor(frequency=frequency)
+        self.detector = hsv_detector(debug=debug)
 
         self.calibration_file = calibration_file
         self.reset_calibration()
-        self.detector = hsv_detector(debug=debug, hue=self.hue)
 
     def __enter__(self):
         self.camera.start()

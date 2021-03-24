@@ -1,27 +1,19 @@
+### MOAB ###
+**/*.csv
+**/bot.json
+**/tags
+**/.ipynb_checkpoints/
+**/*.pem
+docker-compose.yml
+
 ### C ###
 
 # Object files
 *.o
-
-# Libraries
 *.a
-
-# Shared objects
 *.so
 *.so.*
 *.dylib
-
-# Executables
-*.out
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
 
 
 ### macOS ###
@@ -45,12 +37,6 @@ __pycache__/
 *$py.class
 .Python
 
-# C extensions
-
-# Flask stuff:
-instance/
-.webassets-cache
-
 # pyenv
 .python-version
 
@@ -73,8 +59,3 @@ pythonenv*
 
 # End of https://www.toptal.com/developers/gitignore/api/c,macos,python
 
-**/*.csv
-**/bot.json
-**/tags
-**/.ipynb_checkpoints/
-**/*.pem

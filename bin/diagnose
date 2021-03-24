@@ -50,9 +50,6 @@
 @test "stream.service running" {
     systemctl is-active stream.service
 }
-@test "brain.service running" {
-    systemctl is-active brain.service
-}
 
 @test "Docker is running" {
   pgrep -l docker
@@ -66,7 +63,7 @@
   docker-compose -v 
 }
 
-@test "docker-compose has brains running" {
+@test "one or more brains are running" {
   pgrep -f predict
 }
 

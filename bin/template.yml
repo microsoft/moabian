@@ -1,0 +1,26 @@
+version: "3"
+services:
+  brain:
+    image: moab/brain
+    container_name: brain1
+    stop_grace_period: 0s
+    ports: [ 5000:5000 ]
+
+# Add your trained Project Bonsai brains at the bottom of this file
+#
+# image: the URL from your "docker pull" to azuercr.io
+# container_name: optional name that appears in the Moab screen
+# ports: first number must be between 5001 and 6000, and unique
+#
+# Spacing matters in YAML so the custom brain below should line up
+# with the template show above
+#
+#
+# Example:
+
+  # custom1:
+  #   image: scotstan.azurecr.io/a988a049-1111-ffff-eeee-ee55999a9723/my_balance1_test:1-linux-arm32v7
+  #   container_name: balance1
+  #   stop_grace_period: 0s
+  #   ports: [ 5001:5000 ]
+  
