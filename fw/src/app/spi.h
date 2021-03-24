@@ -52,17 +52,17 @@ typedef union
 // All CONTROL packets are 8 bytes long
 typedef struct
 {
-	u8_t control;			// Control byte (always the same)
-	pi_to_hat_data_t data;	// Data (dependent on control byte)
+	u8_t control;			// 1 byte: Control byte (always the same)
+	pi_to_hat_data_t data;	// 7 bytes: Data (dependent on control byte)
 } pi_to_hat_t;
 
 typedef struct
 {
-    u8_t menu_button;
-    u8_t joystick_button;
-    int8_t joystick_x;		// Joystick X (-100 to +100)
-    int8_t joystick_y;		// Joystick Y (-100 to +100)
-    u8_t padding[4];
+    u8_t menu_button;       // byte 0: 0 or 1
+    u8_t joystick_button;   // byte 1: 0 or 1
+    int8_t joystick_x;		// byte 2: Joystick X (-100 to +100)
+    int8_t joystick_y;		// byte 3: Joystick Y (-100 to +100)
+    u8_t padding[4];        // byte 4-7: always 0
 } hat_to_pi_t;
 
 int wait_for_pi_message(pi_to_hat_t* msg, int32_t timeout);
