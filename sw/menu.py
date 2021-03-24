@@ -24,6 +24,7 @@ from controllers import pid_controller, brain_controller, joystick_controller
 
 LOG = logging.getLogger(__name__)
 
+
 @dataclass
 class MenuOption:
     name: str
@@ -48,10 +49,13 @@ def update_icon_fn(hat):
 
     return update_icon
 
+
 def getFromDict(dataDict, mapList):
-    for k in mapList: dataDict = dataDict[k]
+    for k in mapList:
+        dataDict = dataDict[k]
     return dataDict
-   
+
+
 def build_menu_list(env):
     menu_name = ""
     port = 0
@@ -68,7 +72,7 @@ def build_menu_list(env):
             kwargs={},
             is_controller=True,
         ),
-        ]
+    ]
     custom_menu_list = []
     bottom_part = [
         MenuOption(
@@ -95,37 +99,36 @@ def build_menu_list(env):
             is_controller=False,
             require_servos=False,
         ),
-        ]
+    ]
     dc_file = "../docker-compose.yml"
 
     if os.path.isfile(dc_file):
-        with open(dc_file, 'r') as ymlfile:
+        with open(dc_file, "r") as ymlfile:
             docker_compose = yaml.load(ymlfile, Loader=yaml.FullLoader)
-    
+
         # limit to services node in docker compose
-        services = getFromDict(docker_compose,["services"])
-        
+        services = getFromDict(docker_compose, ["services"])
+
         for service, info in services.items():
-            
-            #split out port
-            splitports = info['ports']
+
+            # split out port
+            splitports = info["ports"]
             ports = splitports[0].split(":")
             port = ports[0]
 
             # if container name exists, use it, else use image name
             if "container_name" in info.keys():
-                menu_name = info['container_name']  
+                menu_name = info["container_name"]
             else:
-                slashes = info['image'].split("/")
-                #if image tag or no slashes, use the image name 
+                slashes = info["image"].split("/")
+                # if image tag or no slashes, use the image name
                 if slashes is not None and len(slashes) == 1:
-                    menu_name = info['image']
+                    menu_name = info["image"]
                 else:
                     colon = slashes[-1].split(":")
                     menu_name = colon[0]
-                     
 
-            menuOption = MenuOption(menu_name, brain_controller,{"port": port},True)
+            menuOption = MenuOption(menu_name, brain_controller, {"port": port}, True)
             custom_menu_list.append(menuOption)
 
         menu_list = top_part + custom_menu_list + bottom_part
@@ -136,68 +139,12 @@ def get_menu_list(env):
     update_icon = update_icon_fn(env.hat)
     menu_list = build_menu_list(env)
     return menu_list
-    
-    """ [
-        MenuOption(
-            name="Joystick",
-            closure=joystick_controller,
-            kwargs={},
-            is_controller=True,
-        ),
-        MenuOption(
-            name="PID",
-            closure=pid_controller,
-            kwargs={},
-            is_controller=True,
-        ),
-        MenuOption(
-            name="Brain",
-            closure=brain_controller,
-            kwargs={"port": 5000},
-            is_controller=True,
-        ),
-        MenuOption(
-            name="Custom1",
-            closure=brain_controller,
-            kwargs={"port": 5001},
-            is_controller=True,
-        ),
-        MenuOption(
-            name="Custom2",
-            closure=brain_controller,
-            kwargs={"port": 5002},
-            is_controller=True,
-        ),
-        MenuOption(
-            name="Calibrate",
-            closure=calibrate_controller,
-            kwargs={
-                "env": env,
-                "pid_fn": pid_controller(),
-                "calibration_file": "bot.json",
-            },
-            is_controller=False,
-        ),
-        MenuOption(
-            name="Hue",
-            closure=info_config_controller,
-            kwargs={"env": env},
-            is_controller=False,
-            require_servos=False,
-        ),
-        MenuOption(
-            name="Bot Info",
-            closure=info_screen_controller,
-            kwargs={"env": env},
-            is_controller=False,
-            require_servos=False,
-        ),
-    ] """
 
 
 # color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
 out = partial(click.secho, bold=False, err=True)
 err = partial(click.secho, fg="red", err=True)
+
 
 def _handle_debug(ctx, param, debug):
     log_level = logging.DEBUG if debug else logging.INFO
@@ -207,12 +154,6 @@ def _handle_debug(ctx, param, debug):
     )
     return debug
 
-# -c controller
-# -d debug
-# -f logfile
-# -h hertz
-# -l log on/off
-# -v verbose
 
 @click.command()
 @click.version_option(version="3.0.21")
@@ -261,7 +202,7 @@ def _handle_debug(ctx, param, debug):
     "--verbose",
     count=True,
     default=1,
-    help="verbose tx/rx (1=OLED changes, 2=servo commands, 3=NOOPs)"
+    help="verbose tx/rx (1=OLED changes, 2=servo commands, 3=NOOPs)",
 )
 @click.pass_context
 def main(ctx: click.core.Context, **kwargs: Any) -> None:
@@ -287,7 +228,6 @@ def main_menu(cont, debug, file, hertz, log, verbose):
             current = MenuState.second_level
             index = cont
             last_index = -1
-
 
         # Default menu raises the servo to alert the user the system is ready
         if cont == -1:
@@ -373,7 +313,6 @@ def main_menu(cont, debug, file, hertz, log, verbose):
                 if menu_list[index].require_servos:
                     # Turn off the servos for main menu (they make that crackling noise)
                     env.hat.disable_servos()
-
 
 
 if __name__ == "__main__":

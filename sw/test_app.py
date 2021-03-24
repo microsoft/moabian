@@ -1,10 +1,8 @@
 # A single global App dictionary to hold the command line parameters
 
+
 class App:
-    __hidden = {
-        "debug": False,
-        "port": 3306
-    }
+    __hidden = {"debug": False, "port": 3306}
 
     def print():
         print(App.__hidden)
@@ -16,11 +14,12 @@ class App:
 
     @staticmethod
     def get(name):
-        return(App.__hidden[name])
+        return App.__hidden[name]
 
     @staticmethod
     def debug():
-        return(App.__hidden["debug"])
+        return App.__hidden["debug"]
+
 
 if __name__ == "__main__":
     # from app import App

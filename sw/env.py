@@ -45,7 +45,7 @@ class MoabEnv:
         calibration_file="bot.json",
     ):
         self.debug = debug
-        self.verbose=0
+        self.verbose = 0
         self.frequency = frequency
         self.derivative_fn = derivative
         self.vel_x = self.derivative_fn(frequency)

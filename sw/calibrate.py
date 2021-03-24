@@ -65,9 +65,9 @@ def ball_close_enough(x, y, radius, max_ball_dist=0.045, min_ball_dist=0.01):
 
 
 def calibrate_hue(camera_fn, detector_fn, is_menu_down_fn):
-    hue_low=0
-    hue_high=360
-    hue_steps=41            # TODO: why 41? Why not, say 40?
+    hue_low = 0
+    hue_high = 360
+    hue_steps = 41  # TODO: why 41? Why not, say 40?
 
     img_frame, elapsed_time = camera_fn()
     hue_options = list(np.linspace(hue_low, hue_high, hue_steps))
@@ -227,8 +227,7 @@ def run_calibration(env, pid_fn, calibration_file):
 
     # Display message and wait for joystick
     hat.display_long_string(
-        "Place ball in\ncenter using\nclear stand.\n\n"
-        "Click joystick\nwhen ready."
+        "Place ball in\ncenter using\nclear stand.\n\n" "Click joystick\nwhen ready."
     )
     buttons = wait_for_joystick_or_menu(hat)
     if buttons.menu_button:  # Early quit
@@ -312,7 +311,10 @@ def run_calibration(env, pid_fn, calibration_file):
     filename += f"{hue_calib.hue:03}" if hue_calib.success else "fail"
     filename += f".{time_of_day}.jpg"
     img_frame, _ = camera_fn()
-    detector_fn(img_frame, hue=hue_calib.hue+1, debug=True, filename=filename)
+
+    # Huemask keeps an internal cache. By sending a new hue (hue + 1) invalidates
+    # the cache. TODO: added this while searching for a state bug
+    detector_fn(img_frame, hue=hue_calib.hue + 1, debug=True, filename=filename)
 
 
 def calibrate_controller(**kwargs):
@@ -325,9 +327,9 @@ def calibrate_controller(**kwargs):
     def wait():
         hat = kwargs["env"].hat
         while True:
-            time.sleep(1/30)
+            time.sleep(1 / 30)
             hat.noop()
-            menu, joy, _, _= hat.get_buttons()
+            menu, joy, _, _ = hat.get_buttons()
             if menu or joy:
                 break
         hat.hover()
@@ -343,7 +345,7 @@ def main(calibration_file, frequency=30, debug=True):
         time.sleep(0.2)
         env.hat.enable_servos()
         time.sleep(0.2)
-        env.hat.set_servos(133,133,133)
+        env.hat.set_servos(133, 133, 133)
 
         run_calibration(env, pid_fn, calibration_file)
         wait_for_menu(env.hat)

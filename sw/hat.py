@@ -142,13 +142,13 @@ class Hat:
         self,
         servo_offsets: Tuple[float, float, float] = (0, 0, 0),
         debug=False,
-        verbose=0
+        verbose=0,
     ):
         self.servo_offsets: Tuple[float, float, float] = servo_offsets
         self.buttons = Buttons(False, False, 0.0, 0.0)
 
-        self.debug=debug
-        self.verbose=verbose
+        self.debug = debug
+        self.verbose = verbose
         if debug:
             self.hex_printer = hexyl()
 
@@ -337,7 +337,7 @@ class Hat:
         self.transceive(pad(SendCommand.DISPLAY_POWER_SYMBOL, icon_idx))
 
     def display_string_icon(self, text: str, icon_idx: Icon):
-       # assert len(text) <= 12, "String is too long to display with icon"
+        # assert len(text) <= 12, "String is too long to display with icon"
 
         # Copy the text into a buffer in the firmware
         self._copy_buffer(text)

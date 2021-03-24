@@ -1,12 +1,12 @@
 import psutil
 import time
 
-with open('/tmp/menu.pid', 'r') as f:
+with open("/tmp/menu.pid", "r") as f:
     other_pid = int(f.read())
 
 p = psutil.Process(other_pid)
 p.send_signal(psutil.signal.SIGINT)
-#p.send_signal(psutil.signal.SIGTERM)
+# p.send_signal(psutil.signal.SIGTERM)
 
 try:
     p.wait(timeout=10)

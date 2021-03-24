@@ -85,7 +85,9 @@ def hsv_detector(
         hue_mask(img_hsv, hue / 2, 0.05, 12.0, 4.0)
 
         # convert to b&w mask from grayscale image
-        mask = cv2.inRange(img_hsv, np.array((200, 200, 200)), np.array((255, 255, 255)))
+        mask = cv2.inRange(
+            img_hsv, np.array((200, 200, 200)), np.array((255, 255, 255))
+        )
 
         # expand b&w image with a dialation filter
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)

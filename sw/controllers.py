@@ -94,7 +94,7 @@ def brain_controller(
 
                 if response.ok:
                     if alert_fn is not None:
-                         alert_fn(False)
+                        alert_fn(False)
                     action_json = requests.get(prediction_url, json=observables).json()
                     pitch = action_json["input_pitch"]
                     roll = action_json["input_roll"]
@@ -109,11 +109,10 @@ def brain_controller(
                     action = Vector2(-roll, pitch)
                 else:
                     if alert_fn is not None:
-                         alert_fn(True)
+                        alert_fn(True)
 
             except Exception as e:
                 log.exception(f"Exception calling predictor\n{e}")
-
 
         return action, info
 
