@@ -65,18 +65,10 @@ def squash_small_angles_decorator(controller_fn, min_angle=1.0):
     return decorated_controller
 
 
-def getFromDict(dataDict, mapList):
-    for k in mapList:
-        dataDict = dataDict[k]
-    return dataDict
+def build_menu(env, log_on, logfile):
+    log_csv = lambda fn: log_decorator(fn, logfile)
 
-
-def build_menu(env, log, file):
-    log_csv = lambda fn: log_decorator(fn, file)
-
-    menu_name = ""
-    port = 0
-    top_part = [
+    top_menu = [
         MenuOption(
             name="Joystick",
             closure=joystick_controller,
@@ -87,29 +79,45 @@ def build_menu(env, log, file):
             name="PID",
             closure=pid_controller,
             kwargs={},
-            decorators=[log_csv] if log else None,
+            decorators=[log_csv] if log_on else None,
         ),
     ]
-    custom_menu_list = []
-    bottom_part = [
-        MenuOption(
-            name="Brain",
-            closure=brain_controller,
-            kwargs={"port": 5000},
-            decorators=[log_csv] if log else None,
-        ),
-        MenuOption(
-            name="Custom1",
-            closure=brain_controller,
-            kwargs={"port": 5001},
-            decorators=[log_csv] if log else None,
-        ),
-        MenuOption(
-            name="Custom2",
-            closure=brain_controller,
-            kwargs={"port": 5002},
-            decorators=[log_csv] if log else None,
-        ),
+
+    # Parse the docker-compose.yml file for a list of brains
+    middle_menu = []
+    if os.path.isfile("../docker-compose.yml"):
+        with open("../docker-compose.yml", "r") as f:
+            docker_compose = yaml.safe_load(f)
+
+        # limit to services node in docker compose
+        services = docker_compose["services"]
+
+        for service, info in services.items():
+            # host:image port convention (need host)
+            splitports = info["ports"]
+            port = splitports[0].split(":")[0]
+
+            # if container name exists, use it, else use image name
+            if "container_name" in info.keys():
+                menu_name = info["container_name"]
+            else:
+                slashes = info["image"].split("/")
+                # if image tag or no slashes, use the image name
+                if slashes is not none and len(slashes) == 1:
+                    menu_name = info["image"]
+                else:
+                    colon = slashes[-1].split(":")
+                    menu_name = colon[0]
+
+            m = MenuOption(
+                name=menu_name,
+                closure=brain_controller,
+                kwargs={"port": port},
+                decorators=[log_csv] if log_on else none,
+            )
+            middle_menu.append(m)
+
+    bottom_menu = [
         MenuOption(
             name="Calibrate",
             closure=calibrate_controller,
@@ -135,55 +143,7 @@ def build_menu(env, log, file):
             require_servos=False,
         ),
     ]
-    dc_file = "../docker-compose.yml"
-
-    if os.path.isfile(dc_file):
-        with open(dc_file, "r") as ymlfile:
-            docker_compose = yaml.load(ymlfile, Loader=yaml.FullLoader)
-
-        # limit to services node in docker compose
-        services = docker_compose["services"]
-        #services = getFromDict(docker_compose, ["services"])
-
-        for service, info in services.items():
-
-            # split out port
-            splitports = info["ports"]
-            ports = splitports[0].split(":")
-            port = ports[0]
-
-            # if container name exists, use it, else use image name
-            if "container_name" in info.keys():
-                menu_name = info["container_name"]
-            else:
-                slashes = info["image"].split("/")
-                # if image tag or no slashes, use the image name
-                if slashes is not None and len(slashes) == 1:
-                    menu_name = info["image"]
-                else:
-                    colon = slashes[-1].split(":")
-                    menu_name = colon[0]
-
-    # name: str
-    # closure: Callable
-    # kwargs: dict
-    # # Some menu options are controllers (run a control loop), others are simply
-    # # blocking functions that return on menu press. These other functions are
-    # # for anything that does something to the bot (displaying info to the screen,
-    # # doing a calibration, running git pull, etc.)
-    # is_controller: bool = True
-    # decorators: Optional[List[Callable]] = None  # List of functions to decorate
-    # require_servos: bool = True  # To not turn on servos unnecessarily
-
-            menuOption = MenuOption(name=menu_name,
-                                    closure=brain_controller, kwargs={"port": port},
-                    decorators=[log_csv] if log else None)
-            custom_menu_list.append(menuOption)
-
-        menu_list = top_part + custom_menu_list + bottom_part
-        return menu_list
-
-
+    return top_menu + middle_menu + bottom_menu
 
 
 # color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
@@ -198,6 +158,7 @@ def _handle_debug(ctx, param, debug):
         level=log_level,
     )
     return debug
+
 
 @click.command()
 @click.version_option(version="3.0.22")
