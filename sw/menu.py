@@ -129,7 +129,7 @@ def build_menu(env, log_on, logfile):
             is_controller=False,
         ),
         MenuOption(
-            name="Hue",
+            name="Hue Info",
             closure=info_config_controller,
             kwargs={"env": env},
             is_controller=False,
