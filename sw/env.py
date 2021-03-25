@@ -65,7 +65,7 @@ class MoabEnv:
         return self
 
     def __exit__(self, type, value, traceback):
-        self.hat.lower()
+        self.hat.go_down()
         self.hat.disable_servos()
         self.hat.close()
         self.camera.stop()
