@@ -97,8 +97,8 @@ def calibrate_hue(camera_fn, detector_fn, is_menu_down_fn):
         avg_hue = np.degrees(avg_hue_rad) % 360  # Convert back to [0, 360]
 
         print(f"Hues are: {detected_hues}")
-        print(f"Hue calibrated: {avg_hue:0.3f}")
-        print(f"Avg hue: {avg_hue}")
+        print(f"Hue calibrated: {avg_hue:0.2f}")
+        print(f"Avg hue: {avg_hue:0.2f}")
         return CalibHue(hue=int(avg_hue), success=True)
 
     else:
@@ -228,7 +228,8 @@ def run_calibration(env, pid_fn, calibration_file):
 
     # Display message and wait for joystick
     hat.display_long_string(
-        "Place ball in\ncenter using\nclear stand.\n\n" "Click joystick\nwhen ready."
+        "put ball on stand\nclick joystick"
+        # "Place ball in\ncenter using\nclear stand.\n\n" "Click joystick\nwhen ready."
     )
     buttons = wait_for_joystick_or_menu(hat)
     if buttons.menu_button:  # Early quit
@@ -259,14 +260,9 @@ def run_calibration(env, pid_fn, calibration_file):
     env.reset_calibration(calibration_file=calibration_file)
 
     if pos_calib.success and hue_calib.success:  # and servo_calib.success:
-        hat.display_long_string(
-            f"Ok! Ball hue = {hue_calib.hue}\n"
-            # f"Position = \n({100*x_offset:.1f}, {100*y_offset:.1f}) cm\n\n"
-            # f"servo offsets = ({s1:.2f}, {s2:.2f}, {s3:.2f})\n\n"
-            "Click menu..."
-        )
+        hat.display_long_string(f"Ok! Ball hue={hue_calib.hue}\nClick menu...")
     elif not (pos_calib.success or hue_calib.success):  # or servo_calib.success):
-        hat.display_long_string("Calibration failed.\nClick menu...")
+        hat.display_long_string("Calibration failed\nClick menu...")
     else:
         hue_str = (
             f"Hue calib:\nsuccessful\nBall hue = {hue_calib.hue}\n\n"
