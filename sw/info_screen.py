@@ -13,12 +13,15 @@ from env import MoabEnv
 
 
 def _get_host_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("1.1.1.1", 1))
-    ip = s.getsockname()[0]  # returns string like '1.2.3.4'
-    ip_quads = [int(b) for b in ip.split(".")]
-    log.info(f"IP: {ip}")
-    return ip_quads
+    ip = '127.0.0.1'
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("1.1.1.1", 1))
+        ip = s.getsockname()[0]  # returns string like '1.2.3.4'
+    except Exception as e:
+        print(f"No IP: {ip}")
+
+    return ip
 
 
 def _get_sw_version():
@@ -31,8 +34,8 @@ def _get_sw_version():
 
 def info_screen_controller(env, **kwargs):
     sw_major, sw_minor, sw_bug = _get_sw_version()
-    ip1, ip2, ip3, ip4 = _get_host_ip()
-    s = f"VER {sw_major}.{sw_minor}.{sw_bug}\nIP {ip1}.{ip2}.{ip3}.{ip4}"
+    ip = _get_host_ip()
+    s = f"VER {sw_major}.{sw_minor}.{sw_bug}\nIP {ip}"
     env.hat.display_long_string(s)
 
     def wait_for_menu():
@@ -63,8 +66,8 @@ def info_config_controller(env, **kwargs):
 
 
 def sequence(env, msec=1 / 20):
-    env.hat.display_string_icon("BOT INFO", Icon.UP_DOWN)
 
+    info_screen_controller(env)
     for x in range(randint(1, 5)):
         sleep(msec)
         env.hat.noop()
