@@ -41,44 +41,44 @@ void main(void)
                         mb_idx += 7;
                     }
                     else
-                        LOG_ERR("String is too long to display. Max length is 240 bytes.");
+                        LOG_ERR("String too long to display. Max length is 240 bytes.");
                     break;
 
                 case DISPLAY_BIG_TEXT_ICON:
                     message_buffer[mb_idx] = '\0';  // Add a termination char just in case
                     mb_idx = 0;
-                    LOG_INF("icon(%d) TEXT=%s", (u8_t) rx.data.icon, log_strdup(message_buffer));
+                    LOG_INF("0x%02x (%d) TEXT=%s", rx.control, (u8_t) rx.data.icon, log_strdup(message_buffer));
                     display_big_text_icon(message_buffer, (disp_icon_t) rx.data.icon);
                     break;
 
                 case DISPLAY_BIG_TEXT:
                     message_buffer[mb_idx] = '\0';  // Add a termination char just in case
                     mb_idx = 0;
-                    LOG_INF("TEXT=%s", log_strdup(message_buffer));
+                    LOG_INF("0x%02x TEXT=%s", rx.control, log_strdup(message_buffer));
                     display_big_text(message_buffer);
                     break;
 
                 case DISPLAY_SMALL_TEXT:
                     message_buffer[mb_idx] = '\0';  // Add a termination char just in case
                     mb_idx = 0;
-                    LOG_INF("text=%s", log_strdup(message_buffer));
+                    LOG_INF("0x%02x text=%s", rx.control, log_strdup(message_buffer));
                     display_small_text(message_buffer);
                     break;
 
                 case DISPLAY_POWER_SYMBOL:
                     message_buffer[mb_idx] = '\0';  // Add a termination char just in case
                     mb_idx = 0;
-                    LOG_INF("power(%d) TEXT=%s", (u8_t) rx.data.icon, log_strdup(message_buffer));
+                    LOG_INF("0x%02x (%d) TEXT=%s", rx.control, (u8_t) rx.data.icon, log_strdup(message_buffer));
                     display_big_text_power_icon(message_buffer, (disp_power_icon_t) rx.data.icon);
                     break;
 
                 case SERVO_ENABLE:
-                    LOG_INF("servos: on");
+                    LOG_INF("0x%02x servos: on", rx.control);
                     plate_servo_enable(true);
                     break;
 
                 case SERVO_DISABLE: 
-                    LOG_INF("servos: off");
+                    LOG_INF("0x%02x servos: off", rx.control);
                     plate_servo_enable(false);
                     break;
 
@@ -101,7 +101,7 @@ void main(void)
                     break;
 
                 default:
-                    LOG_ERR("Bad control byte: %x. Prior was: %x", rx.control, last_control);
+                    LOG_ERR("Bad control byte: %0x2x. Prior was: %0x2x", rx.control, last_control);
                     break;
             }
         }
