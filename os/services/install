@@ -27,6 +27,7 @@ setup stream.service    # gunicorn(flask.py) <- reverse proxy nginx
 
 systemctl daemon-reload
 
+unlink /etc/nginx/sites-enabled/default
 cp stream.conf /etc/nginx/sites-enabled
 cp stream.conf /etc/nginx/sites-available
 
