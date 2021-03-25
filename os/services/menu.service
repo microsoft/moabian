@@ -1,7 +1,7 @@
 [Unit]
 Description=Moab Menu
 DefaultDependencies=false
-After=docker.service
+After=dhcpd.service
 
 StartLimitIntervalSec=100
 StartLimitBurst=5
