@@ -233,19 +233,19 @@ def run_calibration(env, pid_fn, calibration_file):
     )
     buttons = wait_for_joystick_or_menu(hat)
     if buttons.menu_button:  # Early quit
-        hat.raise()
+        hat.go_up()
         return
 
     hat.display_string("Calibrating...")
     hue_calib = calibrate_hue(camera_fn, detector_fn, is_menu_down)
     if hue_calib.early_quit:
-        hat.raise()
+        hat.go_up()
         return
 
     # Calibrate position
     pos_calib = calibrate_pos(camera_fn, detector_fn, hue_calib.hue, is_menu_down)
     if pos_calib.early_quit:
-        hat.raise()
+        hat.go_up()
         return
 
     # Save calibration
@@ -299,7 +299,7 @@ def run_calibration(env, pid_fn, calibration_file):
     # the cache. TODO: added this while searching for a state bug
     detector_fn(img_frame, hue=hue_calib.hue + 1, debug=True, filename=filename)
 
-    hat.raise()
+    hat.go_up()
 
 
 def run_servo_calibration(env, pid_fn, calibration_file):
@@ -324,7 +324,7 @@ def run_servo_calibration(env, pid_fn, calibration_file):
     )
     buttons = wait_for_joystick_or_menu(hat)
     if buttons.menu_button:  # Early quit
-        hat.raise()
+        hat.go_up()
         return
 
     hat.display_long_string("Calibrating\nservos...")
@@ -349,7 +349,7 @@ def run_servo_calibration(env, pid_fn, calibration_file):
     else:
         hat.display_long_string("Calibration\nfailed\n\nClick menu\nto return...")
 
-    hat.raise()
+    hat.go_up()
 
 
 def calibrate_controller(**kwargs):
@@ -375,7 +375,7 @@ def calibrate_controller(**kwargs):
             menu, joy, _, _ = hat.get_buttons()
             if menu or joy:
                 break
-        hat.raise()
+        hat.go_up()
 
     return wait_for_menu_and_stream
 

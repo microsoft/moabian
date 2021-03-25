@@ -21,7 +21,7 @@ from calibrate import calibrate_controller
 from typing import Callable, Any, Union, Optional, List
 from procid import setup_signal_handlers, stop_doppelgänger
 from info_screen import info_screen_controller, info_config_controller
-from controllers import pid_controller, brain_controller, joystick_controller
+from controllers import pid_controller, brain_controller, joystick_controller, BrainNotFound
 
 LOG = logging.getLogger(__name__)
 
@@ -237,10 +237,10 @@ def main_menu(cont, debug, file, hertz, log, verbose):
             index = cont
             last_index = -1
 
-        # Default menu raises the servo to alert the user the system is ready
+        # Default menu raises the plate to alert the user the system is ready
         if cont == -1:
             env.hat.enable_servos()
-            env.hat.raise()
+            env.hat.go_up()
             buttons = env.hat.get_buttons()
             time.sleep(1 / env.frequency)
             env.hat.disable_servos()
@@ -303,17 +303,21 @@ def main_menu(cont, debug, file, hertz, log, verbose):
 
                 if menu_list[index].is_controller:
                     # If it's a controller run the control loop
-                    while not buttons.menu_button:
-                        action, info = controller((state, detected, buttons))
-                        state, detected, buttons = env.step(action)
+                    try:
+                        while not buttons.menu_button:
+                            action, info = controller((state, detected, buttons))
+                            state, detected, buttons = env.step(action)
+                    except BrainNotFound:
+                        # TODO: show a message on OLED to start docker
+                        print(f'caught BrainNotFound in loop')
 
-                    env.hat.raise()
+                    env.hat.go_up()
                 else:
                     # If not a controller, let it do it's own thing. We assume
                     # it's a blocking call that will return when menu is pressed
                     controller()
 
-                # Loop breaks after menu pressed and puts the plate back to raise
+                # Loop breaks after menu pressed and puts the plate back to go_up
                 current = MenuState.first_level
                 last_index = -1
 

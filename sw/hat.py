@@ -286,7 +286,7 @@ class Hat:
         """
         self.servo_offsets = (servo1, servo2, servo3)
 
-    def raise(self):
+    def go_up(self):
         """
         Set the plate to its hover position.
         This was experimentally found to be 150 (down but still leaving some
@@ -296,7 +296,7 @@ class Hat:
         # Give enough time for the action to be taken
         time.sleep(0.200)  # Make sure this action gets taken before turning off servos
 
-    def lower(self):
+    def go_down(self):
         """
         Set the plate to its lower position (usually powered-off state).
         This was experimentally found to be 155 (lowest possible position).

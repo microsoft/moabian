@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+import sys
 import time
 import requests
 import numpy as np
@@ -8,6 +9,9 @@ import logging as log
 
 from env import MoabEnv
 from common import Vector2
+
+class BrainNotFound(Exception):
+    pass
 
 
 # Controllers ------------------------------------------------------------------
@@ -112,9 +116,8 @@ def brain_controller(
                         alert_fn(True)
 
             except requests.exceptions.ConnectionError as e:
-                alert_fn(True)
-                print(f"Docker not running: {e}")
-
+                print(f"No brain listening on port: {port}", file=sys.stderr)
+                raise BrainNotFound
 
             except Exception as e:
                 print(f"Brain exception: {e}")

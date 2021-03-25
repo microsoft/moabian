@@ -5,4 +5,4 @@ with Hat() as hat:
     hat.set_angles(0, 0)
 
     input("Hit ENTER to stop...")
-    hat.lower()
+    hat.go_down()
