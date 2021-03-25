@@ -49,10 +49,10 @@ def info_screen_controller(env, **kwargs):
 
 
 def info_config_controller(env, **kwargs):
-    so = ",".join(map(str, env.servo_offsets))
+    so = env.servo_offsets
     s = f"HUE {env.hue}"
-    s += f"\nX,Y {env.plate_offsets_pixels[0]},{env.plate_offsets_pixels[1]}"
-    # s += f"\nSO {so}"
+    # s += f"\nX,Y {env.plate_offsets_pixels[0]},{env.plate_offsets_pixels[1]}"
+    s += f"\nSERVOS {so[0]:.0f}, {so[1]:.0f}, {so[2]:.0f}"
     env.hat.display_long_string(s)
 
     def wait_for_menu():
