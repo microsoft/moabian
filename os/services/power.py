@@ -16,7 +16,7 @@ from signal import signal, SIGINT
 
 power_pin = 3  # HAT puts button signal here https://pinout.xyz/pinout/pin5_gpio3
 pressed = 0  # button is active low, so depressed is 0
-countdown = 1.0  # one second before power is cut
+countdown = 2.0  # two seconds before power is cut
 
 # countdown timer thread
 T = None
