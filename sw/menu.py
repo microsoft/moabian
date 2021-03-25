@@ -145,13 +145,14 @@ def build_menu(env, log_on, logfile):
     ]
     return top_menu + middle_menu + bottom_menu
 
-def alert_callback(is_error):
-    if is_error:
-        print("brain throwing error")
-
 # color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
 out = partial(click.secho, bold=False, err=True)
 err = partial(click.secho, fg="red", err=True)
+
+def alert_callback(is_error):
+    if is_error:
+        # TODO: change the icon to show an error
+        err("Brain predict error")
 
 
 def _handle_debug(ctx, param, debug):
