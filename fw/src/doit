@@ -41,8 +41,9 @@ exec 2> >(tee "/tmp/stderr.log")
 # 3.0.20: Pitch/roll to servo 1/2/3 coordinate transform removed (now in hat.py)
 # 3.0.21: Tighten up the log info messages
 # 3.0.22: Trying to capture 3 Rx buffer overruns with WARN message
+# 3.0.23: Show FW version on boot; tighter FW logs
 
-VERSION="3.0.22"
+VERSION="3.0.23"
 
 # YRDDDHR: 2103908. 2021, 39th day of the year, 08th hour (PDT)
 TIMESTAMP=$(TZ='America/Los_Angeles' date +"%j%H%M")
