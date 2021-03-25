@@ -240,7 +240,7 @@ def main_menu(cont, debug, file, hertz, log, verbose):
         # Default menu raises the servo to alert the user the system is ready
         if cont == -1:
             env.hat.enable_servos()
-            env.hat.hover()
+            env.hat.raise()
             buttons = env.hat.get_buttons()
             time.sleep(1 / env.frequency)
             env.hat.disable_servos()
@@ -307,13 +307,13 @@ def main_menu(cont, debug, file, hertz, log, verbose):
                         action, info = controller((state, detected, buttons))
                         state, detected, buttons = env.step(action)
 
-                    env.hat.hover()
+                    env.hat.raise()
                 else:
                     # If not a controller, let it do it's own thing. We assume
                     # it's a blocking call that will return when menu is pressed
                     controller()
 
-                # Loop breaks after menu pressed and puts the plate back to hover
+                # Loop breaks after menu pressed and puts the plate back to raise
                 current = MenuState.first_level
                 last_index = -1
 

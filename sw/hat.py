@@ -286,7 +286,7 @@ class Hat:
         """
         self.servo_offsets = (servo1, servo2, servo3)
 
-    def hover(self):
+    def raise(self):
         """
         Set the plate to its hover position.
         This was experimentally found to be 150 (down but still leaving some
