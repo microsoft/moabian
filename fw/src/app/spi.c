@@ -77,34 +77,11 @@ void spi_task(void)
         hat_to_pi.joystick_x = (int) atomic_get(&g_joy_x);
         hat_to_pi.joystick_y = (int) atomic_get(&g_joy_y);
 
-        // Assert that the padding bytes are all zero
-        if (hat_to_pi.padding[0] != 0 | 
-            hat_to_pi.padding[1] != 0 | 
-            hat_to_pi.padding[2] != 0 | 
-            hat_to_pi.padding[3] != 0) 
-        {
-            LOG_ERR("FATAL 1");
-            // LOG_HEXDUMP_INF((const u8_t *) &pi_to_hat, sizeof(pi_to_hat), "RX");
-        }
-
         // tx: outbound (button state and joystick positions)
         // rx: incoming (command verbs)
 
 		if (spi_transceive(spi, &spi_cfg, &tx, &rx) > 0)
 		{
-            // Assert that the padding bytes are all zero
-            if (hat_to_pi.padding[0] != 0 | 
-                hat_to_pi.padding[1] != 0 | 
-                hat_to_pi.padding[2] != 0 | 
-                hat_to_pi.padding[3] != 0) 
-            {
-                LOG_ERR("FATAL 2");
-                // LOG_HEXDUMP_INF((const u8_t *) &pi_to_hat, sizeof(pi_to_hat), "RX");
-            }
-
-            
-            // LOG_HEXDUMP_INF((const u8_t *) &pi_to_hat, sizeof(pi_to_hat), "RX");
-
             size_t size = sizeof(fifo_item_t);
             fifo_item_t *ptr = (fifo_item_t *) k_malloc(size);
             __ASSERT_NO_MSG(ptr != 0);
@@ -113,17 +90,6 @@ void spi_task(void)
             memcpy(&ptr->msg, &pi_to_hat, sizeof(pi_to_hat));
 
 			k_fifo_put(&my_fifo, ptr);
-            //
-            // Assert that the padding bytes are all zero
-            if (hat_to_pi.padding[0] != 0 | 
-                hat_to_pi.padding[1] != 0 | 
-                hat_to_pi.padding[2] != 0 | 
-                hat_to_pi.padding[3] != 0) 
-            {
-                LOG_ERR("FATAL 3");
-                // LOG_HEXDUMP_INF((const u8_t *) &pi_to_hat, sizeof(pi_to_hat), "RX");
-            }
-
 		}
 	}
 }
