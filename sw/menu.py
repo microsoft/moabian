@@ -45,7 +45,7 @@ class MenuState(Enum):
     second_level = 2  # Inside a controller or 'modal' (running the fn from MenuOption)
 
 
-def squash_small_angles_decorator(controller_fn, min_angle=1.0):
+def squash_small_angles(controller_fn, min_angle=1.0):
     """
     Decorates a controller that sets actions smaller than a certain angle to 0.
     """
@@ -73,13 +73,13 @@ def build_menu(env, log_on, logfile):
             name="Joystick",
             closure=joystick_controller,
             kwargs={},
-            decorators=[squash_small_angles_decorator],
+            decorators=[squash_small_angles],
         ),
         MenuOption(
             name="PID",
             closure=pid_controller,
             kwargs={},
-            decorators=[log_csv] if log_on else None,
+            decorators=[log_csv] if log_on else None
         ),
     ]
 
