@@ -242,9 +242,6 @@ class Hat:
 
     def set_angles(self, pitch: float, roll: float):
         s1, s2, s3 = plate_angles_to_servo_positions(pitch, roll)
-        s1 += self.servo_offsets[0]
-        s2 += self.servo_offsets[1]
-        s3 += self.servo_offsets[2]
         self.set_servos(s1, s2, s3)
 
     def set_servos(self, servo1: float, servo2: float, servo3: float):
