@@ -112,7 +112,7 @@ def build_menu(env, log_on, logfile):
             m = MenuOption(
                 name=menu_name,
                 closure=brain_controller,
-                kwargs={"port": port},
+                kwargs={"port": port, "alert_fn":alert_callback},
                 decorators=[log_csv] if log_on else none,
             )
             middle_menu.append(m)
@@ -145,6 +145,9 @@ def build_menu(env, log_on, logfile):
     ]
     return top_menu + middle_menu + bottom_menu
 
+def alert_callback(is_error):
+    if is_error:
+        print("brain throwing error")
 
 # color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
 out = partial(click.secho, bold=False, err=True)
@@ -274,7 +277,6 @@ def main_menu(cont, debug, file, hertz, log, verbose):
 
             else:  # current == MenuState.second_level:
                 if menu_list[index].require_servos:
-                    # Turn on the servos
                     env.hat.enable_servos()
 
                 # Reset the controller
@@ -316,7 +318,6 @@ def main_menu(cont, debug, file, hertz, log, verbose):
                 last_index = -1
 
                 if menu_list[index].require_servos:
-                    # Turn off the servos for main menu (they make that crackling noise)
                     env.hat.disable_servos()
 
 

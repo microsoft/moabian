@@ -111,8 +111,13 @@ def brain_controller(
                     if alert_fn is not None:
                         alert_fn(True)
 
+            except requests.exceptions.ConnectionError as e:
+                alert_fn(True)
+                print(f"Docker not running: {e}")
+
+
             except Exception as e:
-                log.exception(f"Exception calling predictor\n{e}")
+                print(f"Brain exception: {e}")
 
         return action, info
 
