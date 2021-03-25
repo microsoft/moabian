@@ -10,7 +10,7 @@ StartLimitBurst=5
 Environment="MOABIAN=3.0.23"
 Environment="PYTHONUNBUFFERED=1"
 WorkingDirectory=/home/pi/moab/sw
-ExecStart=/usr/bin/python3 menu.py -d -v
+ExecStart=/usr/bin/python3 menu.py --debug --verbose --reset
 User=pi
 
 Restart=on-failure
