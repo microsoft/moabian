@@ -207,6 +207,11 @@ def _handle_debug(ctx, param, debug):
     help=("Enables or disables the logging as specified by -f/--file"),
 )
 @click.option(
+    "-r",
+    "--reset/--no-reset",
+    help="Reset Moab firmware on start"
+)
+@click.option(
     "-v",
     "--verbose",
     count=True,
@@ -222,7 +227,11 @@ def main(ctx: click.core.Context, **kwargs: Any) -> None:
     main_menu(**kwargs)
 
 
-def main_menu(cont, debug, file, hertz, log, verbose):
+def main_menu(cont, debug, file, hertz, log, reset, verbose):
+
+    if reset:
+        out("Resetting firmware")
+        os.system("raspi-gpio set 6 dh && sleep 0.05 && raspi-gpio set 6 dl")
 
     with MoabEnv(hertz, debug=debug, verbose=verbose) as env:
         menu_list = build_menu(env, log, file)
