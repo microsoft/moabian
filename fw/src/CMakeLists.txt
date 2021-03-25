@@ -25,6 +25,7 @@ include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
 project(app VERSION 3.0.0.0)
 
 set(SEMVER $ENV{SEMVER})
+set(MAJORMINORPATCH $ENV{MAJORMINORPATCH})
 message("Moab SEMVER=${SEMVER}")
 
 configure_file(app/app_version.h.in app_version.h)

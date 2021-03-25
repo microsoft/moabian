@@ -46,6 +46,7 @@ VERSION="3.0.22"
 
 # YRDDDHR: 2103908. 2021, 39th day of the year, 08th hour (PDT)
 TIMESTAMP=$(TZ='America/Los_Angeles' date +"%j%H%M")
+export MAJORMINORPATCH=$VERSION
 export SEMVER=$VERSION.$TIMESTAMP
 
 # Lets you run this script from anywhere

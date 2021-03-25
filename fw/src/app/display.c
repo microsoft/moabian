@@ -2,12 +2,12 @@
 // Licensed under the MIT License.
 #include "headers.h"
 #include "display.h"
+#include "app_version.h"
 
 LOG_MODULE_REGISTER(display);
 
 // Mutex to protect access from other threads
 struct k_mutex mutex1;
-struct k_mutex mutex2;
 
 // The SH1106 device handle
 static struct device *display_dev;
@@ -54,7 +54,6 @@ int display_init()
     }
 
     k_mutex_init(&mutex1);
-    k_mutex_init(&mutex2);
 
     LOG_INF("Display screen %s", log_strdup(CONFIG_LVGL_DISPLAY_DEV_NAME));
 
@@ -111,10 +110,10 @@ int display_init()
     //
     t3 = lv_label_create(s3, NULL);
     lv_label_set_style(t3, LV_LABEL_STYLE_MAIN, &t3_style);
-    lv_label_set_long_mode(t3, LV_LABEL_LONG_SROLL_CIRC);
+    lv_label_set_long_mode(t3, LV_LABEL_LONG_BREAK);
     lv_label_set_align(t3, LV_LABEL_ALIGN_CENTER);
     lv_obj_set_size(t3, 128, 32);
-    lv_obj_align(t3, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_align(t3, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
 
     //
     // SCREEN4
@@ -134,54 +133,17 @@ int display_init()
     lv_obj_align(t4, NULL, LV_ALIGN_IN_LEFT_MID, 36, 0);
 
 
-    display_big_text("PROJ MOAB");
+    //LOG_INF("Version %s", log_strdup(APP_SEMVER));
+    static char splash[30] = {0};
+    sprintf(splash, "PROJECT  MOAB\n%s", APP_MAJORMINORPATCH);
+
+    display_small_text(splash);
 
     lv_task_handler();
     display_blanking_off(display_dev);
 
     return 0;
 }
-
-
-#if 0
-static void OLD_refresh_big_text_icon(our_fonts_t font_index)
-{
-    lv_label_long_mode_t longmode;
-
-    lv_obj_set_hidden(text_label, true);
-    lv_obj_set_hidden(icon_label, true);        // TODO: why was this false?
-
-    // force redraw of entire screen
-    // required because of lvgl or screen bug
-    lv_obj_set_size(text_label, 128, 32);
-    lv_obj_align(text_label, NULL, LV_ALIGN_CENTER, 0, 0);
-
-    if (font_index == IECSYMBOL)
-        icon_style.text.font = &iecsymbol_30;
-    else
-        icon_style.text.font = &moabsym_30;
-
-    text_style.text.font = &din2014_18;
-
-    lv_obj_set_hidden(icon_label, false);
-    lv_obj_align(icon_label, NULL, LV_ALIGN_IN_LEFT_MID, 2, 0);
-    longmode = lv_label_get_long_mode(text_label);
-
-    // This chunk is probably here to let it "finish" the animation?
-    if (longmode != LV_LABEL_LONG_BREAK)
-    {
-        lv_label_set_long_mode(text_label, LV_LABEL_LONG_BREAK);
-        lv_obj_invalidate(text_label);
-        // Another load-bearing poster
-        k_sleep(50);
-    }
-    lv_obj_set_hidden(text_label, false);
-    lv_label_set_align(text_label, LV_LABEL_ALIGN_LEFT);
-    lv_label_set_long_mode(text_label, LV_LABEL_LONG_BREAK);
-    lv_obj_set_width(text_label, 94);
-    lv_obj_align(text_label, NULL, LV_ALIGN_IN_LEFT_MID, 36, 0);
-}
-#endif
 
 
 // Four entry points, all called by main.c thread
@@ -196,7 +158,6 @@ void display_power_symbol(const char *str, disp_power_icon_t i)
     sprintf(icon_str, "%d", (u8_t) i);
     lv_label_set_text(i1, icon_str);
     lv_scr_load(s1);        // toggle IECSYMBOL
-    LOG_INF("screen1");
 
     k_mutex_unlock(&mutex1);
 }
@@ -209,7 +170,6 @@ void display_big_text(const char *str)
 
     lv_label_set_text(t2, str);
     lv_scr_load(s2);        // toggle IECSYMBOL
-    LOG_INF("screen2");
 
     k_mutex_unlock(&mutex1);
 }
@@ -221,18 +181,10 @@ void display_big_text_icon(const char *str, disp_icon_t i)
 
     k_mutex_lock(&mutex1, K_FOREVER);
 
-    //  HACK START
-    //lv_label_set_long_mode(t3, LV_LABEL_LONG_BREAK);
-    //lv_obj_invalidate(t3);
-    //lv_task_handler();
-    // k_sleep(50);
-    //  HACK END
-    
     lv_label_set_text(t1, str);
     sprintf(icon_str, "%d", (u8_t) i);
     lv_label_set_text(i1, icon_str);
     lv_scr_load(s1); // toggle MOABSYMBOL
-    LOG_INF("screen1");
 
     k_mutex_unlock(&mutex1);
 }
@@ -241,15 +193,8 @@ void display_small_text(const char *str)
 {
     k_mutex_lock(&mutex1, K_FOREVER);
 
-    //lv_label_set_long_mode(t3, LV_LABEL_LONG_BREAK);
-    //lv_obj_invalidate(t3);
-    //lv_task_handler();
-    //lv_label_set_long_mode(t3, LV_LABEL_LONG_SROLL_CIRC);
-    //lv_obj_set_size(t3, 128, 32);
-
     lv_label_set_text(t3, str);
     lv_scr_load(s3);        // toggle IECSYMBOL
-    LOG_INF("screen3");
 
     k_mutex_unlock(&mutex1);
 }
@@ -261,18 +206,10 @@ void display_big_text_power_icon(const char *str, disp_power_icon_t i)
 
     k_mutex_lock(&mutex1, K_FOREVER);
 
-    //  HACK START
-    //lv_label_set_long_mode(t3, LV_LABEL_LONG_BREAK);
-    //lv_obj_invalidate(t3);
-    //lv_task_handler();
-    // k_sleep(50);
-    //  HACK END
-    
     lv_label_set_text(t4, str);
     sprintf(icon_str, "%d", (u8_t) i);
     lv_label_set_text(i2, icon_str);
     lv_scr_load(s4); // toggle MOABSYMBOL
-    LOG_INF("screen4");
 
     k_mutex_unlock(&mutex1);
 }
