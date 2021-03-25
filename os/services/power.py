@@ -56,8 +56,8 @@ def power_button_event(pin):
         # kill the timer before it kills us
         if T is not None and too_late is False:
             T.cancel()
-            print("Tapped. Starting menu.", flush=True)
-            os.system("sudo systemctl start menu")
+            print("Tapped. Restarting menu.", flush=True)
+            os.system("sudo systemctl restart menu")
 
 
 def sigint(signal_received, frame):
