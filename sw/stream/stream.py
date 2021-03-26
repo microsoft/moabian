@@ -7,7 +7,7 @@ from flask import Flask, render_template, Response, url_for, redirect
 from camera_file import CameraFile
 from camera_opencv import CameraOpenCV
 
-app = Flask(__name__, static_url_path='', static_folder='static', template_folder='templates')
+app = Flask(__name__, static_url_path='', static_folder='static', template_folder='static')
 
 if __name__ != '__main__':
     gunicorn_logger = logging.getLogger('gunicorn.error')
@@ -16,13 +16,7 @@ if __name__ != '__main__':
 
 @app.route('/')
 def default():
-    return redirect(url_for('static', filename='file.html'))
-
-@app.route('/home')
-def home():
-    app.logger.info('/home --> index.html')
-    return redirect(url_for('static', filename='index.html'))
-
+    return render_template('index.html')
 
 def gen(camera):
     while True:
