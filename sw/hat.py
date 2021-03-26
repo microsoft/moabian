@@ -173,7 +173,6 @@ class Hat:
                 [GpioPin.HAT_EN, GpioPin.HAT_RESET],
                 gpio.OUT,
             )
-            # TODO: firmware isn't restarting, so lower from 0.9 to 0.1
             time.sleep(0.1)
         except KeyboardInterrupt:
             raise
@@ -319,8 +318,6 @@ class Hat:
             # Combine into one list to send
             msg = [SendCommand.COPY_STRING] + list(s[7 * msg_idx : 7 * msg_idx + 7])
             self.transceive(np.array(msg, dtype=np.int8))
-
-            # TODO: Why is this sleep here instead of before display command?
             time.sleep(0.010)
 
     def display_power_symbol(self, text: str, icon_idx: PowerIcon):

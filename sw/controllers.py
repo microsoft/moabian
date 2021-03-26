@@ -27,15 +27,11 @@ def pid_controller(
         x, y, vel_x, vel_y, sum_x, sum_y = env_state
 
         if ball_detected:
-            # TODO: The PID controller should probably use matrices instead of 2
-            #       independent SISO (single-input single-output) controls.
             action_x = Kp * x + Ki * sum_x + Kd * vel_x
             action_y = Kp * y + Ki * sum_y + Kd * vel_y
             action_x = np.clip(action_x, -max_angle, max_angle)
             action_y = np.clip(action_y, -max_angle, max_angle)
 
-            # NOTE the flipped X & Y! (and the inverted second term)
-            # TODO: fix this in next firmware rev
             action = Vector2(action_x, action_y)
 
         else:

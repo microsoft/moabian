@@ -39,7 +39,6 @@ static struct adc_sequence adc_table;
 static struct gpio_callback gpio_cb_joystick;
 static struct gpio_callback gpio_cb_menu;
 
-// TODO: good comment here
 // https://devzone.nordicsemi.com/f/nordic-q-a/54146/blink-led-on-button-press-on-nrf9160dk
 // helped me on button up and down
 // trigger callback on pin rising *and* falling: GPIO_INT_DOUBLE_EDGE
@@ -302,16 +301,8 @@ static void joy_task(void)
 	{
 		if ((err = joystick_position(&joyx, &joyy, &calibration)) == 0)
 		{
-            // def'n of these two functions need mutexes to protect them
-            // TODO: test this new version
             atomic_set(&g_joy_x, joyx);
             atomic_set(&g_joy_y, joyy);
-
-
-            // not thread safe. menu/joy buttons are set in callbacks
-			// pi_msgr_set_joystick(joyx, joyy);      // main.c
-			// pi_msgr_set_buttons(button_data);      // pi_msgr.c
-			// button_data.raw = 0;
 		}
 		else
 		{
@@ -319,7 +310,6 @@ static void joy_task(void)
 		}
 
         k_sleep(16);        // 60 Hz
-        //k_sleep(33);        // 30 Hz
 	}
 }
 

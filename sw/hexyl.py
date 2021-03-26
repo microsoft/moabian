@@ -21,9 +21,6 @@ class color:
     end = "\033[0m"
 
 
-# TODO: use pythonic map/reduce itertools
-
-
 def hexyl():
     tick = 0
 
