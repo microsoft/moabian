@@ -11,13 +11,13 @@ services:
   #   image:  
   #   container_name: custom1
   #   stop_grace_period: 0s
-  #   ports: [ 5000:5000 ]
+  #   ports: [ 5001:5000 ]
   
   # custom2:
   #   image: 
   #   container_name: custom2
   #   stop_grace_period: 0s
-  #   ports: [ 5000:5000 ]
+  #   ports: [ 5002:5000 ]
 
 # Add your trained Project Bonsai brains above.
 #
