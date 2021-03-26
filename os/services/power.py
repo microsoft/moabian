@@ -16,7 +16,7 @@ from signal import signal, SIGINT
 
 power_pin = 3  # HAT puts button signal here https://pinout.xyz/pinout/pin5_gpio3
 pressed = 0  # button is active low, so depressed is 0
-countdown = 2.0  # two seconds before power is cut
+countdown = 3.0  # two seconds before power is cut
 
 # countdown timer thread
 T = None
@@ -69,7 +69,7 @@ def main():
     setupGPIO()
 
     while True:
-        time.sleep(5)
+        time.sleep(1)
 
 
 if __name__ == "__main__":

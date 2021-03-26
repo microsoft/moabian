@@ -109,7 +109,6 @@ static int cmd_version(const struct shell *shell, size_t argc, char **argv)
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
 
-    // TODO: Replace with configurable version number.
     shell_print(shell, "Moab version %s", APP_SEMVER);
 
     return 0;

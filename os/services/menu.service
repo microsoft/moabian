@@ -3,11 +3,8 @@ Description=Moab Menu
 DefaultDependencies=false
 After=dhcpd.service
 
-StartLimitIntervalSec=100
-StartLimitBurst=5
-
 [Service]
-Environment="MOABIAN=3.0.23"
+Environment="MOABIAN=3.0.24"
 Environment="PYTHONUNBUFFERED=1"
 WorkingDirectory=/home/pi/moab/sw
 ExecStart=/usr/bin/python3 menu.py --debug --verbose --reset

@@ -20,8 +20,6 @@
   python3 -c "import cv2"
 }
 
-# TODO: investigate dropped frames with versions > than 4.1.0.25
-
 @test "opencv version 4.1.0.25" {
   pip3 list | grep -i -E 'opencv-python-headless.*4.1.0.25'
 }

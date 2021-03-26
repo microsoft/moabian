@@ -110,7 +110,7 @@ fw_reset() {
         send-keys 'bot log' 'C-m' \; \
         select-pane -t 0 \; \
         split-window -h -p 50 \; \
-        send-keys 'journalctl -f -u menu' 'C-m' \; \
+        send-keys 'journalctl -f -u menu -u power' 'C-m' \; \
         select-pane -t 0 \; 
 }
 

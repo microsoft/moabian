@@ -173,7 +173,6 @@ class Hat:
                 [GpioPin.HAT_EN, GpioPin.HAT_RESET],
                 gpio.OUT,
             )
-            # TODO: firmware isn't restarting, so lower from 0.9 to 0.1
             time.sleep(0.1)
         except KeyboardInterrupt:
             raise
@@ -181,7 +180,6 @@ class Hat:
             raise IOError(f"Could not setup GPIO pins")
 
     def close(self):
-        self.display_power_symbol("TO WAKE", PowerIcon.POWER)
         if self.spi is not None:
             self.spi.close()
 
@@ -242,9 +240,6 @@ class Hat:
 
     def set_angles(self, pitch: float, roll: float):
         s1, s2, s3 = plate_angles_to_servo_positions(pitch, roll)
-        s1 += self.servo_offsets[0]
-        s2 += self.servo_offsets[1]
-        s3 += self.servo_offsets[2]
         self.set_servos(s1, s2, s3)
 
     def set_servos(self, servo1: float, servo2: float, servo3: float):
@@ -323,8 +318,6 @@ class Hat:
             # Combine into one list to send
             msg = [SendCommand.COPY_STRING] + list(s[7 * msg_idx : 7 * msg_idx + 7])
             self.transceive(np.array(msg, dtype=np.int8))
-
-            # TODO: Why is this sleep here instead of before display command?
             time.sleep(0.010)
 
     def display_power_symbol(self, text: str, icon_idx: PowerIcon):

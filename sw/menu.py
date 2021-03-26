@@ -151,7 +151,6 @@ err = partial(click.secho, fg="red", err=True)
 
 def alert_callback(is_error):
     if is_error:
-        # TODO: change the icon to show an error
         err("Brain predict error")
 
 
@@ -165,7 +164,7 @@ def _handle_debug(ctx, param, debug):
 
 
 @click.command()
-@click.version_option(version="3.0.23")
+@click.version_option(version="3.0.24")
 @click.option(
     "-c",
     "--cont",
@@ -318,7 +317,6 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                             action, info = controller((state, detected, buttons))
                             state, detected, buttons = env.step(action)
                     except BrainNotFound:
-                        # TODO: show a message on OLED to start docker
                         print(f'caught BrainNotFound in loop')
 
                     env.hat.go_up()

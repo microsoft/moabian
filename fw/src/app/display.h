@@ -22,7 +22,7 @@ typedef enum
     DISP_ICON_PAUSE,
     DISP_ICON_CHECK,
     DISP_ICON_X,
-    DISP_ICON_EOL           // TODO: I don't think we need sentinel with enum in C
+    DISP_ICON_EOL
 } disp_icon_t;
 
 // Glyphs for IEC Power Symbols

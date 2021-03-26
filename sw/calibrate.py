@@ -126,7 +126,6 @@ def calibrate_pos(camera_fn, detector_fn, hue, is_menu_down_fn):
     return CalibPos()
 
 
-# TODO: optimize this calibration
 def calibrate_servo_offsets(pid_fn, env, stationary_vel=0.005, time_limit=20):
     start_time = time.time()
     action = Vector2(0, 0)
@@ -284,7 +283,6 @@ def run_calibration(env, pid_fn, calibration_file):
     # When the calibration is complete, save the image of what the moab camera
     # sees (useful for debugging when the hue calibration fails)
     # Have a nice filename with the time and whether it succeeded or failed
-    # TODO: put the hue in the image name
 
     time_of_day = datetime.datetime.now().strftime("%H%M%S")
     filename = "/tmp/hue"

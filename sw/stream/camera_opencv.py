@@ -20,7 +20,6 @@ class CameraOpenCV(BaseCamera):
         x = int((w / 2 - d / 2))
         y = int((h / 2 - d / 2))
 
-        # TODO: See if these x/y offsets are universal across Mark 2 & 3
         # x += -12
         # y +=  4
 
