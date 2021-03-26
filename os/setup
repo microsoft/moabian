@@ -142,7 +142,10 @@ function layer-pip-docker
     fi
 
     # Setup a default docker-compose.yml
-    [[ -e ../docker-compose.yml ]] || cp ../bin/template.yml ../docker-compose.yml
+    if ! [[ -e ../docker-compose.yml ]]; then 
+        cp ../bin/template.yml ../docker-compose.yml
+        chown pi:pi ../docker-compose.yml
+    fi
 }
 
 
