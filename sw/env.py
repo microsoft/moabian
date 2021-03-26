@@ -6,7 +6,7 @@ import time
 import json
 
 from typing import Tuple
-from hat import Hat, Buttons
+from hat import Hat, Buttons, Icon, PowerIcon
 from camera import OpenCVCameraSensor
 from dataclasses import dataclass, astuple
 from detector import hsv_detector, meters_to_pixels
@@ -67,6 +67,7 @@ class MoabEnv:
     def __exit__(self, type, value, traceback):
         self.hat.go_down()
         self.hat.disable_servos()
+        self.hat.display_power_symbol("TO WAKE", PowerIcon.POWER)
         self.hat.close()
         self.camera.stop()
 

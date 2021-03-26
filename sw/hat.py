@@ -181,7 +181,6 @@ class Hat:
             raise IOError(f"Could not setup GPIO pins")
 
     def close(self):
-        self.display_power_symbol("TO WAKE", PowerIcon.POWER)
         if self.spi is not None:
             self.spi.close()
 
