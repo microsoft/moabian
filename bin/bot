@@ -75,7 +75,8 @@ main() {
   blank? ${1:-} && die 0
 
   case $1 in
-    reset  ) fw_reset;;
+    reset  ) reset;;
+    fwreset  ) fw_reset;;
     log ) fw_log;;
     shell ) fw_log;;
     ver | version ) fw_version;;
@@ -94,6 +95,8 @@ fw_fanoff()  { raspi-gpio set 26 dl; }
 fw_fanon()   { raspi-gpio set 26 dh; }
 fw_fanon()   { raspi-gpio set 26 dh; }
 csv()        { tail -f /tmp/log.csv; }
+
+reset()      { sudo systemctl restart menu; }
 
 fw_reset() { 
     raspi-gpio set 6 dh
