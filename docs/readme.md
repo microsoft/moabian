@@ -51,20 +51,19 @@ This can take up to a minute if Moab is not connected to internet.
      the ball. Try disturbing the ball by poking it or blowing on it and
      watch Moab return the ball to the center.
 
-### **Troubleshooting**
+### Troubleshooting
 
-    If your Moab is not able to balance a ball in CLASSIC or BRAIN mode,
-    we recommend the following troubleshooting steps:
+If your Moab is not able to balance a ball in CLASSIC or BRAIN mode, we recommend the following troubleshooting steps:
 
-    1. Check your lighting situation. Are there any objects or lights in
+1. Check your lighting situation. Are there any objects or lights in
        the room that Moab could be mistaking for orange ping pong balls?
        Look for circular lights on your ceiling. If this is the case try
        moving Moab to another location, blocking the lights, or changing
        the lighting situation. 
 
-    2. Calibrate the camera. Move the joystick down and select
+2. Calibrate the camera. Move the joystick down and select
        "CALIBRATE". Follow the instructions on the screen to calibrate
        the camera to recognize the color of the ball.  
 
-    3. If your Moab is still unable to balance a ball after following
+3. If your Moab is still unable to balance a ball after following
        the steps above, please contact us for a troubleshooting guide.
