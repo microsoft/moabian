@@ -1,6 +1,6 @@
-## III. Train and Export a Brain
+# Train and Export a Brain
 
-### Train a brain
+## Train a brain
 
 If you have not trained a brain already, please follow [Project Moab
 tutorial](https://microsoft.github.io/moab/tutorials/) 1, 2 or 3 to
@@ -11,7 +11,7 @@ workspace provisioned on Azure. If you do not have one, follow the
 [account setup
 guide](https://docs.microsoft.com/en-us/bonsai/guides/account-setup).
 
-### Export a brain for deployment
+## Export a brain for deployment
 
 1. In the Bonsai UI, Click on “**Export brain**” button in the Train tab
 for your trained brain, as in the following screenshot:  
