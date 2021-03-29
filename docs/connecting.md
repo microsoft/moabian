@@ -7,12 +7,21 @@ connect to your network with an ethernet cable you can do so using WiFi.
 To configure the WiFi on your Moab, you will need an HDMI monitor and
 USB keyboard.
 
-### Option 1: Connecting with an ethernet cable
+## Option 1: Connecting with an ethernet cable
+
+### Required Materials
+
+- Ethernet cable (to connect Moab to your local network)
 
 Connect one end of an ethernet cable to your Moab and the other end to
 your router.
 
-### Option 2: Connecting with an HDMI monitor and USB keyboard
+## Option 2: Connecting with an HDMI monitor and USB keyboard
+
+### Required Materials
+
+- HDMI Monitor
+- USB Keyboard
 
 1. Connect Moab to a monitor using an HDMI cable.
 
@@ -25,7 +34,7 @@ your router.
 
 4. Follow the instructions in the next section to enable the WiFi.
 
-### Enable WiFi (required for Option 2)
+## Enable WiFi (required for Option 2)
 
 1. Type `sudo raspi-config`, and hit enter to open the Raspberry Pi
 Software Configuration Tool.
@@ -45,7 +54,7 @@ first letter of your country as a short cut.
 
 7. Select **Finish**.
 
-### SSH into Moab
+## SSH into Moab
 
 There are multiple methods to SSH into Moab. We provide instructions for
 using Visual Studio Code.
