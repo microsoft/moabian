@@ -32,6 +32,8 @@ The servo offset calibration is a bit more advanced and is only necessary to do 
 
 4. Update the servo offset values based on where the ball rolls off the plate. Add a negative integer value (start off with -1.0) corresponding to the servo that was closest to the ball when it rolled off the plate. Save the bot.json file.
 
+![bot-json](images/bot-json.png)
+
 5. Restart the Moab software using the command bot reset in the command line.
 
 6. Check the level of the plate using JOYSTICK mode.
