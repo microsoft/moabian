@@ -4,25 +4,33 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-# add change et to noet if you need tabs in the TOHERE section
+# use :set noet when modifying EOF blocks
+# eventually fix with .editorconfig for VS Code <-- 
+
+## Moabian v3.0 OS Setup
+##
+## Pre-flight checklist for developer: 
+## 
+## 1) cd ~/moab/sw/huemask && make 
+## 2) ensure correct v3.bin firwmare file is checked in to ~/moab/fw
 
 set -euo pipefail   # unofficial bash strict mode
 
-die()     { ret=$?; printf '%s\n' "$@" >&2; exit "$ret"; }
 require() { hash "$@" || exit 127; }
+println() { printf '%s\n' "$*"; }
+die()     { ret=$?; printf "%s\n" "$@" >&2; exit "$ret"; }
 
-## This script needs to run as root
-[[ $EUID -eq 0 ]] || die "$0 needs to run as root. Try sudo $0"
+[[ $EUID -eq 0 ]] || die "$0 script needs to run as root. Try sudo $0"
 
 ## Log script output
 exec 1> >(tee "/tmp/stdout.log")
 exec 2> >(tee "/tmp/stderr.log")
 
 ## Set CWD to the location where this script is running
+## $_D -> full path to folder where script is 
+## $_P -> parent path (usually /home/pi/moab)
 readonly _D="$(dirname "$(readlink -f "$0")")" && cd "$_D"
-
-## Requirements before continuing
-[[ -d files ]] || die 'Need subfolder "files"'
+readonly _P=$(dirname $_D)
 
 function layer-run-first
 {
@@ -58,7 +66,7 @@ function layer-classic-moabian
         tmux
         vim
         minicom
-        libffi-dev
+        raspi-gpio
     )
     apt-get install --no-install-recommends -y ${packages[*]}
 
@@ -70,23 +78,8 @@ function layer-classic-moabian
     systemctl disable apt-daily-upgrade
     systemctl disable man-db
 
-    ## Pre-compiled moab C library install for certain os/files/bin utilities
-    install -pvm 644 files/lib/* /usr/local/lib
-    ldconfig -v -n /usr/local/lib
-    ln -fs /usr/local/lib/libmoab.so.1 /usr/local/lib/libmoab.so
-    ldconfig
-
-    ## Set a proper default bash prompt for all users
-    ## and install a Moab specific message-of-the-day "splash" screen
-    install -pvm 644 files/profile.d/* /etc/profile.d
     rm -f /etc/motd
     
-    ## This adds $HOME/moab/bin to the global path
-    install -pvm 644 files/etc/* /etc
-
-    ## /usr/local/bin 
-    install -pvm 755 files/bin/* /usr/local/bin
-
     ## /home/pi
     for f in files/home/*; do
         dst="/home/pi/.${f##*/}"
@@ -105,18 +98,17 @@ function layer-classic-moabian
 
     ## /home/pi/moab
     chown -R pi:pi /home/pi/moab
-}
 
+    ## Remove files left over from v2.1
+    rm -f /usr/local/bin/{testmoab,ufetch,motd}
+    ## Remove files from v2.4
+    rm -f /usr/local/lib/libmoab*
+    ## Remove files from v2.5 (now in ~/moab/bin
+    rm -f /usr/local/lib/libbcm2835*
+    rm -f /usr/local/bin/{splash,diagnose,oled}
 
-function blah
-{
-    sudo -u pi -s <<'EOF'
-        dest="$HOME/.vim/pack/moabian/start"
-        rm -rf $dest
-        mkdir -p "$dest"
-        git clone https://github.com/lifepillar/vim-solarized8 "$dest/solarized8"
-        git clone https://github.com/scotstan/vim-polyglot "$dest/polyglot"
-EOF
+    ## /etc/environment file sets MOABIAN=3.x.x for all users
+    install -pvm 644 files/etc/* /etc
 }
 
 
@@ -130,6 +122,8 @@ function layer-pip-docker
     if ! command -v pip3 &> /dev/null; then
         wget https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py
         python3 /tmp/get-pip.py
+    else
+        python3 -m pip install --upgrade pip
     fi
 
     # Pointer for pip to download pre-compiled Raspberry Pi binary wheels
@@ -146,20 +140,27 @@ function layer-pip-docker
     if ! command -v docker-compose &> /dev/null; then
         pip3 install docker-compose
     fi
+
+    # Setup a default docker-compose.yml
+    if ! [[ -e ../docker-compose.yml ]]; then 
+        cp ../bin/template.yml ../docker-compose.yml
+        chown pi:pi ../docker-compose.yml
+    fi
 }
 
 
 function layer-moab-services 
 {
-    require 'pip3'
-    sudo -u pi pip3 install --user RPi.GPIO
-    services/install 2&> /dev/null
+    sudo -u pi python3 -m pip install --user RPi.GPIO
+    services/install
 }
 
 function layer-rename {
-    sed -i -e 's/raspberrypi/moab/' /etc/hosts /etc/hostname
-    echo "raspberrypi.local renamed to moab.local"
-    warn "Please reboot your Moab now by typing: sudo reboot now"
+    if grep raspberry /etc/hostname; then
+        sed -i -e 's/raspberrypi/moab/' /etc/hosts /etc/hostname
+        echo "raspberrypi.local renamed to moab.local"
+        warn "Please reboot your Moab now by typing: sudo reboot now"
+    fi
 }
 
 function touched { grep -qF "##moabian" "$1"; }
@@ -219,9 +220,22 @@ function touch-console-setup
 	EOF
 }
 
-function layer-bcm2835
+function layer-baremetal
 {
-    ../sw/bin/bcm2835
+    # install APT packages as root
+    $_P/sw/setup/packages.sh
+
+    info "Installing python packages"
+    sudo -u pi -s <<-EOF
+		python3 -m pip install --upgrade pip
+		pip3 install --user -r $_P/sw/setup/requirements.txt
+		pip3 install --user $_P/sw/huemask
+	EOF
+}
+
+function layer-flash
+{
+    $_P/bin/flash $_P/fw/v3.bin
 }
 
 function layer-mcumgr
@@ -263,14 +277,16 @@ function info {
 
 function main
 {
-    info "layer-run-first" && layer-run-first
-    info "touch-files" && touch-files
-    info "classic-moabian" && layer-classic-moabian
-    info "pip-docker" && layer-pip-docker
-    info "services setup" && layer-moab-services
-    info "install bcm2835 library" && layer-bcm2835
-    info "install go and mcumgr" && layer-mcumgr
-    info "renaming to moab.local" && layer-rename
+    info "01/10: updating system packages" && layer-run-first
+    info "02/10: setting up boot files" && touch-files
+    info "03/10: moabian package install" && layer-classic-moabian
+    info "04/10: installing docker" && layer-pip-docker
+    info "05/10: firmware tooling" && layer-mcumgr
+    info "06/10: python packages for moab" && layer-baremetal
+    info "07/10: autorun services setup" && layer-moab-services
+    info "08/10: flashing Moab HAT to v3 firmware" && layer-flash
+    info "09/10: cleaning up" && sudo apt-get autoremove --yes
+    info "10/10: renaming bot to moab" && layer-rename
 }
 
 main

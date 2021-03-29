@@ -9,15 +9,27 @@ readonly _D="$(dirname "$(readlink -f "$0")")" && cd "$_D"
 function setup()
 {
     # next line failing in nominal on new systems
-    sudo systemctl disable "$1" || true
+    sudo systemctl disable "$1" 2>/dev/null || true
 
     sudo ln -sf "$PWD/$1" /etc/systemd/system/"$1"
     sudo systemctl enable "$1"
     sudo chmod 0644 "$1"
 }
 
-setup moab.service
-setup power.service
-setup fan.service
+# v3 no longer needs version 2.4.1 moab.service
+systemctl disable moab 2>/dev/null || true
 
-sudo systemctl daemon-reload
+setup fan.service       # 5 sec monitoring the /sys/cpu/temp
+setup power.service     # Monitors power button: 2 seconds shuts down
+setup brain.service    # 3 docker containers 5000 REST <--
+setup menu.service      # menu.py
+setup stream.service    # gunicorn(flask.py) <- reverse proxy nginx
+
+systemctl daemon-reload
+
+unlink /etc/nginx/sites-enabled/default
+cp stream.conf /etc/nginx/sites-enabled
+cp stream.conf /etc/nginx/sites-available
+
+echo "restarting nginx"
+service nginx reload

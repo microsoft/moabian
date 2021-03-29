@@ -1,0 +1,148 @@
+/dts-v1/;
+#include <st/f4/stm32f415Rg.dtsi>
+
+/ {
+	model = "MOAB Hat board";
+	compatible = "st,stm32f415rg";
+
+	chosen {
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart3;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,ccm = &ccm0;
+		zephyr,code-partition = &slot0_partition;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		red_led_1: led_1 {
+			gpios = <&gpioc 13 GPIO_INT_ACTIVE_HIGH>;
+			label = "User LD1";
+		};
+		servo_en_led: led_2 {
+			gpios = <&gpioa 12 GPIO_INT_ACTIVE_HIGH>;
+			label = "User LD2";
+		};
+		spi_msg_led: led_3 {
+			gpios = <&gpioc 4 GPIO_INT_ACTIVE_HIGH>;
+			label = "User LD3";
+		};
+	};
+
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		user_button1: key1 {
+			label = "button1";
+			gpios = <&gpioc 0 GPIO_INT_ACTIVE_HIGH>;
+		};
+		user_button2: key2 {
+			label = "button2";
+			gpios = <&gpioc 1 GPIO_INT_ACTIVE_HIGH>;
+		};
+	};
+
+	aliases {
+		led-red = &red_led_1;
+		button-menu = &user_button1;
+		button-joystick = &user_button2;
+		servo-enable = &servo_en_led;
+		spi-msg-ready = &spi_msg_led;
+	};
+};
+
+
+
+&usart1 {
+	current-speed = <115200>;
+	//status = "okay";
+};
+
+&usart3 {
+	current-speed = <115200>;
+	//status = "okay";
+};
+
+&timers3 {
+	//status = "okay";
+
+	// pwm {
+	// 	st,prescaler = <100>;
+	// 	status = "okay";
+	// };
+};
+
+&i2c2 {
+	//status = "okay";
+	clock-frequency = <I2C_BITRATE_FAST>;
+
+	// lp5024@62 {
+	// 	compatible = "ti,lp50xx";
+	// 	reg = <0x62>;
+	// 	label = "LP5024";
+	// 	rgb-count = <8>;
+	// };
+};
+
+&spi1 {
+	//status = "okay";
+	cs-gpios = <&gpioa 4 GPIO_INT_ACTIVE_LOW>;
+};
+
+&spi2 {
+	//status = "okay";
+	cs-gpios = <&gpiob 12 GPIO_INT_ACTIVE_LOW>;
+	sh1106-spi@0 {
+		compatible = "sino,sh1106";
+		reg = <0x0>;
+		label = "SH1106";
+		width = <128>;
+		height = <32>;
+		segment-offset = <2>;
+		page-offset = <0>;
+		display-offset = <0x7>; // <0x7>;
+		multiplex-ratio = <0xA8>; // 63
+		segment-remap;
+		com-invdir;
+		//com-sequential;
+		prechargep = <0x1F>;
+		reset-gpios = <&gpioc 5 GPIO_INT_ACTIVE_LOW>;
+		a0-gpios = <&gpioc 9 GPIO_INT_ACTIVE_LOW>;
+		spi-max-frequency = <4000000>;
+	};
+};
+
+&adc1 {
+	//status = "okay";
+};
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* 128K */
+		boot_partition: partition@0 {
+			label = "mcuboot";
+			reg = <0x00000000 0x20000>;
+			#read-only;
+		};
+		/* 256K */
+		slot0_partition: partition@20000 {
+			label = "image-0";
+			reg = <0x00020000 0x40000>;
+		};
+		/* 256K */
+		slot1_partition: partition@60000 {
+			label = "image-1";
+			reg = <0x00060000 0x40000>;
+		};
+		/* 256K */
+		scratch_partition: partition@A0000 {
+			label = "image-scratch";
+			reg = <0x000A0000 0x40000>;
+		};
+	};
+};

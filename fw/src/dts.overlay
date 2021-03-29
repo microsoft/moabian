@@ -1,0 +1,32 @@
+&usart1 {
+	status = "okay";
+};
+
+&usart3 {
+	status = "okay";
+};
+
+&timers3 {
+	status = "okay";
+
+	pwm {
+		st,prescaler = <100>;
+		status = "okay";
+	};
+};
+
+&i2c2 {
+	status = "okay";
+};
+
+&spi1 {
+	status = "okay";
+};
+
+&spi2 {
+	status = "okay";
+};
+
+&adc1 {
+	status = "okay";
+};
