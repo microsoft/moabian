@@ -4,7 +4,7 @@ DefaultDependencies=false
 After=basic.target
 
 [Service]
-ExecStart=/usr/bin/python3 fan.py --temperature 60
+ExecStart=/usr/bin/python3 fan.py --temperature 63
 WorkingDirectory=/home/pi/moab/os/services
 User=pi
 Restart=on-failure

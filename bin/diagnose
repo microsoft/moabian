@@ -1,0 +1,67 @@
+#!/usr/bin/env bats
+
+@test "DNS working" {
+  ping -c 1 github.com
+}
+
+@test "raspi-gpio installed" {
+    which raspi-gpio
+}
+
+@test "nginx config ok" {
+    sudo nginx -t
+}
+
+@test "web server running" {
+    wget http://0.0.0.0/index.html -O /dev/null
+}
+
+@test "opencv for python loads" {
+  python3 -c "import cv2"
+}
+
+@test "opencv version 4.1.0.25" {
+  pip3 list | grep -i -E 'opencv-python-headless.*4.1.0.25'
+}
+
+@test "huemask python library installed" {
+    pip3 list | grep -i huemask
+}
+
+@test "Camera detected" {
+  vcgencmd get_camera | grep 'detected=1'
+}
+
+@test "power/fan/moab services started without GPIO error" {
+  journalctl | grep -v gpio.setup
+}
+
+@test "fan.service running" {
+    systemctl is-active fan.service
+}
+@test "power.service running" {
+    systemctl is-active power.service
+}
+@test "menu.service running" {
+    systemctl is-active menu.service
+}
+@test "stream.service running" {
+    systemctl is-active stream.service
+}
+
+@test "Docker is running" {
+  pgrep -l docker
+}
+
+@test "/home/pi/moab/docker-compose.yml exists" {
+  [[ -e /home/pi/moab/docker-compose.yml ]]
+}
+
+@test "docker-compose is installed and can launch" {
+  docker-compose -v 
+}
+
+@test "one or more brains are running" {
+  pgrep -f predict
+}
+

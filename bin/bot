@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# vim:filetype=sh:
+
+# http://www.binaryphile.com/bash/2018/07/26/approach-bash-like-a-developer-part-1-intro.html
+# https://github.com/MatthewZito/sh/pull/1
+
+IFS=$'\n'
+set -o noglob
+shopt -s nocasematch expand_aliases
+alias args?='(( $# ))'
+alias args_include?='include? "$*"'
+alias fewer_args_than?='fewer_than? $#'
+
+this_script="$(basename "$0")"
+HERE=$(dirname "$BASH_SOURCE")
+
+die () {
+  local rc=$?
+
+  present? ${2:-}   && rc=$2
+  present? "${1:-}" && echo "$1" >&2
+  exit $rc
+}
+
+define ()      { IFS=$'\n' read -r -d '' ${1} || true; }
+blank? ()      { [[ -z ${1:-} ]]; }
+fewer_than? () { (( $1 < $2 )); }
+include? ()    { [[ $IFS$1$IFS == *"$IFS$2$IFS"* ]]; }
+present? ()    { [[ -n ${1:-} ]]; }
+sourced? ()    { [[ ${FUNCNAME[1]} == source ]]; }
+
+split () {
+  local i
+
+  for (( i = 0; i < ${#1}; i++ )); do
+    echo ${1:i:1}
+  done
+}
+
+strict_mode () {
+  case $1 in
+    on  ) set -euo pipefail;;
+    off ) set +euo pipefail;;
+  esac
+}
+
+define HELP <<EOF
+Usage:
+    bot [command]
+
+COMMANDS:
+    bot version         display firmware version string
+    bot reset           fast firmware and menu restart
+    bot fw_reset        fast firmware restart
+    bot log             firwmare log stream (CTRL-A Q to quit)
+    bot shell           firmware shell (advanced)
+    bot fanon           force fan on
+    bot fanoff          force fan off
+    bot csv             show csv file
+    bot 4up             4-up tmux console for logs (CTRL-O Q to quit)
+    bot 2up             2-up tmux console for logs (CTRL-O Q to quit)
+EOF
+
+
+usage () {
+  local rc=0
+
+  present? ${1:-} && {
+    echo "$1$IFS"
+    rc=2
+  }
+  die "$HELP" $rc
+}
+
+main() {
+  blank? ${1:-} && die 0
+
+  case $1 in
+    reset  ) reset;;
+    fwreset  ) fw_reset;;
+    log ) fw_log;;
+    shell ) fw_log;;
+    ver | version ) fw_version;;
+    fanon ) fw_fanon;;
+    fanoff ) fw_fanoff;;
+    csv ) csv;;
+    4up ) 4up;;
+    2up ) 2up;;
+  esac
+}
+
+fw_log()     { sudo minicom --device=/dev/ttyAMA0; }
+fw_shell()   { sudo minicom --device=/dev/ttyAMA0; }
+fw_version() { fwversion; }
+fw_fanoff()  { raspi-gpio set 26 dl; }
+fw_fanon()   { raspi-gpio set 26 dh; }
+fw_fanon()   { raspi-gpio set 26 dh; }
+csv()        { tail -f /tmp/log.csv; }
+
+reset()      { sudo systemctl restart menu; }
+
+fw_reset() { 
+    raspi-gpio set 6 dh
+    sleep 0.1
+    raspi-gpio set 6 dl
+}
+
+4up() {
+    tmux -2 new-session -A -s "console" \; \
+        send-keys 'cd ~/moab/sw' 'C-m' \; \
+        split-window -v -p 50 \; \
+        send-keys 'tail -F /tmp/log.csv' 'C-m' \; \
+        split-window -h -p 50 \; \
+        send-keys 'bot log' 'C-m' \; \
+        select-pane -t 0 \; \
+        split-window -h -p 50 \; \
+        send-keys 'journalctl -f -u menu -u power' 'C-m' \; \
+        select-pane -t 0 \; 
+}
+
+2up() {
+    tmux -2 new-session -A -s "console" \; \
+        send-keys 'cd ~/moab/sw' 'C-m' \; \
+        split-window -v -p 30 \; \
+        send-keys 'bot log' 'C-m' \; \
+        select-pane -t 0 \; 
+}
+
+
+
+sourced? && return
+strict_mode on
+
+args_include? --help  && usage
+args?                 || usage "bot • Moab command-line tools"
+fewer_args_than? 2    || usage "Error: wrong number of arguments"
+
+[[ $TERM == "alacritty" ]] && TERM=xterm-256color 
+main $*
+

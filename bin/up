@@ -6,7 +6,13 @@
 
 readonly _D="$(dirname "$(readlink -f "$0")")" && cd $_D
 
-fw-restart
-
 cd ..
-docker-compose up -d
+
+missing-compose() {
+    echo "Using default docker-compose.yml"
+    cp $_D/template.yml docker-compose.yml
+}
+
+[[ -e docker-compose.yml ]] || missing-compose
+
+docker-compose up --remove-orphans -d

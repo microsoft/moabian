@@ -16,7 +16,7 @@ from signal import signal, SIGINT
 
 power_pin = 3  # HAT puts button signal here https://pinout.xyz/pinout/pin5_gpio3
 pressed = 0  # button is active low, so depressed is 0
-countdown = 0.5  # two seconds; it's longer than you think
+countdown = 3.0  # two seconds before power is cut
 
 # countdown timer thread
 T = None
@@ -36,10 +36,11 @@ def shutdown():
     global too_late
     too_late = True
 
-    # Send SIGINT to moab/control container; when caught, Moab 
+    # Send SIGTERM to moab/control container; when caught, Moab 
     # will drop the plate, kill the servo power and clear the screen
 
-    os.system("docker kill --signal=2 control &> /dev/null")
+    cmd = "/bin/kill -s TERM $(cat /tmp/menu.pid) &> /dev/null"
+    os.system(cmd)
     os.system("sudo shutdown now")
 
 
@@ -54,8 +55,9 @@ def power_button_event(pin):
     else:
         # kill the timer before it kills us
         if T is not None and too_late is False:
-            print("Countdown canceled", flush=True)
             T.cancel()
+            print("Tapped. Restarting menu.", flush=True)
+            os.system("sudo systemctl restart menu")
 
 
 def sigint(signal_received, frame):
@@ -67,7 +69,7 @@ def main():
     setupGPIO()
 
     while True:
-        time.sleep(5)
+        time.sleep(1)
 
 
 if __name__ == "__main__":

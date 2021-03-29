@@ -1,0 +1,86 @@
+<!-- https://dev.to/hankchizljaw/a-modern-css-reset-6p3 -->
+
+* { box-sizing: border-box; }
+
+body, h1, h2, p { margin: 0; }
+
+body {
+    --canvasColor: #f9f9f9;
+    --canvasColor: #eeeeee;
+    --backgroundColor: #fff;
+    --foregroundColor: #111;
+    --primaryColor: #ff9557;
+    --secondaryColor: #ffcc67;
+    --accentColor: #4e5166;
+
+    min-height: 100vh;
+    background-color: #f9f9f9;
+    line-height: 1.5;
+    text-align:center;
+}
+
+main {
+    width: 90%;
+    margin: 3em auto 0;
+}
+
+img { 
+    max-width: 100%; 
+    display: block;
+}
+
+html {
+    font-family: Avenir, Helvetica;
+    font-size: 100%;
+}
+
+.lines {
+    width: fit-content;
+    height: fit-content;
+    position: relative;
+    background-image: linear-gradient(#00f, #00f);
+    background-size: 20px 100%;
+    background-repeat: no-repeat;
+    background-position: center center;
+
+    filter: brightness(0.8); 
+}
+
+img {
+    opacity: 0.9;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 1fr max-content 1fr;
+    grid-template-rows: 1fr;
+}
+
+.container img{
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.container hr{
+    grid-column: 2;
+    grid-row: 1;
+    z-index: 1;
+
+    height:100%;
+    width:100%;
+    align-self: center;
+    justify-self: center;
+
+    background-image: linear-gradient(#a00, #a00);
+    background-repeat: no-repeat;
+    background-position: center center;
+    opacity: 0.5;
+}
+
+.horizontal {
+  background-size: 100% 3px;
+}
+
+.vertical {
+  background-size: 3px 100%;
+}

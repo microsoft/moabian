@@ -1,0 +1,17 @@
+[Unit]
+Description=Moab Menu
+DefaultDependencies=false
+After=dhcpd.service
+
+[Service]
+Environment="MOABIAN=3.0.24"
+Environment="PYTHONUNBUFFERED=1"
+WorkingDirectory=/home/pi/moab/sw
+ExecStart=/usr/bin/python3 menu.py --debug --verbose --reset
+User=pi
+
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
