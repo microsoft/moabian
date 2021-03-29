@@ -50,7 +50,8 @@ Usage:
 
 COMMANDS:
     bot version         display firmware version string
-    bot reset           fast firmware reset/restart
+    bot reset           fast firmware and menu restart
+    bot fw_reset        fast firmware restart
     bot log             firwmare log stream (CTRL-A Q to quit)
     bot shell           firmware shell (advanced)
     bot fanon           force fan on
