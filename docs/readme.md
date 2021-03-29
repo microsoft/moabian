@@ -1,6 +1,6 @@
-# Project Moab Manual
+# Getting started with Project Moab
 
-## I. Getting Started
+This documentation is intended for the physical Moab hardware.
 
 ### Power on
 
@@ -10,7 +10,7 @@ This can take up to a minute if Moab is not connected to internet.
 
 ### Balance a ball
 
-1. Manual Mode
+1. **Joystick Mode**
 
    Once Moab has booted, "MANUAL"  mode will be displayed on the
    screen. Press the joystick to select Manual mode. The plate will
@@ -20,7 +20,7 @@ This can take up to a minute if Moab is not connected to internet.
 
    To exit Manual mode, select the menu button next to the joystick.
 
-2. Classic Mode
+2. **PID Mode**
 
     This is classic PID (Proportional, Integral, Derivative) controller
     that balance the ball at the center of the plate. This controller
@@ -51,7 +51,7 @@ This can take up to a minute if Moab is not connected to internet.
      the ball. Try disturbing the ball by poking it or blowing on it and
      watch Moab return the ball to the center.
 
-4. **Troubleshooting**
+### **Troubleshooting**
 
     If your Moab is not able to balance a ball in CLASSIC or BRAIN mode,
     we recommend the following troubleshooting steps:
