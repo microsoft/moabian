@@ -45,8 +45,9 @@ exec 2> >(tee "/tmp/stderr.log")
 # 3.0.24: Sync'd with SW v3.0.24
 # 3.0.25: Possible fix for critical SPI chip-select contention (controller vs peripheral)
 # 3.0.27: applying peter's CS fix
+# 3.0.28: spi_cfg.cs = NULL attempt
 
-VERSION="3.0.27"
+VERSION="3.0.28"
 
 # YRDDDHR: 2103908. 2021, 39th day of the year, 08th hour (PDT)
 TIMESTAMP=$(TZ='America/Los_Angeles' date +"%j%H%M")
@@ -81,6 +82,7 @@ install() {
 
         echo "Installing $DEST/$FN on moab"
         scp "$DEST/$FN" moab:$FN || echo "scp copy to moab failed"
+        sleep 1
         ssh moab "sudo moab/bin/flash /home/pi/$FN"
     fi 
 }
