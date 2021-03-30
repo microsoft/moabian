@@ -194,6 +194,7 @@ function touch-config-txt
 		hdmi_force_hotplug=1
 		gpio=20=op,dh
 		gpio=5=op,dl
+		gpio=6=op
 		start_x=1
 		gpu_mem=128
 	EOF
