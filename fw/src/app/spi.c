@@ -48,6 +48,8 @@ void spi_task(void)
 	spi_cfg.operation = SPI_WORD_SET(8) | SPI_OP_MODE_SLAVE;
 	spi_cfg.frequency = 25000000;
 
+    // Past versions:
+    // spi_cs.gpio_dev = device_get_binding(DT_INST_0_ST_STM32_SPI_CS_GPIOS_CONTROLLER);
 	spi_cs.gpio_dev = NULL;
 	spi_cs.gpio_pin = DT_INST_0_ST_STM32_SPI_CS_GPIOS_PIN;
 	spi_cs.delay = 20;
@@ -69,6 +71,9 @@ void spi_task(void)
 
 	while(true)
 	{
+        // Peter's fix:
+        gpio_pin_configure(spi_cs.gpio_dev, DT_INST_0_ST_STM32_SPI_CS_GPIOS_PIN, GPIO_DIR_IN);
+
         memset(&pi_to_hat, 0, sizeof(pi_to_hat));       // 8 bytes from Raspberry Pi (Tx)
         memset(&hat_to_pi, 0, sizeof(hat_to_pi));       // 8 bytes to   Raspberry Pi (Rx)
 

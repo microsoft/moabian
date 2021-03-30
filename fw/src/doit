@@ -44,8 +44,9 @@ exec 2> >(tee "/tmp/stderr.log")
 # 3.0.23: Show FW version on boot; tighter FW logs
 # 3.0.24: Sync'd with SW v3.0.24
 # 3.0.25: Possible fix for critical SPI chip-select contention (controller vs peripheral)
+# 3.0.27: applying peter's CS fix
 
-VERSION="3.0.25"
+VERSION="3.0.27"
 
 # YRDDDHR: 2103908. 2021, 39th day of the year, 08th hour (PDT)
 TIMESTAMP=$(TZ='America/Los_Angeles' date +"%j%H%M")
