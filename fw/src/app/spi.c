@@ -48,12 +48,12 @@ void spi_task(void)
 	spi_cfg.operation = SPI_WORD_SET(8) | SPI_OP_MODE_SLAVE;
 	spi_cfg.frequency = 25000000;
 
-	spi_cs.gpio_dev = device_get_binding(DT_INST_0_ST_STM32_SPI_CS_GPIOS_CONTROLLER);
+	spi_cs.gpio_dev = NULL;
 	spi_cs.gpio_pin = DT_INST_0_ST_STM32_SPI_CS_GPIOS_PIN;
-	spi_cs.delay = 0;
+	spi_cs.delay = 20;
 	spi_cfg.cs = &spi_cs;
 
-	LOG_INF("SPI interface listening");
+	LOG_INF("SPI interface CS in peripheral mode");
 
 	const struct spi_buf tx_buf = {
 		.buf = &hat_to_pi,
