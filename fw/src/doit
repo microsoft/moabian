@@ -78,6 +78,7 @@ install() {
 
         echo "Installing $DEST/$FN on moab"
         scp "$DEST/$FN" moab:$FN || echo "scp copy to moab failed"
+		sleep 5
         ssh moab "sudo moab/bin/flash /home/pi/$FN"
     fi 
 }

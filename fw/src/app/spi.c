@@ -69,7 +69,11 @@ void spi_task(void)
 
 	while(true)
 	{
-        memset(&pi_to_hat, 0, sizeof(pi_to_hat));       // 8 bytes from Raspberry Pi (Tx)
+        // prevent CS from being treated as an output after SPI operation.
+		// TODO: find a proper solution to keep CS as an input pin
+		gpio_pin_configure(spi_cs.gpio_dev, DT_INST_0_ST_STM32_SPI_CS_GPIOS_PIN, GPIO_DIR_IN);
+		
+		memset(&pi_to_hat, 0, sizeof(pi_to_hat));       // 8 bytes from Raspberry Pi (Tx)
         memset(&hat_to_pi, 0, sizeof(hat_to_pi));       // 8 bytes to   Raspberry Pi (Rx)
 
         hat_to_pi.menu_button = atomic_get(&g_btn_menu);
