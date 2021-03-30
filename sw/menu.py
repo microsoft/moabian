@@ -70,6 +70,16 @@ def build_menu(env, log_on, logfile):
 
     top_menu = [
         MenuOption(
+            name="Calibrate",
+            closure=calibrate_controller,
+            kwargs={
+                "env": env,
+                "pid_fn": pid_controller(),
+                "calibration_file": "bot.json",
+            },
+            is_controller=False,
+        ),
+        MenuOption(
             name="Joystick",
             closure=joystick_controller,
             kwargs={},
@@ -119,16 +129,6 @@ def build_menu(env, log_on, logfile):
 
     bottom_menu = [
         MenuOption(
-            name="Calibrate",
-            closure=calibrate_controller,
-            kwargs={
-                "env": env,
-                "pid_fn": pid_controller(),
-                "calibration_file": "bot.json",
-            },
-            is_controller=False,
-        ),
-        MenuOption(
             name="Hue Info",
             closure=info_config_controller,
             kwargs={"env": env},
@@ -164,7 +164,7 @@ def _handle_debug(ctx, param, debug):
 
 
 @click.command()
-@click.version_option(version="3.0.24")
+@click.version_option(version="3.0.25")
 @click.option(
     "-c",
     "--cont",
