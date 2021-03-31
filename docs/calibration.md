@@ -18,7 +18,7 @@ You can always view the hue value on your Moab by navigating to and selecting HU
 
 ## Servo Offset (plate level) calibration
 
-The servo offset calibration is a bit more advanced and is only necessary to do if your Moab is having trouble balancing the ball or the plate visibly needs to be leveled. It is important to complete the Ball Hue and Position calibration step before following this procedure.
+The servo offset calibration is a bit more advanced and is only necessary to do if your Moab is having trouble balancing the ball or the plate visibly needs to be leveled. It is important to complete the Ball Hue and Position calibration step before following this procedure. [Connecting](https://github.com/microsoft/moabian/blob/docs-v3-updates/docs/connecting.md) to your Moab is a prerequisite to this procedure.
 
 
 
