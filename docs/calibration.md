@@ -34,7 +34,7 @@ The servo offset calibration is a bit more advanced and is only necessary to do 
 
 ![bot-json](images/bot-json.png)
 
-5. Restart the Moab software using the command bot reset in the command line.
+5. Restart the Moab software using the command **bot reset** in the command line.
 
 6. Check the level of the plate using JOYSTICK mode.
 
