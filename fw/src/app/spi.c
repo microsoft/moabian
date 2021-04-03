@@ -37,6 +37,8 @@ void spi_task(void)
 	struct device *spi;
 	struct spi_config       spi_cfg;
 	struct spi_cs_control   spi_cs;
+	int spi_trancieve_ret = 0;
+	//int cnt = 0;
 
 	spi = device_get_binding("SPI_1");
 	if (!spi)
@@ -69,10 +71,6 @@ void spi_task(void)
 
 	while(true)
 	{
-        // prevent CS from being treated as an output after SPI operation.
-		// TODO: find a proper solution to keep CS as an input pin
-		gpio_pin_configure(spi_cs.gpio_dev, DT_INST_0_ST_STM32_SPI_CS_GPIOS_PIN, GPIO_DIR_IN);
-		
 		memset(&pi_to_hat, 0, sizeof(pi_to_hat));       // 8 bytes from Raspberry Pi (Tx)
         memset(&hat_to_pi, 0, sizeof(hat_to_pi));       // 8 bytes to   Raspberry Pi (Rx)
 
@@ -84,7 +82,15 @@ void spi_task(void)
         // tx: outbound (button state and joystick positions)
         // rx: incoming (command verbs)
 
-		if (spi_transceive(spi, &spi_cfg, &tx, &rx) > 0)
+		spi_trancieve_ret = spi_transceive(spi, &spi_cfg, &tx, &rx);
+		if(spi_trancieve_ret != sizeof(pi_to_hat))
+		{
+			if(spi_trancieve_ret >= 0)
+				LOG_ERR("Recieved %d bytes from pi.", spi_trancieve_ret);
+			else
+				LOG_ERR("SPI1 Error: %d", spi_trancieve_ret);
+		}
+		else
 		{
             size_t size = sizeof(fifo_item_t);
             fifo_item_t *ptr = (fifo_item_t *) k_malloc(size);
