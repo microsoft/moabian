@@ -39,11 +39,9 @@ def pixel_to_meter_ratio(frame_size=256, field_of_view=1.05):
     return conversion
 
 
-def draw_ball(img, center, radius, hue):
-    bgr = hue_to_bgr(hue)
-    # 45 -> hsl(45°, 75%, 50%)
-    cv2.circle(img, center, 2, bgr, 2)
-    cv2.circle(img, center, int(radius), bgr, 2)
+def draw_ball(img, center, radius, color):
+    cv2.circle(img, center, 2, color, 2)
+    cv2.circle(img, center, int(radius), color, 2)
     return img
 
 
@@ -79,60 +77,46 @@ def hsv_detector(
         hue = calibration.ball_hue
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, tuple(kernel_size))
 
+    minDist = 20
+    param1 = 300
+    param2 = 30
+    minRadius = int(0.06 * frame_size)
+    maxRadius = int(0.22 * frame_size)
+
     def detect_features(img, hue=hue, debug=debug, filename="/tmp/camera/frame.jpg"):
-        # covert to HSV space
-        img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        img = cv2.medianBlur(img, 5)
+        gray_img = cv2.cvtColor(img[:,:,::-1], cv2.COLOR_BGR2GRAY)
+        circles = cv2.HoughCircles(gray_img, cv2.HOUGH_GRADIENT, 1, minDist=minDist, param1=param1, param2=param2, minRadius=minRadius, maxRadius=maxRadius)
 
-        # The hue_mask function follows CV2 convention and hue is in the range
-        # [0, 180] instead of [0, 360]
-        # run through each triplet and perform our masking filter on it.
-        # hue_mask coverts the hsv image into a grayscale image with a
-        # bandpass applied centered around hue, with width sigma
-        hue_mask(img_hsv, hue / 2, 0.05, 12.0, 4.0)
+        if circles is not None and circles.shape[1] > 0:
+            circles = np.uint(np.around(circles))
+            circles = circles[0]
+            # Consider the first circle to be the correct one
+            ball_detected = True
+            main_x, mainy, main_radius = circles[0]
 
-        # convert to b&w mask from grayscale image
-        mask = cv2.inRange(
-            img_hsv, np.array((200, 200, 200)), np.array((255, 255, 255))
-        )
+            if debug:
+                # Draw additional circles if necessary (useful for debugging)
+                if circles.shape[0] > 1:
+                    for x, y, radius in circles[1:]:
+                        # Draw the less important ones
+                        draw_ball(img, (x, y), radius, (255, 100, 100))
 
-        # expand b&w image with a dialation filter
-        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+                # Putting this last makes sure to draw this circle on top
+                draw_ball(img, (main_x, mainy), main_radius, (255, 0, 0))
+                
+                save_img(filename, img, rotated=False, quality=80)
 
-        contours = cv2.findContours(
-            mask,
-            cv2.RETR_EXTERNAL,
-            cv2.CHAIN_APPROX_SIMPLE,
-        )[-2]
+            center = Vector2(main_x, mainy).rotate(np.radians(-30))
+            center = pixels_to_meters(center, frame_size)
+            return ball_detected, (center, main_radius)
 
-        if len(contours) > 0:
-            contour_peak = max(contours, key=cv2.contourArea)
-            ((x_obs, y_obs), radius) = cv2.minEnclosingCircle(contour_peak)
-
-            # Determine if ball size is the appropriate size
-            norm_radius = radius / frame_size
-            if ball_min < norm_radius < ball_max:
-                ball_detected = True
-
-                # Convert from pixels to absolute with 0,0 as center of detected plate
-                x = x_obs - frame_size // 2
-                y = y_obs - frame_size // 2
-
-                if debug:
-                    ball_center_pixels = (int(x_obs), int(y_obs))
-                    draw_ball(img, ball_center_pixels, radius, hue)
-                    save_img(filename, img, rotated=False, quality=80)
-
-                # Rotate the x, y coordinates by -30 degrees
-                center = Vector2(x, y).rotate(np.radians(-30))
-                center = pixels_to_meters(center, frame_size)
-                return ball_detected, (center, radius)
-
-        # If there were no contours or no contours the size of the ball
-        ball_detected = False
-        if debug:
-            save_img(filename, img, rotated=False, quality=80)
-        return ball_detected, (Vector2(0, 0), 0.0)
-
+        else:
+            # If there were no contours or no contours the size of the ball
+            ball_detected = False
+            if debug:
+                save_img(filename, img, rotated=False, quality=80)
+            return ball_detected, (Vector2(0, 0), 0.0)
     return detect_features
 
 
