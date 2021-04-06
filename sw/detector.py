@@ -6,6 +6,7 @@ HSV filtering ball detector
 """
 
 import cv2
+import time
 import math
 import numpy as np
 from hsv import hue_to_bgr
@@ -64,36 +65,38 @@ def save_img(filepath, img, rotated=False, quality=80):
 def hsv_detector(
     calibration=None,
     frame_size=256,
-    kernel_size=[5, 5],
-    ball_min=0.06,
-    ball_max=0.22,
-    hue=None,  # hue [0..255]
+    hue=None,
     debug=False,
 ):
-    if calibration is None:
-        calibration = Calibration()
-    # if we haven't been overridden, use ballHue from calibration
-    if hue is None:
-        hue = calibration.ball_hue
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, tuple(kernel_size))
-
-    minDist = 20
+    dp = 1
+    min_dist = 10
     param1 = 300
     param2 = 30
-    minRadius = int(0.06 * frame_size)
-    maxRadius = int(0.22 * frame_size)
+    ball_min = 0.06  # Fraction of the image size
+    ball_max = 0.22  # Fraction of the image size
+    min_radius = int(ball_min * frame_size)
+    max_radius = int(ball_max * frame_size)
 
-    def detect_features(img, hue=hue, debug=debug, filename="/tmp/camera/frame.jpg"):
+    def detect_features(img, hue=None, debug=debug, filename="/tmp/camera/frame.jpg"):
         img = cv2.medianBlur(img, 5)
         gray_img = cv2.cvtColor(img[:,:,::-1], cv2.COLOR_BGR2GRAY)
-        circles = cv2.HoughCircles(gray_img, cv2.HOUGH_GRADIENT, 1, minDist=minDist, param1=param1, param2=param2, minRadius=minRadius, maxRadius=maxRadius)
+        circles = cv2.HoughCircles(
+            gray_img,
+            cv2.HOUGH_GRADIENT,
+            dp,
+            minDist=min_dist,
+            param1=param1,
+            param2=param2,
+            minRadius=min_radius,
+            maxRadius=max_radius
+        )
 
         if circles is not None and circles.shape[1] > 0:
             circles = np.uint(np.around(circles))
             circles = circles[0]
             # Consider the first circle to be the correct one
             ball_detected = True
-            main_x, mainy, main_radius = circles[0]
+            main_x, main_y, main_radius = circles[0]
 
             if debug:
                 # Draw additional circles if necessary (useful for debugging)
@@ -103,20 +106,27 @@ def hsv_detector(
                         draw_ball(img, (x, y), radius, (255, 100, 100))
 
                 # Putting this last makes sure to draw this circle on top
-                draw_ball(img, (main_x, mainy), main_radius, (255, 0, 0))
+                draw_ball(img, (main_x, main_y), main_radius, (255, 0, 0))
                 
                 save_img(filename, img, rotated=False, quality=80)
 
-            center = Vector2(main_x, mainy).rotate(np.radians(-30))
+            # Rescale to [-frame_size/2, +frame_size/2], rotate, then convert to meters
+            main_x -= frame_size // 2
+            main_y -= frame_size // 2
+            center = Vector2(main_x, main_y).rotate(np.radians(-30))
             center = pixels_to_meters(center, frame_size)
-            return ball_detected, (center, main_radius)
+            radius = main_radius
 
         else:
             # If there were no contours or no contours the size of the ball
             ball_detected = False
             if debug:
                 save_img(filename, img, rotated=False, quality=80)
-            return ball_detected, (Vector2(0, 0), 0.0)
+            center = Vector2(0, 0)
+            radius = 0.0
+
+        return ball_detected, (center, radius)
+
     return detect_features
 
 
