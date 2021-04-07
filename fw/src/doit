@@ -46,8 +46,10 @@ exec 2> >(tee "/tmp/stderr.log")
 # 3.0.25: Possible fix for critical SPI chip-select contention (controller vs peripheral)
 # 3.0.27: applying peter's CS fix
 # 3.0.28: spi_cfg.cs = NULL attempt
+# 3.0.29: skip
+# 3.0.30: Zephyr 2.1 patch for SPI CS peripheral mode
 
-VERSION="3.0.28"
+VERSION="3.0.30"
 
 # YRDDDHR: 2103908. 2021, 39th day of the year, 08th hour (PDT)
 TIMESTAMP=$(TZ='America/Los_Angeles' date +"%j%H%M")
@@ -82,7 +84,7 @@ install() {
 
         echo "Installing $DEST/$FN on moab"
         scp "$DEST/$FN" moab:$FN || echo "scp copy to moab failed"
-        sleep 1
+		sleep 5
         ssh moab "sudo moab/bin/flash /home/pi/$FN"
     fi 
 }
