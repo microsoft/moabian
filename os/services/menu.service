@@ -4,7 +4,7 @@ DefaultDependencies=false
 After=dhcpd.service
 
 [Service]
-Environment="MOABIAN=3.0.28"
+Environment="MOABIAN=3.0.30"
 Environment="PYTHONUNBUFFERED=1"
 WorkingDirectory=/home/pi/moab/sw
 ExecStart=/usr/bin/python3 menu.py --debug --verbose --reset
