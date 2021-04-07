@@ -48,6 +48,7 @@ exec 2> >(tee "/tmp/stderr.log")
 # 3.0.28: spi_cfg.cs = NULL attempt
 # 3.0.29: skip
 # 3.0.30: Zephyr 2.1 patch for SPI CS peripheral mode
+# "    ": compile against Zephyr 2.1 from this fork: https://github.com/scotstan/zephyr/tree/Moabian_SPI_v3_fixes
 
 VERSION="3.0.30"
 
