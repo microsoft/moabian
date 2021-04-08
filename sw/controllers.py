@@ -10,6 +10,7 @@ import logging as log
 from env import MoabEnv
 from common import Vector2
 
+
 class BrainNotFound(Exception):
     pass
 
@@ -29,6 +30,42 @@ def pid_controller(
         if ball_detected:
             action_x = Kp * x + Ki * sum_x + Kd * vel_x
             action_y = Kp * y + Ki * sum_y + Kd * vel_y
+            action_x = np.clip(action_x, -max_angle, max_angle)
+            action_y = np.clip(action_y, -max_angle, max_angle)
+
+            action = Vector2(action_x, action_y)
+
+        else:
+            # Move plate back to flat
+            action = Vector2(0, 0)
+
+        return action, {}
+
+    return next_action
+
+
+def pid_circle_controller(
+    Kp=75,  # Proportional coefficient
+    Ki=0.5,  # Integral coefficient
+    Kd=45,  # Derivative coefficient
+    max_angle=22,
+    **kwargs,
+):
+    degrees_per_second = 90
+    radius = 0.07  # Radius of circle to follow in meters
+    angle = 0
+
+    def next_action(state):
+        nonlocal angle
+        angle += (1 / 30) * np.radians(degrees_per_second)
+        x_desired, y_desired = radius * np.sin(angle), radius * np.cos(angle)
+
+        env_state, ball_detected, buttons = state
+        x, y, vel_x, vel_y, sum_x, sum_y = env_state
+
+        if ball_detected:
+            action_x = Kp * (x - x_desired) + Ki * sum_x + Kd * vel_x
+            action_y = Kp * (y - y_desired) + Ki * sum_y + Kd * vel_y
             action_x = np.clip(action_x, -max_angle, max_angle)
             action_y = np.clip(action_y, -max_angle, max_angle)
 

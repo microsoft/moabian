@@ -21,7 +21,13 @@ from calibrate import calibrate_controller
 from typing import Callable, Any, Union, Optional, List
 from procid import setup_signal_handlers, stop_doppelgänger
 from info_screen import info_screen_controller, info_config_controller
-from controllers import pid_controller, brain_controller, joystick_controller, BrainNotFound
+from controllers import (
+    pid_controller,
+    pid_circle_controller,
+    brain_controller,
+    joystick_controller,
+    BrainNotFound
+)
 
 LOG = logging.getLogger(__name__)
 
@@ -88,6 +94,12 @@ def build_menu(env, log_on, logfile):
         MenuOption(
             name="PID",
             closure=pid_controller,
+            kwargs={},
+            decorators=[log_csv] if log_on else None
+        ),
+        MenuOption(
+            name="PID Circle",
+            closure=pid_circle_controller,
             kwargs={},
             decorators=[log_csv] if log_on else None
         ),
