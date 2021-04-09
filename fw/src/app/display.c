@@ -45,7 +45,7 @@ static lv_style_t t4_style;      // big, offset 32 power_symbol
 int display_init()
 {
     // Although the lvgl docs say to call lv_init()
-    // It's already by called by this point
+    // It's already called by this point
 
     display_dev = device_get_binding(CONFIG_LVGL_DISPLAY_DEV_NAME);
     if (display_dev == NULL) {

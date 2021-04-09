@@ -121,7 +121,8 @@ static void plate_coerce_to_range(float* value, float low, float high)
 		*value = high;
 }
 
-
+// RVR: what's the difference between plate_servo_set_position and plate_servo_update_position?
+// The two functions have a lot of duplicated code that could be merged.
 static int plate_servo_set_position(u8_t id, float angle)
 {
 	int err = 0;
@@ -180,6 +181,7 @@ int plate_init(void)
 	unsigned char c;
 	int cal_invalid = 0;
 
+	// get device bindings and set-up IO pins ---------------------------------
 	plate_servo_en_dev = device_get_binding(SERVO_EN_PORT);
 
 	if (!plate_servo_en_dev) {
@@ -188,6 +190,7 @@ int plate_init(void)
 	}
 
 	gpio_pin_configure(plate_servo_en_dev, SERVO_EN_PIN, GPIO_DIR_OUT);
+	// RVR: Explixitly set inital state of SERVO_EN_PIN here?
 
 	pwm_dev = device_get_binding(DT_ALIAS_PWM_3_LABEL);
 	if (!pwm_dev) {
@@ -195,6 +198,8 @@ int plate_init(void)
 		return -1;
 	}
 	
+	// Load in calibration values for the three servos ------------------------
+
 	/* If there's no calibration data, we will leave these "default" values
 	as the calibration */
 	for (i=0; i<3; i++)
@@ -204,29 +209,36 @@ int plate_init(void)
 		servocal.servo_min[i] = TYPICAL_MIN;
 	}
 	
-	bank = 15;
+
+	bank = 15; // RVR: magic number for bank. Add to defines.
 	address = (OTP_BASE_ADDR + (OTP_BANK_SIZE * bank));
 	for (i=0; i<8; i++)
 	{
 		c = *(unsigned char *)address;
 		//LOG_INF ("0x%08X = %02X", address, c);
-		if (c == 0xFF) bank-=2;
-		else break;
+		if (c == 0xFF) 
+			bank-=2;
+		else 
+			break;
 		address = (OTP_BASE_ADDR + (OTP_BANK_SIZE * bank));
 	}
 	/* Actual servo calibration values are in increments of 5 so we will never
 	   see a value of 0xFF if the calibration data is present in OTP */
 	if (*(unsigned char *)address != 0xFF)
 	{
-		for (i=0; i<sizeof(servo_cal_t); i++) {
+		for (i=0; i<sizeof(servo_cal_t); i++) 
+		{
 			cal[i] = *(unsigned char *)address++;
 		}
 		memcpy(&servocal, &cal, sizeof(servo_cal_t));
 		for (i=0; i<3; i++) 
 		{
-			if ((servocal.servo_max[i] > MAXPULSEWIDTH) || (servocal.servo_max[i] < MINPULSEWIDTH)) cal_invalid = 1;
-			if ((servocal.servo_min[i] > MAXPULSEWIDTH) || (servocal.servo_min[i] < MINPULSEWIDTH)) cal_invalid = 1;
-			if ((servocal.servo_133[i] > MAXPULSEWIDTH) || (servocal.servo_133[i] < MINPULSEWIDTH)) cal_invalid = 1;
+			if ((servocal.servo_max[i] > MAXPULSEWIDTH) || (servocal.servo_max[i] < MINPULSEWIDTH)) 
+				cal_invalid = 1;
+			if ((servocal.servo_min[i] > MAXPULSEWIDTH) || (servocal.servo_min[i] < MINPULSEWIDTH)) 
+				cal_invalid = 1;
+			if ((servocal.servo_133[i] > MAXPULSEWIDTH) || (servocal.servo_133[i] < MINPULSEWIDTH)) 
+				cal_invalid = 1;
 		}
 	}
 	
@@ -242,14 +254,23 @@ int plate_init(void)
 	}
 
 	for (i=0; i<3; i++)	
-        LOG_INF ("Bank: %i Servo %i: Max %i Mid %i Min %i", bank, i, servocal.servo_max[i], servocal.servo_133[i], servocal.servo_min[i]);
+	{
+        LOG_INF ("Bank: %i Servo %i: Max %i Mid %i Min %i", 
+			bank, 
+			i, 
+			servocal.servo_max[i], 
+			servocal.servo_133[i], 
+			servocal.servo_min[i]);
+	}
+
+    // Apply calibration values found -----------------------------------------
 
 	servo_usec_degree[0] = (servocal.servo_max[0] - servocal.servo_min[0])/ARM_TRAVEL;
 	servo_usec_degree[1] = (servocal.servo_max[1] - servocal.servo_min[1])/ARM_TRAVEL;
 	servo_usec_degree[2] = (servocal.servo_max[2] - servocal.servo_min[2])/ARM_TRAVEL;
 
 	plate_servos[0].dev = pwm_dev;
-	plate_servos[0].pwm_channel = 1;
+	plate_servos[0].pwm_channel = 1; // RVR: magic numbers for channel. Recomend adding to define or enum.
 
 	plate_servos[1].dev = pwm_dev;
 	plate_servos[1].pwm_channel = 2;
@@ -257,9 +278,11 @@ int plate_init(void)
 	plate_servos[2].dev = pwm_dev;
 	plate_servos[2].pwm_channel = 3;
 
+    // set servos to inital default position ----------------------------------
+
     // Need to start with some defaults. We tried removing
     // but it's a load-bearing poster.
-	plate_servo_set_position(0, 150);
+	plate_servo_set_position(0, 150); // RVR: magic number for inital position. Recomend adding to define.
 	plate_servo_set_position(1, 150);
 	plate_servo_set_position(2, 150);
 

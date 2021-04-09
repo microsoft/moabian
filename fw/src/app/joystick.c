@@ -82,6 +82,9 @@ static int joy_button_init(struct device *gpio_dev)
     // gpio_pin_interrupt_configure is called here in the sample code
     // https://github.com/zephyrproject-rtos/zephyr/blob/master/samples/basic/button/src/main.c
     // why is it missing here?
+	
+	// RVR: gpio_pin_interrupt_configureis not yet present in v2.1 of Zephyr and was added in a later
+	// release. The current GPIO configuration is correct.
 
 	gpio_init_callback(&gpio_cb_joystick, joy_button_pressed, BIT(JOY_BTN_PIN));
 	gpio_add_callback(gpio_dev, &gpio_cb_joystick);
@@ -119,6 +122,7 @@ int joystick_position(int8_t* x_percent, int8_t* y_percent, joystick_cal_t *cal)
 	adc_table.buffer = &adc_buffer;
 	adc_table.buffer_size = sizeof(adc_buffer);
 
+	// read X and Y channels from the ADC -------------------------------------
 	if ((err = adc_read(adc, &adc_table)) != 0)
 		return err;
 
@@ -132,6 +136,9 @@ int joystick_position(int8_t* x_percent, int8_t* y_percent, joystick_cal_t *cal)
 
 	analog_val_y = adc_buffer;
 
+    // apply calibration ------------------------------------------------------
+
+	// remove offset error from raw ADC counts
 	if (cal)
 	{
 		analog_val_x -= (cal->x_error);
@@ -139,9 +146,11 @@ int joystick_position(int8_t* x_percent, int8_t* y_percent, joystick_cal_t *cal)
 
 	}
 
+	// convert counts to volts
 	float vx = analog_val_x * ADC_VOLT_BIT;
 	float vy = analog_val_y * ADC_VOLT_BIT;
 
+	// load in appropriate cal factor for applying gain correction
 	xscale = 1.0;
 	yscale = 1.0;
 
@@ -154,6 +163,10 @@ int joystick_position(int8_t* x_percent, int8_t* y_percent, joystick_cal_t *cal)
 	}
 
 	// Remove the joystick's calibrated offset error
+	// RVR: this is actually removing the gain error only. Offest error correction is done above.
+	// RVR: why not just assign to vx/vy again or another float? That way there is no need to
+	//      perform the over flow check. Just assign to y/x_percent after clamping to +/-100
+	//      Underflow can be eliminated by making analog_val_x/y a signed int16 instead of unsigned.
 	*x_percent = -(int8_t)(((vx - JOY_CENTER_VOLTS) * (100 / JOY_CENTER_VOLTS))/xscale);
 	*y_percent = -(int8_t)(((vy - JOY_CENTER_VOLTS) * (100 / JOY_CENTER_VOLTS))/yscale);
 
@@ -239,6 +252,7 @@ static void joy_task(void)
 	char c;
 	uint32_t address = (OTP_BASE_ADDR + (OTP_BANK_SIZE*bank));
 
+    // Read calibration from NVM ----------------------------------------------
 	/* Start searching for calibration data at bank 14 and work downwards. This
        makes sure we're always looking at the most recent valid calibration. */
 	bank = 14;
@@ -247,6 +261,7 @@ static void joy_task(void)
 		c = *(unsigned char *)address;
 
 		// 0xCB is a magic value that indicates the beginning of calibration data
+		// RVR: should add magic number to defines
 		if (c == 0xCB)
 		{
 			break;
@@ -275,6 +290,9 @@ static void joy_task(void)
 		}
 		memcpy(&calibration, &cal, sizeof(joystick_cal_t));
 	}
+
+
+	// init ADC and IO lines for reading joystick -----------------------------
 	joy_gpio_dev = device_get_binding(JOY_BTN_PORT);
 	if (!joy_gpio_dev)
 	{
@@ -296,7 +314,7 @@ static void joy_task(void)
 	if (adc_init() != 0)
 		LOG_ERR("ADC failed Init.");
 
-	// Read joystick at 60 Hz
+	// Read joystick at 62.5 Hz -----------------------------------------------
 	while(true)
 	{
 		if ((err = joystick_position(&joyx, &joyy, &calibration)) == 0)
@@ -313,4 +331,6 @@ static void joy_task(void)
 	}
 }
 
+// RVR: should use K_FP_REGS flag for thread definition as floating point math is done on this thread.
+// see https://docs.zephyrproject.org/2.1.0/reference/kernel/threads/index.html?highlight=k_thread_define#thread-options
 K_THREAD_DEFINE(joy_task_id, STACKSIZE, joy_task, NULL, NULL, NULL, PRIORITY, 0, K_NO_WAIT);
