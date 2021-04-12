@@ -95,8 +95,8 @@ def main(args):
 def parseArgs():
     p = argparse.ArgumentParser(
         prog="fan",
-        description="Turn on the fan when the CPU hits this temperature",
-        epilog="Ranges: TEMP [40, 80]; DELTA [0, 10]",
+        description="Manage fan speed as a function of Pi CPU temperature",
+        epilog="Ranges: TEMP [40, 60]; DELTA [15, 50]; TEMP + DELTA < 80",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
@@ -108,7 +108,7 @@ def parseArgs():
         default=55,
         action="store",
         metavar="TEMP",
-        help="setpoint in degrees Celsius",
+        help="Fan tuns on above TEMP in degrees Celsius",
     )
 
     p.add_argument(
@@ -119,7 +119,7 @@ def parseArgs():
         default=25,
         action="store",
         metavar="DELTA",
-        help="turn off fan at TEMP plus DELTA",
+        help="Fan will reach max speed at TEMP plus DELTA",
     )
 
     p.add_argument(
@@ -130,7 +130,7 @@ def parseArgs():
         default=5,
         action="store",
         metavar="SEC",
-        help="minimum run time for fan in seconds",
+        help="Period to poll fan speed and update fan speed setting in seconds",
     )
 
     args = p.parse_args()
