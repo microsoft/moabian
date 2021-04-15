@@ -7,5 +7,10 @@
 readonly _D="$(dirname "$(readlink -f "$0")")" && cd $_D
 
 cd ..
+echo "Stopping brains..."
 down
+echo "Starting brains..."
 up
+echo "Restarting Moab menu"
+bot fw_reset
+bot reset
