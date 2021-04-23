@@ -17,6 +17,7 @@ from env import MoabEnv
 from functools import partial
 from dataclasses import dataclass
 from log_csv import log_decorator
+from updater import update_controller
 from calibrate import calibrate_controller
 from typing import Callable, Any, Union, Optional, List
 from procid import setup_signal_handlers, stop_doppelgänger
@@ -138,6 +139,13 @@ def build_menu(env, log_on, logfile):
         MenuOption(
             name="Bot Info",
             closure=info_screen_controller,
+            kwargs={"env": env},
+            is_controller=False,
+            require_servos=False,
+        ),
+        MenuOption(
+            name="Update Bot",
+            closure=update_controller,
             kwargs={"env": env},
             is_controller=False,
             require_servos=False,
