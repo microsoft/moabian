@@ -7,6 +7,7 @@ import time
 
 def update_controller(env, **kwargs):
     subprocess.run(["git", "pull"])
+    subprocess.run(["/home/pi/moab/bin/restart"])
 
     def wait_for_menu():
         menu_button = False
