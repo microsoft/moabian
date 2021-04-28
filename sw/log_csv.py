@@ -9,7 +9,7 @@ from common import Vector2
 
 def log_decorator(fn, logfile="/tmp/log.csv"):
     # Add the header line
-    cols = ["tick", "dt"]  # Timing
+    cols = ["time", "tick", "dt"]  # Timing
     cols += ["x", "y", "vel_x", "vel_y"]  # State
     cols += ["pitch", "roll"]  # Action
     cols += ["status", "error_response"]  # Error status
@@ -25,8 +25,9 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
     # Acts like a normal controller function
     def decorated_fn(state):
         nonlocal prev_time, tick
-        dt = time.time() - prev_time
-        prev_time = time.time()
+        now = time.time()
+        dt = now - prev_time
+        prev_time = now
         tick += 1
 
         # Run the actual controller
@@ -45,10 +46,10 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
         # Deconstruct action
         pitch, roll = action
         # combine all to a list for the log
-        l = [tick, dt] + [x, y, vel_x, vel_y] + [pitch, roll] + [status, resp]
+        l = [now, tick, dt] + [x, y, vel_x, vel_y] + [pitch, roll] + [status, resp]
 
         # combine all to a list for the log
-        # l = [tick, dt] + state + action + [status + resp]
+        # l = [now, tick, dt] + state + action + [status + resp]
 
         # round floats to 5 digits
         l = [f"{n:8.5f}" if type(n) is float else n for n in l]
