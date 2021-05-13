@@ -155,7 +155,7 @@ def build_menu(env, log_on, logfile):
             require_servos=False,
         ),
     ]
-    print (bottom_menu)
+
     return top_menu + middle_menu + bottom_menu
 
 # color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
