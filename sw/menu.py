@@ -129,6 +129,18 @@ def build_menu(env, log_on, logfile):
 
     bottom_menu = [
         MenuOption(
+            name="IOT",
+            closure=brain_controller,
+            kwargs={"port": 5005, "alert_fn":alert_callback},
+            decorators=[log_csv] if log_on else none,
+        ),
+        MenuOption(
+            name="IOT2",
+            closure=brain_controller,
+            kwargs={"port": 5006, "alert_fn":alert_callback},
+            decorators=[log_csv] if log_on else none,
+        ),
+        MenuOption(
             name="Hue Info",
             closure=info_config_controller,
             kwargs={"env": env},
@@ -143,6 +155,7 @@ def build_menu(env, log_on, logfile):
             require_servos=False,
         ),
     ]
+    print (bottom_menu)
     return top_menu + middle_menu + bottom_menu
 
 # color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
