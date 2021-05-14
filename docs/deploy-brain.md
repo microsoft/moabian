@@ -61,7 +61,7 @@ enter to see the exported brain image in the list.
 
 ### Edit the docker-compose.yml file
 
-2. Select"**Open Folder**" as shown in the following screenshot.
+1. Select"**Open Folder**" as shown in the following screenshot.
 Alternatively, you can select **File** --> **Open**
 
     ![VSCodeOpen](images/VSCodeOpen.png)
@@ -74,21 +74,22 @@ Alternatively, you can select **File** --> **Open**
 1. Open the **docker-compose.yml** file by selecting in from the menu on
 the left.
 
-4. At line 10, delete `moab/brain` and copy/paste the container name of
-your exported brain (everything after the words `docker pull`) from the
-text editor, as in the following screenshots: 
+1. Uncomment lines 10 - 14 for a new custom brain section.  
+You can modify the container name on line 12 for a friendly name that will be displayed on the menu. If the `container name:` is not present, Moab will parse image name and display it on the menu instead.  
+
+1. On line 11, copy/paste the image name of your exported brain (everything after the words `docker pull`) from the text editor, as in the following screenshots: 
 
    ![DC1](images/DC1.png)
 
     ![DockerCompose](images/DockerCompose.png)
 
+1. Save the file.
 
 ### Restart your Moab and test your deployed brain
 
-1. In the terminal, type `down` and hit enter to terminate the Moab
-control service.
+1. In the terminal, type `sudo reboot now` and hit enter to restart the Moab control service.
 
-2. Type `up` and hit enter to restart the Moab control service.
+1. Test your new exported brain on your Moab hardware by selecting your custom brain name on your Moab menu (don’t forget your ping pong ball!).
 
-3. Test your new exported brain on your Moab hardware by selecting
-“**Custom 1**” on your Moab menu (don’t forget your ping pong ball!).
+[!NOTE]>
+>For additional brains,after doing your docker pull,  copy/paste lines 10-14, copy/paste your image name,  change "custom1:" and the 'container name:' to something unique and iterate the port.  
