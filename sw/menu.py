@@ -166,7 +166,6 @@ def build_menu(env, log_on, logfile):
             if (
                 (info["Names"] != "edgeHub")
                 and (info["Names"] != "edgeAgent")
-                and (info["Networks"] == "azure-iot-edge")
             ):
                 # check for port
                 if "Ports" in info.keys():
