@@ -28,8 +28,8 @@ readonly _P=$(dirname $_D)
 
 # Warn that this will remove all current brains
 
-# Stop moab
-sudo systemctl stop menu brain
+# Stop moab and related brain services
+sudo systemctl stop menu brain docker iotedge || true
 
 # Remove Docker's docker
 sudo apt-get purge -y docker-ce 
@@ -42,20 +42,19 @@ sudo cp /tmp/microsoft.list /etc/apt/sources.list.d
 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg
 sudo cp /tmp/microsoft.gpg /etc/apt/trusted.gpg.d
 
-# Install Microsof'ts docker "moby-engine"
+# Install docker "moby-engine"
 sudo apt-get update -y
 sudo apt-get install moby-engine -y
 
-# Reload build2020 brain
-wget https://github.com/microsoft/moabian/releases/download/v.2.4.0/brain.77b0.tar.gz
-docker load < brain.77b0.tar.gz
+# Reload default brain
+sudo systemctl start docker
+wget https://github.com/microsoft/moabian/releases/download/v.2.4.0/brain.77b0.tar.gz -O /tmp/brain.tar.gz
+docker load < /tmp/brain.tar.gz
 docker tag 77b0 moab/brain:latest
-rm brain.77b0.tar.gz
 
 # change branches
 cd ~/moab
 git checkout main
-git reset --hard HEAD
 git pull
 git checkout IOTPrototype
 bot reset
