@@ -1,0 +1,67 @@
+#!/bin/bash
+# vim:ft=sh ts=4 sw=4 et
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+# This script swaps Docker for Moby Engine
+
+set -euo pipefail   # unofficial bash strict mode
+
+require() { hash "$@" || exit 127; }
+println() { printf '%s\n' "$*"; }
+die()     { ret=$?; printf "%s\n" "$@" >&2; exit "$ret"; }
+
+# Run as non-root check
+[[ $EUID -eq 0 ]] || die "$0 run as pi user, not root"
+
+## Log script output
+exec 1> >(tee "/tmp/stdout.log")
+exec 2> >(tee "/tmp/stderr.log")
+
+## Set CWD to the location where this script is running
+## $_D -> full path to folder where script is 
+## $_P -> parent path (usually /home/pi/moab)
+readonly _D="$(dirname "$(readlink -f "$0")")" && cd "$_D"
+readonly _P=$(dirname $_D)
+
+# Warn that this will remove all current brains
+
+# Stop moab
+sudo systemctl stop menu brain
+
+# Remove Docker's docker
+sudo apt purge -y docker-ce 
+sudo apt autoremove -y
+sudo rm -rf /var/lib/docker /etc/docker
+
+# Add Microsoft as APT source for moby-engine
+curl https://packages.microsoft.com/config/debian/stretch/multiarch/prod.list > /tmp/microsoft.list
+sudo cp /tmp/microsoft.list /etc/apt/sources.list.d
+curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg
+sudo cp /tmp/microsoft.gpg /etc/apt/trusted.gpg.d
+
+# Install Microsof'ts docker "moby-engine"
+sudo apt update -y
+sudo apt install moby-engine -y
+
+# Reload build2020 brain
+wget https://github.com/microsoft/moabian/releases/download/v.2.4.0/brain.77b0.tar.gz
+docker load < brain.77b0.tar.gz
+docker tag 77b0 moab/brain:latest
+rm brain.77b0.tar.gz
+
+# change branches
+cd ~/moab
+git checkout main
+git reset --hard HEAD
+git pull
+git checkout IOTPrototype
+bot reset
+
+# restart Moab as-is
+sudo systemctl start brain menu
+
+# Finally install Azure IoT Edge
+# Not necessary if brains are managed via docker-compose.yml
+sudo apt-get install iotedge
