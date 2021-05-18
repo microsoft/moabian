@@ -23,7 +23,12 @@ from calibrate import calibrate_controller
 from typing import Callable, Any, Union, Optional, List
 from procid import setup_signal_handlers, stop_doppelgänger
 from info_screen import info_screen_controller, info_config_controller
-from controllers import pid_controller, brain_controller, joystick_controller, BrainNotFound
+from controllers import (
+    pid_controller,
+    brain_controller,
+    joystick_controller,
+    BrainNotFound,
+)
 
 LOG = logging.getLogger(__name__)
 
@@ -66,6 +71,7 @@ def squash_small_angles(controller_fn, min_angle=1.0):
 
     return decorated_controller
 
+
 def build_menu(env, log_on, logfile):
     log_csv = lambda fn: log_decorator(fn, logfile)
 
@@ -90,7 +96,7 @@ def build_menu(env, log_on, logfile):
             name="PID",
             closure=pid_controller,
             kwargs={},
-            decorators=[log_csv] if log_on else None
+            decorators=[log_csv] if log_on else None,
         ),
     ]
 
@@ -130,31 +136,39 @@ def build_menu(env, log_on, logfile):
 
     # Parse Azure IOT brains from docker ps and add to middle_menu
 
-    docker_ps = subprocess.Popen("docker ps --format '{{json .}}'",
-                            stdout=subprocess.PIPE, shell=True,universal_newlines=True)
+    docker_ps = subprocess.Popen(
+        "docker ps --format '{{json .}}'",
+        stdout=subprocess.PIPE,
+        shell=True,
+        universal_newlines=True,
+    )
     _iot_json = "["
     stdout = docker_ps.communicate()[0]
-    if  docker_ps.returncode == 0:
-        #split the json objects on the newline
+    if docker_ps.returncode == 0:
+        # split the json objects on the newline
         lines = stdout.splitlines()
 
-        for i,line in enumerate(lines):
-            _iot_json += line 
-            #add comma between each json object
+        for i, line in enumerate(lines):
+            _iot_json += line
+            # add comma between each json object
             if i != len(lines) - 1:
                 _iot_json += ","
 
-        #Add ending bracket for well-formed json
-        _iot_json +=  "]"
+        # Add ending bracket for well-formed json
+        _iot_json += "]"
 
-        #Load the json objects into a list
+        # Load the json objects into a list
         iot_dict = json.loads(_iot_json)
 
-        #parse the list
-        for x, info in enumerate(iot_dict): 
+        # parse the list
+        for x, info in enumerate(iot_dict):
 
-            if (info['Names'] != "edgeHub") and (info['Names'] != "edgeAgent") and (info['Networks'] == 'azure-iot-edge'):
-                #check for port
+            if (
+                (info["Names"] != "edgeHub")
+                and (info["Names"] != "edgeAgent")
+                and (info["Networks"] == "azure-iot-edge")
+            ):
+                # check for port
                 if "Ports" in info.keys():
                     # port format: 'Ports': '0.0.0.0:5005->5000/tcp, :::5005->5000/tcp'
                     splitports = info["Ports"]
@@ -162,26 +176,26 @@ def build_menu(env, log_on, logfile):
                     if splitports is not None:
                         # split on comma first - 0.0.0.0:5005->5000/tcp
                         splitport_1 = splitports.split(",")[0]
-                        #split next on arrow - 0.0.0.0:5005
+                        # split next on arrow - 0.0.0.0:5005
                         splitport_2 = splitport_1.split("->")[0]
-                        #finally split on colon and take last element - 5005
+                        # finally split on colon and take last element - 5005
                         port = splitport_2.split(":")[1]
 
-                #split image on slashes
+                # split image on slashes
                 slashes = info["Image"].split("/")
 
                 # if image tag or no slashes, use the image name
                 if slashes is not None and len(slashes) == 1:
                     menu_name = info["image"]
                 else:
-                    #split on colon
+                    # split on colon
                     colon = slashes[-1].split(":")
                     menu_name = colon[0]
 
                 m = MenuOption(
                     name=menu_name,
                     closure=brain_controller,
-                    kwargs={"port": port, "alert_fn":alert_callback},
+                    kwargs={"port": port, "alert_fn": alert_callback},
                     decorators=[log_csv] if log_on else none,
                 )
                 middle_menu.append(m)
@@ -217,9 +231,11 @@ def build_menu(env, log_on, logfile):
 
     return top_menu + middle_menu + bottom_menu
 
+
 # color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
 out = partial(click.secho, bold=False, err=True)
 err = partial(click.secho, fg="red", err=True)
+
 
 def alert_callback(is_error):
     if is_error:
@@ -277,11 +293,7 @@ def _handle_debug(ctx, param, debug):
     default=True,
     help=("Enables or disables the logging as specified by -f/--file"),
 )
-@click.option(
-    "-r",
-    "--reset/--no-reset",
-    help="Reset Moab firmware on start"
-)
+@click.option("-r", "--reset/--no-reset", help="Reset Moab firmware on start")
 @click.option(
     "-v",
     "--verbose",
@@ -389,7 +401,7 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                             action, info = controller((state, detected, buttons))
                             state, detected, buttons = env.step(action)
                     except BrainNotFound:
-                        print(f'caught BrainNotFound in loop')
+                        print(f"caught BrainNotFound in loop")
 
                     env.hat.go_up()
                 else:
