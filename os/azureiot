@@ -6,6 +6,7 @@
 
 # This script swaps Docker for Moby Engine
 
+set -v
 set -euo pipefail   # unofficial bash strict mode
 
 require() { hash "$@" || exit 127; }
@@ -13,7 +14,7 @@ println() { printf '%s\n' "$*"; }
 die()     { ret=$?; printf "%s\n" "$@" >&2; exit "$ret"; }
 
 # Run as non-root check
-[[ $EUID -eq 0 ]] || die "$0 run as pi user, not root"
+[[ $EUID -ne 0 ]] || die "$0 run as pi user, not root"
 
 ## Log script output
 exec 1> >(tee "/tmp/stdout.log")
@@ -31,8 +32,8 @@ readonly _P=$(dirname $_D)
 sudo systemctl stop menu brain
 
 # Remove Docker's docker
-sudo apt purge -y docker-ce 
-sudo apt autoremove -y
+sudo apt-get purge -y docker-ce 
+sudo apt-get autoremove -y
 sudo rm -rf /var/lib/docker /etc/docker
 
 # Add Microsoft as APT source for moby-engine
@@ -42,8 +43,8 @@ curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/mi
 sudo cp /tmp/microsoft.gpg /etc/apt/trusted.gpg.d
 
 # Install Microsof'ts docker "moby-engine"
-sudo apt update -y
-sudo apt install moby-engine -y
+sudo apt-get update -y
+sudo apt-get install moby-engine -y
 
 # Reload build2020 brain
 wget https://github.com/microsoft/moabian/releases/download/v.2.4.0/brain.77b0.tar.gz
@@ -64,4 +65,4 @@ sudo systemctl start brain menu
 
 # Finally install Azure IoT Edge
 # Not necessary if brains are managed via docker-compose.yml
-sudo apt-get install iotedge
+sudo apt-get install -y iotedge
