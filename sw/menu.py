@@ -21,7 +21,12 @@ from calibrate import calibrate_controller
 from typing import Callable, Any, Union, Optional, List
 from procid import setup_signal_handlers, stop_doppelgänger
 from info_screen import info_screen_controller, info_config_controller
-from controllers import pid_controller, brain_controller, joystick_controller, BrainNotFound
+from controllers import (
+    pid_controller,
+    brain_controller,
+    joystick_controller,
+    BrainNotFound,
+)
 
 LOG = logging.getLogger(__name__)
 
@@ -43,6 +48,23 @@ class MenuOption:
 class MenuState(Enum):
     first_level = 1  # In the main menu screen (selecting beteween menu options)
     second_level = 2  # Inside a controller or 'modal' (running the fn from MenuOption)
+
+
+# @dataclass
+# class MenuOption:
+#     name: str
+
+#     # Whether the menu item requires control of physical buttons/joystick (ie joystick controller or calibrate needing buttons)
+#     capture_joystick: bool = False
+#     capture_menu_button: bool = False
+#     capture_joy_button: bool = False
+
+#     # Allow switching in and out of this menu item while the item is running
+#     # ?? don't have a thing for this?
+#     allow_quick_switch: bool = False
+
+#     # Function to run after exiting level 2 menu
+#     on_exit: Optional[Callable] = None
 
 
 def squash_small_angles(controller_fn, min_angle=1.0):
@@ -89,7 +111,7 @@ def build_menu(env, log_on, logfile):
             name="PID",
             closure=pid_controller,
             kwargs={},
-            decorators=[log_csv] if log_on else None
+            decorators=[log_csv] if log_on else None,
         ),
     ]
 
@@ -122,7 +144,7 @@ def build_menu(env, log_on, logfile):
             m = MenuOption(
                 name=menu_name,
                 closure=brain_controller,
-                kwargs={"port": port, "alert_fn":alert_callback},
+                kwargs={"port": port, "alert_fn": alert_callback},
                 decorators=[log_csv] if log_on else none,
             )
             middle_menu.append(m)
@@ -145,9 +167,11 @@ def build_menu(env, log_on, logfile):
     ]
     return top_menu + middle_menu + bottom_menu
 
+
 # color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
 out = partial(click.secho, bold=False, err=True)
 err = partial(click.secho, fg="red", err=True)
+
 
 def alert_callback(is_error):
     if is_error:
@@ -205,11 +229,7 @@ def _handle_debug(ctx, param, debug):
     default=True,
     help=("Enables or disables the logging as specified by -f/--file"),
 )
-@click.option(
-    "-r",
-    "--reset/--no-reset",
-    help="Reset Moab firmware on start"
-)
+@click.option("-r", "--reset/--no-reset", help="Reset Moab firmware on start")
 @click.option(
     "-v",
     "--verbose",
@@ -248,15 +268,16 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
 
         # Default menu raises the plate to alert the user the system is ready
         if cont == -1:
-            env.hat.enable_servos()
-            env.hat.go_up()
-            buttons = env.hat.get_buttons()
+            env.hardware.hat.enable_servos()
+            env.hardware.go_up()
+            buttons = env.hardware.hat.get_buttons()
             time.sleep(1 / env.frequency)
-            env.hat.disable_servos()
+            env.hardware.hat.disable_servos()
 
         while True:
             time.sleep(1 / env.frequency)
 
+            # In the first level of the menu (select between menu options)
             if current == MenuState.first_level:
                 # Depends on if it's the first/last icon
                 if index == 0:
@@ -266,27 +287,28 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                 else:
                     icon = Icon.UP_DOWN
 
+                # Only update text and icon if it has changed
                 if last_index != index:
-                    env.hat.display_string_icon(menu_list[index].name, icon)
+                    env.hardware.display(menu_list[index].name, icon)
                     last_index = index
 
                 # Noop is needed since display string only sends msg when it has
                 # a new string (different from previous string)
-                env.hat.noop()
-                buttons = env.hat.get_buttons()
+                env.hardware.hat.noop()
+                buttons = env.hardware.hat.get_buttons()
 
-                if buttons.joy_button:  # Selected controller
+                if buttons.joy_button:  # Enter the menu option
                     current = MenuState.second_level
-                elif buttons.joy_y < -0.8:  # Flicked joystick down
+                elif buttons.joy_y < -0.8:  # Flick joystick down
                     index = min(index + 1, len(menu_list) - 1)
                     time.sleep(0.1)
-                elif buttons.joy_y > 0.8:  # Flicked joystick up
+                elif buttons.joy_y > 0.8:  # Flick joystick up
                     index = max(index - 1, 0)
                     time.sleep(0.1)
 
             else:  # current == MenuState.second_level:
                 if menu_list[index].require_servos:
-                    env.hat.enable_servos()
+                    env.hardware.hat.enable_servos()
 
                 # Reset the controller
                 if menu_list[index].is_controller:
@@ -317,9 +339,9 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                             action, info = controller((state, detected, buttons))
                             state, detected, buttons = env.step(action)
                     except BrainNotFound:
-                        print(f'caught BrainNotFound in loop')
+                        print(f"caught BrainNotFound in loop")
 
-                    env.hat.go_up()
+                    env.hardware.go_up()
                 else:
                     # If not a controller, let it do it's own thing. We assume
                     # it's a blocking call that will return when menu is pressed
@@ -330,7 +352,7 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                 last_index = -1
 
                 if menu_list[index].require_servos:
-                    env.hat.disable_servos()
+                    env.hardware.hat.disable_servos()
 
 
 if __name__ == "__main__":

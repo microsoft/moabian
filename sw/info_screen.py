@@ -36,31 +36,31 @@ def info_screen_controller(env, **kwargs):
     sw_major, sw_minor, sw_bug = _get_sw_version()
     ip = _get_host_ip()
     s = f"VER {sw_major}.{sw_minor}.{sw_bug}\nIP {ip}"
-    env.hat.display_long_string(s)
+    env.hardware.display(s, scrolling=True)
 
     def wait_for_menu():
         menu_button = False
         while not menu_button:
             sleep(1 / env.frequency)
-            env.hat.noop()
-            menu_button, joy_button, joy_x, joy_y = env.hat.get_buttons()
+            env.hardware.hat.noop()
+            menu_button, joy_button, joy_x, joy_y = env.hardware.hat.get_buttons()
 
     return wait_for_menu
 
 
 def info_config_controller(env, **kwargs):
-    so = env.servo_offsets
-    s = f"HUE {env.hue}"
+    so = env.hardware.servo_offsets
+    s = f"HUE {env.hardware.hue}"
     # s += f"\nX,Y {env.plate_offsets_pixels[0]},{env.plate_offsets_pixels[1]}"
     s += f"\nSERVOS {so[0]:.0f}, {so[1]:.0f}, {so[2]:.0f}"
-    env.hat.display_long_string(s)
+    env.hardware.display(s, scrolling=True)
 
     def wait_for_menu():
         menu_button = False
         while not menu_button:
             sleep(1 / env.frequency)
-            env.hat.noop()
-            menu_button, joy_button, joy_x, joy_y = env.hat.get_buttons()
+            env.hardware.hat.noop()
+            menu_button, joy_button, joy_x, joy_y = env.hardware.hat.get_buttons()
 
     return wait_for_menu
 
@@ -70,12 +70,12 @@ def sequence(env, msec=1 / 20):
     info_screen_controller(env)
     for x in range(randint(1, 5)):
         sleep(msec)
-        env.hat.noop()
+        env.hardware.hat.noop()
 
     info_config_controller(env)
     for x in range(randint(1, 15)):
         sleep(msec)
-        env.hat.noop()
+        env.hardware.hat.noop()
 
 
 def main():
@@ -83,7 +83,7 @@ def main():
         for x in range(10):
             sequence(env)
 
-        env.hat.display_string("done")
+        env.hardware.display("done")
 
 
 if __name__ == "__main__":
