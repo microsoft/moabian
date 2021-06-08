@@ -185,7 +185,7 @@ def build_menu(env, log_on, logfile):
 
                 # if image tag or no slashes, use the image name
                 if slashes is not None and len(slashes) == 1:
-                    menu_name = info["image"]
+                    menu_name = info["Image"]
                 else:
                     # split on colon
                     colon = slashes[-1].split(":")
