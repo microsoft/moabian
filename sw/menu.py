@@ -268,11 +268,10 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
 
         # Default menu raises the plate to alert the user the system is ready
         if cont == -1:
-            env.hardware.hat.enable_servos()
+            env.hardware.enable_servos()
             env.hardware.go_up()
-            buttons = env.hardware.hat.get_buttons()
-            time.sleep(1 / env.frequency)
-            env.hardware.hat.disable_servos()
+            buttons = env.hardware.get_buttons()
+            env.hardware.disable_servos()
 
         while True:
             time.sleep(1 / env.frequency)
@@ -292,11 +291,7 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                     env.hardware.display(menu_list[index].name, icon)
                     last_index = index
 
-                # Noop is needed since display string only sends msg when it has
-                # a new string (different from previous string)
-                env.hardware.hat.noop()
-                buttons = env.hardware.hat.get_buttons()
-
+                buttons = env.hardware.get_buttons()
                 if buttons.joy_button:  # Enter the menu option
                     current = MenuState.second_level
                 elif buttons.joy_y < -0.8:  # Flick joystick down
@@ -308,7 +303,7 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
 
             else:  # current == MenuState.second_level:
                 if menu_list[index].require_servos:
-                    env.hardware.hat.enable_servos()
+                    env.hardware.enable_servos()
 
                 # Reset the controller
                 if menu_list[index].is_controller:
@@ -352,7 +347,7 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                 last_index = -1
 
                 if menu_list[index].require_servos:
-                    env.hardware.hat.disable_servos()
+                    env.hardware.disable_servos()
 
 
 if __name__ == "__main__":

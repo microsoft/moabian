@@ -22,7 +22,7 @@ from common import Vector2
 from detector import hsv_detector
 from controllers import pid_controller
 from dataclasses import dataclass, astuple
-from hat import Hat, plate_angles_to_servo_positions
+from hardware import plate_angles_to_servo_positions
 
 
 @dataclass
@@ -193,20 +193,18 @@ def read_calibration(calibration_file="bot.json"):
     return calibration_dict
 
 
-def wait_for_joystick_or_menu(hat, sleep_time=1 / 30):
+def wait_for_joystick_or_menu(hardware, sleep_time=1 / 30):
     """Waits for either the joystick or the menu. Returns the buttons"""
     while True:
-        hat.noop()  # Force new transfer to have up to date button reading
-        buttons = hat.get_buttons()
+        buttons = hardware.get_buttons()
         if buttons.menu_button or buttons.joy_button:
             return buttons
         time.sleep(sleep_time)
 
 
-def wait_for_menu(hat, sleep_time=1 / 30):
+def wait_for_menu(hardware, sleep_time=1 / 30):
     while True:
-        hat.noop()  # Force new transfer to have up to date button reading
-        menu_button, joy_button, joy_x, joy_y = hat.get_buttons()
+        menu_button, joy_button, joy_x, joy_y = hardware.get_buttons()
         time.sleep(sleep_time)
         if menu_button:
             return
@@ -214,37 +212,37 @@ def wait_for_menu(hat, sleep_time=1 / 30):
 
 def run_calibration(env, pid_fn, calibration_file):
     # Get some hidden things from env
-    hat = env.hat
-    camera_fn = env.camera
-    detector_fn = env.detector
+    hardware = env.hardware
+    camera_fn = hardware.camera
+    detector_fn = hardware.detector
 
-    def is_menu_down(hat=hat) -> bool:
-        hat.noop()
-        return hat.get_buttons().menu_button
+    def is_menu_down(hardware=hardware) -> bool:
+        return hardware.get_buttons().menu_button
 
     # lift plate up first
-    hat.set_angles(0, 0)
+    hardware.set_angles(0, 0)
 
     # Display message and wait for joystick
-    hat.display_long_string(
-        "put ball on stand\nclick joystick"
+    hardware.display(
+        "put ball on stand\nclick joystick",
         # "Place ball in\ncenter using\nclear stand.\n\n" "Click joystick\nwhen ready."
+        scrolling=True
     )
-    buttons = wait_for_joystick_or_menu(hat)
+    buttons = wait_for_joystick_or_menu(hardware)
     if buttons.menu_button:  # Early quit
-        hat.go_up()
+        hardware.go_up()
         return
 
-    hat.display_string("Calibrating...")
+    hardware.display("Calibrating...")
     hue_calib = calibrate_hue(camera_fn, detector_fn, is_menu_down)
     if hue_calib.early_quit:
-        hat.go_up()
+        hardware.go_up()
         return
 
     # Calibrate position
     pos_calib = calibrate_pos(camera_fn, detector_fn, hue_calib.hue, is_menu_down)
     if pos_calib.early_quit:
-        hat.go_up()
+        hardware.go_up()
         return
 
     # Save calibration
@@ -256,12 +254,12 @@ def run_calibration(env, pid_fn, calibration_file):
 
     # Update the environment to use the new calibration
     # Warning! This mutates the state!
-    env.reset_calibration(calibration_file=calibration_file)
+    hardware.reset_calibration(calibration_file=calibration_file)
 
     if pos_calib.success and hue_calib.success:  # and servo_calib.success:
-        hat.display_long_string(f"Ok! Ball hue={hue_calib.hue}\nClick menu...")
+        hardware.display(f"Ok! Ball hue={hue_calib.hue}\nClick menu...", scrolling=True)
     elif not (pos_calib.success or hue_calib.success):  # or servo_calib.success):
-        hat.display_long_string("Calibration failed\nClick menu...")
+        hardware.display("Calibration failed\nClick menu...", scrolling=True)
     else:
         hue_str = (
             f"Hue calib:\nsuccessful\nBall hue = {hue_calib.hue}\n\n"
@@ -273,11 +271,12 @@ def run_calibration(env, pid_fn, calibration_file):
             if hue_calib.success
             else "(X, Y) calib:\nfailed\n\n"
         )
-        hat.display_long_string(
+        hardware.display(
             "Calibration\npartially succeeded\n\n"
             + hue_str
             + pos_str
-            + "Click menu\nto return...\n"
+            + "Click menu\nto return...\n",
+            scrolling=True
         )
 
     # When the calibration is complete, save the image of what the moab camera
@@ -297,7 +296,7 @@ def run_calibration(env, pid_fn, calibration_file):
     # the cache. TODO: added this while searching for a state bug
     detector_fn(img_frame, hue=hue_calib.hue + 1, debug=True, filename=filename)
 
-    hat.go_up()
+    hardware.go_up()
 
 
 def run_servo_calibration(env, pid_fn, calibration_file):
@@ -305,27 +304,28 @@ def run_servo_calibration(env, pid_fn, calibration_file):
     raise NotImplementedError
 
     # Get some hidden things from env
-    hat = env.hat
-    camera_fn = env.camera
-    detector_fn = env.detector
+    hardware = env.hardware
+    camera_fn = hardware.camera
+    detector_fn = hardware.detector
 
     # Start the calibration with uncalibrated servos
-    hat.set_servo_offsets(0, 0, 0)
+    hardware.servo_offsets = (0, 0, 0)
     # lift plate up fist
-    hat.set_angles(0, 0)
+    hardware.set_angles(0, 0)
 
     # Calibrate servo offsets
-    hat.display_long_string(
+    hardware.display(
         "Calibarating\nservos\n\n"
         "Place ball in\ncenter without\n stand.\n\n"
-        "Click joystick\nto continue."
+        "Click joystick\nto continue.",
+        scrolling=True
     )
-    buttons = wait_for_joystick_or_menu(hat)
+    buttons = wait_for_joystick_or_menu(hardware)
     if buttons.menu_button:  # Early quit
-        hat.go_up()
+        hardware.go_up()
         return
 
-    hat.display_long_string("Calibrating\nservos...")
+    hardware.display("Calibrating\nservos...", scrolling=True)
     servo_calib = calibrate_servo_offsets(pid_fn, env)
 
     # Save calibration
@@ -339,15 +339,16 @@ def run_servo_calibration(env, pid_fn, calibration_file):
     env.reset_calibration(calibration_file=calibration_file)
 
     if servo_calib.success:
-        hat.display_long_string(
+        hardware.display(
             f"servo offsets =\n({s1:.2f}, {s2:.2f}, {s3:.2f})\n\n"
-            "Click menu\nto return...\n"
+            "Click menu\nto return...\n",
+            scrolling=True
         )
         print(f"servo offsets =\n({s1:.2f}, {s2:.2f}, {s3:.2f})")
     else:
-        hat.display_long_string("Calibration\nfailed\n\nClick menu\nto return...")
+        hardware.display("Calibration\nfailed\n\nClick menu\nto return...", scrolling=True)
 
-    hat.go_up()
+    hardware.go_up()
 
 
 def calibrate_controller(**kwargs):
@@ -360,20 +361,19 @@ def calibrate_controller(**kwargs):
     def wait_for_menu_and_stream():
         # Get some hidden things from env to be able to stream the calib results
         env = kwargs["env"]
-        hat = env.hat
-        camera_fn = env.camera
-        detector_fn = env.detector
+        hardware = env.hardware
+        camera_fn = hardware.camera
+        detector_fn = hardware.detector
 
         menu_button = False
         while not menu_button:
             img_frame, _ = camera_fn()
             detector_fn(img_frame, debug=True)  # Save to streaming
 
-            hat.noop()
-            menu, joy, _, _ = hat.get_buttons()
+            menu, joy, _, _ = hardware.get_buttons()
             if menu or joy:
                 break
-        hat.go_up()
+        env.hardware.go_up()
 
     return wait_for_menu_and_stream
 
@@ -384,13 +384,13 @@ def main(calibration_file, frequency=30, debug=True):
     with MoabEnv(frequency=frequency, debug=debug) as env:
         env.step((0, 0))
         time.sleep(0.2)
-        env.hat.enable_servos()
+        env.hardware.enable_servos()
         time.sleep(0.2)
-        env.hat.set_servos(133, 133, 133)
+        env.hardware.set_servos(133, 133, 133)
 
         run_calibration(env, pid_fn, calibration_file)
 
-        env.hat.disable_servos()
+        env.hardware.disable_servos()
 
 
 if __name__ == "__main__":  # Parse command line args

@@ -107,6 +107,12 @@ def pad(*args, **kwargs):
 
 
 class Hat:
+    """
+    A helper class that solely does SPI messages. It contains some state for the
+    SPI connection, GPIO pins, and saves responses from the hat. Nothing at a
+    higher level of abstraction should be done here.
+    """
+    
     def __init__(
         self,
         debug=False,
@@ -206,13 +212,7 @@ class Hat:
     def set_servos(
         self,
         servos: Tuple[float, float, float],
-        offsets: Optional[Tuple[float, float, float]] = None,
     ):
-        if offsets is not None:
-            servos[0] += offsets[0]
-            servos[1] += offsets[1]
-            servos[2] += offsets[2]
-
         # Note the off by 1 for indexing
         # Use fixed point 16-bit numbers, with precision of hundredths
         servo1_centi_degrees = np.int16(servos[0] * 100)
