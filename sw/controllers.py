@@ -150,9 +150,9 @@ def brain_controller_quick_switch(
     else:
         raise ValueError(f"{port} must be an int or a tuple of ints")
 
-    port1_controller = _brain_controller(port=port1, **kwargs)
-    port2_controller = _brain_controller(port=port2, **kwargs)
-    pid_controller = pid_controller(**kwargs)
+    port1_controller_fn = _brain_controller(port=port1, **kwargs)
+    port2_controller_fn = _brain_controller(port=port2, **kwargs)
+    pid_controller_fn = pid_controller(**kwargs)
 
     prediction_url1 = f"http://localhost:{port1}/v1/prediction"
     prediction_url2 = f"http://localhost:{port2}/v1/prediction"
@@ -170,12 +170,12 @@ def brain_controller_quick_switch(
             status_code2 = 400  # In case the port doesn't work at all
 
         if status_code1 == 200:
-            return port1_controller(state)
+            return port1_controller_fn(state)
         elif status_code2 == 200:
-            return port2_controller(state)
+            return port2_controller_fn(state)
         else:
             # If neither port works fall back to PID controller
-            return pid_controller(state)
+            return pid_controller_fn(state)
 
     return next_action
 
