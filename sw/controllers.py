@@ -157,23 +157,27 @@ def brain_controller_quick_switch(
     prediction_url1 = f"http://localhost:{port1}/v1/prediction"
     prediction_url2 = f"http://localhost:{port2}/v1/prediction"
 
+    current_controller = 1  # Start by trying the first port
+
     def next_action(state):
+        nonlocal current_controller
         (x, y, vx, vy, _, _), ball_detected, buttons = state
         observables = {"ball_x": x, "ball_y": y, "ball_vel_x": vx, "ball_vel_y": vy}
-        try:
-            status_code1 = requests.get(prediction_url1, json=observables).status_code
-        except:
-            status_code1 = 400  # In case the port doesn't work at all
-        try:
-            status_code2 = requests.get(prediction_url2, json=observables).status_code
-        except:
-            status_code2 = 400  # In case the port doesn't work at all
 
-        if status_code1 == 200:
-            return port1_controller_fn(state)
-        elif status_code2 == 200:
-            return port2_controller_fn(state)
-        else:
+        try:
+            if current_controller == 1:
+                return port1_controller_fn(state)
+            else:
+                return port2_controller_fn(state)
+        except:
+            if current_controller == 1:
+                current_controller = 2
+            else:
+                current_controller = 1
+
+            # Note: just getting here requires you to run brain controller...
+            #       so the timing even when fallling back to pid is going to be
+            #       longer than usual.
             # If neither port works fall back to PID controller
             return pid_controller_fn(state)
 
