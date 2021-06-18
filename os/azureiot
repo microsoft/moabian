@@ -62,6 +62,5 @@ bot reset
 # restart Moab as-is
 sudo systemctl start brain menu
 
-# Finally install Azure IoT Edge
-# Not necessary if brains are managed via docker-compose.yml
-sudo apt-get install -y iotedge
+# Azure IoT Edge version 1.2
+sudo apt-get install -y aziot-edge
