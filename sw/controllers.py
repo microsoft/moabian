@@ -52,7 +52,7 @@ def joystick_controller(max_angle=16, **kwargs):
     return next_action
 
 
-def brain_controller(
+def _brain_controller(
     max_angle=22,
     port=5555,
     alert_fn=lambda toggle: None,
@@ -121,3 +121,90 @@ def brain_controller(
         return action, info
 
     return next_action
+
+def brain_pid_hybrid_controller(
+    max_angle=22,
+    port=5000,
+    alert_fn=lambda toggle: None,
+    **kwargs,
+):
+    brain_fn = _brain_controller(port=port, **kwargs)
+    pid_fn = pid_controller(**kwargs)
+
+    def next_action(state):
+        (x, y, vx, vy, _, _), ball_detected, buttons = state
+        observables = {"ball_x": x, "ball_y": y, "ball_vel_x": vx, "ball_vel_y": vy}
+
+        try:
+            return brain_fn(state)
+        except:
+            return pid_fn(state)
+
+    return next_action
+
+def brain_controller_quick_switch(
+    max_angle=22,
+    port=5000,
+    alert_fn=lambda toggle: None,
+    **kwargs,
+):
+    """
+    This class interfaces with an HTTP server running locally.
+    It passes the current hardware state and gets new plate
+    angles in return.
+
+    The hardware state is unprojected from camera pixel space
+    back to real space by using the calculated plate surface plane.
+
+
+    This works the same as brain controller but will switch between a pair of two
+    ports depending on which one is active/working.
+
+    If port is a single number the spillover is port + 1.
+    """
+    if isinstance(port, tuple):
+        port1, port2 = port
+    elif isinstance(int(port), int):
+        port1, port2 = int(port), int(port) + 1
+    else:
+        raise ValueError(f"{port} must be an int or a tuple of ints")
+
+    port1_controller_fn = _brain_controller(port=port1, **kwargs)
+    port2_controller_fn = _brain_controller(port=port2, **kwargs)
+    pid_controller_fn = pid_controller(**kwargs)
+
+    prediction_url1 = f"http://localhost:{port1}/v1/prediction"
+    prediction_url2 = f"http://localhost:{port2}/v1/prediction"
+
+    current_controller = 1  # Start by trying the first port
+
+    def next_action(state):
+        nonlocal current_controller
+        (x, y, vx, vy, _, _), ball_detected, buttons = state
+        observables = {"ball_x": x, "ball_y": y, "ball_vel_x": vx, "ball_vel_y": vy}
+
+        try:
+            if current_controller == 1:
+                return port1_controller_fn(state)
+            else:
+                return port2_controller_fn(state)
+        except:
+            if current_controller == 1:
+                current_controller = 2
+            else:
+                current_controller = 1
+
+            # Note: just getting here requires you to run brain controller...
+            #       so the timing even when fallling back to pid is going to be
+            #       longer than usual.
+            # If neither port works fall back to PID controller
+            return pid_controller_fn(state)
+
+    return next_action
+
+
+# Export as the default brain controller
+#brain_controller = brain_controller_quick_switch
+brain_controller = brain_pid_hybrid_controller
+
+
