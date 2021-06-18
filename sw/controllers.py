@@ -122,6 +122,25 @@ def _brain_controller(
 
     return next_action
 
+def brain_pid_hybrid_controller(
+    max_angle=22,
+    port=5000,
+    alert_fn=lambda toggle: None,
+    **kwargs,
+):
+    brain_fn = _brain_controller(port=port, **kwargs)
+    pid_fn = pid_controller(**kwargs)
+
+    def next_action(state):
+        (x, y, vx, vy, _, _), ball_detected, buttons = state
+        observables = {"ball_x": x, "ball_y": y, "ball_vel_x": vx, "ball_vel_y": vy}
+
+        try:
+            return brain_fn(state)
+        except:
+            return pid_fn(state)
+
+    return next_action
 
 def brain_controller_quick_switch(
     max_angle=22,
@@ -140,7 +159,7 @@ def brain_controller_quick_switch(
 
     This works the same as brain controller but will switch between a pair of two
     ports depending on which one is active/working.
-    
+
     If port is a single number the spillover is port + 1.
     """
     if isinstance(port, tuple):
@@ -185,4 +204,7 @@ def brain_controller_quick_switch(
 
 
 # Export as the default brain controller
-brain_controller = brain_controller_quick_switch
+#brain_controller = brain_controller_quick_switch
+brain_controller = brain_pid_hybrid_controller
+
+
