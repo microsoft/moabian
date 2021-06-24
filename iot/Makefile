@@ -6,7 +6,7 @@ config/template.json: template.json .env
 	env $$(cat .env | xargs) envsubst '$$BRAIN,$$ACR,$$USERNAME,$$PASSWORD' < $< > $@;
 
 deploy: config/template.json
-	az iot edge set-modules --hub-name advo-iot-hub --device-id m002 --content $<
+	az iot edge set-modules --hub-name advo-iot-hub --device-id m157 --content $<
 
 clean:
 	@rm -rf config/template.json
