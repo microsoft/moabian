@@ -1,5 +1,8 @@
 #!/usr/bin/env bats
 
+@test "Factory servo calibration found" {
+  fwsettings | grep -i "found"
+}
 @test "DNS working" {
   ping -c 1 github.com
 }
