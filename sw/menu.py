@@ -103,16 +103,16 @@ def build_menu(env, log_on, logfile):
 
     # Parse the docker-compose.yml file for a list of brains
     middle_menu = []
-        # Parse brains from docker ps and add to middle_menu
-        # parse the list
+    # Parse brains from docker ps and add to middle_menu
+    # parse the list
     for brain_image in docker.ps():
-            m = MenuOption(
-                name=brain_image.short_name,
-                closure=brain_controller,
-                kwargs={"port": brain_image.port, "alert_fn": alert_callback},
-                decorators=[log_csv] if log_on else none,
-            )
-            middle_menu.append(m)
+        m = MenuOption(
+            name=brain_image.short_name,
+            closure=brain_controller,
+            kwargs={"port": brain_image.port, "alert_fn": alert_callback},
+            decorators=[log_csv] if log_on else none,
+        )
+        middle_menu.append(m)
 
     bottom_menu = [
         # MenuOption(
