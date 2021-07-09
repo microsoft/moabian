@@ -3,6 +3,47 @@ import json
 import sys
 from dataclasses import dataclass
 
+# Image name Test cases 
+#    = image name more than 1 slash 
+#       = 1 colon, more than 1 dash  - scotstanws.azurecr.io/d83f2142-1c3c-4ae4-84fa-4e9ff3aa5ed9/circle:2-linux-arm32v7
+#       = 1 colon, no dash  - scotstanws.azurecr.io/d83f2142-1c3c-4ae4-84fa-4e9ff3aa5ed9/circle:2
+#       = 1 colon, 1 dash  - scotstanws.azurecr.io/d83f2142-1c3c-4ae4-84fa-4e9ff3aa5ed9/circle-arm32v7
+
+#       = more than 1 colon, no dash  - scotstanws.azurecr.io/d83f2142-1c3c-4ae4-84fa-4e9ff3aa5ed9/circle:2:er
+#       = more than 1 colon, 1 dash  - scotstanws.azurecr.io/d83f2142-1c3c-4ae4-84fa-4e9ff3aa5ed9/circle:2:linux-arm32v7
+#       = more than 1 colon, more than 1 dash  - scotstanws.azurecr.io/d83f2142-1c3c-4ae4-84fa-4e9ff3aa5ed9/circle:2:linux-arm32-v7
+
+#       = no colon, no dash  - scotstanws.azurecr.io/d83f2142-1c3c-4ae4-84fa-4e9ff3aa5ed9/circle
+#       = no colon 1 dash  - scotstanws.azurecr.io/d83f2142-1c3c-4ae4-84fa-4e9ff3aa5ed9/circle-linux
+#       = no colon more than 1 dash  - scotstanws.azurecr.io/d83f2142-1c3c-4ae4-84fa-4e9ff3aa5ed9/circle-linux-arm32v7
+
+# image name 1 slash 
+
+#       = no colon, no dash - moab/brain
+#       = no colon, 1 dash - moab/brain:3:3-linux
+#       = no colon, more than 1 dash - moab/brain:3:3-linux-v32
+
+#       = 1 colon, no dash - moab/brain:3
+#       = 1 colon, 1 dash - moab/brain:3-linux
+#       = 1 colon more than 1 dash - moab/brain:3-linux-v32
+
+#       = more than 1 colon, no dash - moab/brain:3:3
+#       = more than 1 colon, 1 dash - moab/brain:3:3-linux
+#       = more than 1 colon, more than 1 dash - moab/brain:3:3-linux-v32
+
+# image name no slash 
+
+#       = no colon no dash - den1
+#       = no colon 1 dash - 3-linux
+#       = no colon more than 1 dash - v2-02-rg
+
+#       = 1 colon no dash - den1:v2
+#       = 1 colon 1 dash - den1:3-linux
+#       = 1 colon more than 1 dash - den1:v2-02-rg
+
+#       = more than 1 colon no dash - den1:v2:hi
+#       = more than 1 colon more than 1 dash - den1:v2:-02-rg
+#       = more than 1 colon no dash - den1:v2:23
 
 @dataclass
 class BonsaiImage:
@@ -66,7 +107,7 @@ def list_to_bonsai_images(iot_dict):
                     splitport_2 = splitport_1.split("->")[0]
                     # finally split on colon and take last element - 5005
                     port = splitport_2.split(":")[1]
-
+            version = 0
             # split image on slashes
             slashes = info["Image"].split("/")
 
