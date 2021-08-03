@@ -1,6 +1,6 @@
 # Welcome to Project Moab
 
-Project Moab is hardware kit built to demonstrate the end-to-end Project Bonsai Platform. This open source ball balancing robot was built to demonstrate the end-to-end Project Bonsai Platform.
+Project Moab is an open source ball balancing robot built to demonstrate the end-to-end Microsoft Project Bonsai Platform, a low-code AI platform for building autonomous systems.
 
 If you have the hardware kit, you can find all the setup documentation in the [Wiki](https://github.com/microsoft/moabian/wiki).
 
