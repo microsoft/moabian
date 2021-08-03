@@ -6,11 +6,11 @@ If you have the hardware kit, you can find all the setup documentation in the [W
 
 You can find an introduction to Autonomous systems and an overview of the Project Bonsai platform [here](https://innovation.microsoft.com/en-us/exploring-autonomous-systems).
 
-For a step-by-step tutorials of how to train a brain to balance a ball on Moab, visit the [Project Moab Website](https://microsoft.github.io/moab/).
+For step-by-step tutorials of how to train a brain to balance a ball on Moab, visit the [Project Moab Website](https://microsoft.github.io/moab/).
 
-Simulation is a huge component of Project Bonsai. You can find the python simulator of Project Moab [here](https://github.com/microsoft/moabsim-py). This is also where you can find the inkling files for the Moab tutorials.
+Simulation is a huge component of Project Bonsai. You can find the python simulator for Project Moab [here](https://github.com/microsoft/moabsim-py). This is also where you can find the inkling files for the Project Moab tutorials.
 
-There is also a MathWorks Project Moab simulation. You can find the Simulink and Simscape Multibody model [here](https://github.com/microsoft/bonsai-simulink/tree/main/samples/moab).
+There is also a MathWorks Project Moab simulation. You can find the Simulink and Simscape Multibody model [here](https://github.com/microsoft/bonsai-simulink/tree/main/samples/moab). Connecting this simulation to Project Bonsai requires the [Microsoft Project Bonsai Simulink Toolbox](https://www.mathworks.com/matlabcentral/fileexchange/75512-microsoft-project-bonsai-simulink-toolbox).
 
 ## Microsoft Open Source Code of Conduct
 
