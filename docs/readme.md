@@ -32,7 +32,7 @@ This can take up to a minute if Moab is not connected to internet.
     the ball. Try disturbing the ball by poking it or blowing on it and
     watch Moab return the ball to the center.
 
-    If Moab is unable to balance a ball or making erratic movements, see [Troubleshooting](https://github.com/microsoft/moabian/blob/docs-v3-updates/docs/troubleshooting.md).
+    If Moab is unable to balance a ball or making erratic movements, see [Troubleshooting](https://github.com/microsoft/moabian/docs/troubleshooting.md).
 
     To exit PID mode, select the menu button next to the joystick.
 
