@@ -40,7 +40,7 @@ function layer-run-first
     ## Enable ssh by default for Moab
     touch /boot/ssh
 
-    apt-get update -y
+    apt-get update --allow-releaseinfo-change -y
 }
 
 
