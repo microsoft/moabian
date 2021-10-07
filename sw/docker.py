@@ -63,26 +63,31 @@ def get_image_info(image_name, port):
     # split image on slashes
     version = 0
     slashes = image_name.split("/")
-
-    # if image tag or no slashes, use the image name
-    if slashes is not None and len(slashes) == 1:
-        brain_id = image_name
-        short_name = brain_id[:9]
-    else:
-        # if there's a colon in the name, use it for version
-        colon = slashes[-1].split(":")
-        if colon and len(colon) > 1:
-            version_split = colon[1].split("-")
-            if version_split is not None:
-                version = version_split[0]
-                brain_id = colon[0]
-                short_name = brain_id[:6] + ":" + version
-            else:
-                brain_id = colon[0]
-                short_name = brain_id[:9]
-        else:
+    if slashes is not None: 
+	
+    # if image tag or no slashes, use the image name		
+        if len(slashes) == 1:
             brain_id = image_name
             short_name = brain_id[:9]
+		
+        else:
+            # if there's a colon in the name, use it for version
+            colon = slashes[-1].split(":")
+			
+            if colon and len(colon) > 1:
+                version_split = colon[1].split("-")
+                # if version_split, account for dashes
+                if version_split is not None:
+                    version = version_split[0]
+                    brain_id = colon[0]
+                    short_name = brain_id[:6] + ":" + version
+                else:
+                    brain_id = colon[0]
+                    short_name = brain_id[:9]
+            else:
+                # brain_id will be the last split on slashes
+                brain_id = slashes[-1]
+                short_name = brain_id[:9]
 
     bonsai_image = BonsaiImage(
         image=image_name,
