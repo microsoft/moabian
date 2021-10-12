@@ -1,5 +1,5 @@
 numpy==1.20.1
-opencv-python-headless==4.1.0.25
+opencv-python-headless==4.1.1.26
 picamera==1.13
 requests==2.25.1
 dacite==1.6.0
