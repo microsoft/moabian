@@ -66,7 +66,9 @@ def _brain_controller(
     The hardware state is unprojected from camera pixel space
     back to real space by using the calculated plate surface plane.
     """
-    prediction_url = f"http://localhost:{port}/v1/prediction"
+
+    #prediction_url = f"http://localhost:{port}/v1/prediction"
+    prediction_url = f"http://localhost:{port}/v2/clients/12345/predict"
 
     def next_action(state):
         env_state, ball_detected, buttons = state
@@ -173,8 +175,11 @@ def brain_controller_quick_switch(
     port2_controller_fn = _brain_controller(port=port2, **kwargs)
     pid_controller_fn = pid_controller(**kwargs)
 
-    prediction_url1 = f"http://localhost:{port1}/v1/prediction"
-    prediction_url2 = f"http://localhost:{port2}/v1/prediction"
+    #prediction_url1 = f"http://localhost:{port1}/v1/prediction"
+    #prediction_url2 = f"http://localhost:{port2}/v1/prediction"
+
+    prediction_url1 = f"http://localhost:{port}/v2/clients/12345/predict"
+    prediction_url2 = f"http://localhost:{port}/v2/clients/12345/predict"
 
     current_controller = 1  # Start by trying the first port
 
