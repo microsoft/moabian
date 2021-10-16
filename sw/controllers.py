@@ -75,10 +75,12 @@ def _brain_controller(
         x, y, vel_x, vel_y, sum_x, sum_y = env_state
 
         observables = {
-            "ball_x": x,
-            "ball_y": y,
-            "ball_vel_x": vel_x,
-            "ball_vel_y": vel_y,
+            "state": {
+                "ball_x": x, 
+                "ball_y": y, 
+                "ball_vel_x": vx, 
+                "ball_vel_y": vy
+            }
         }
 
         action = Vector2(0, 0)  # Action is 0,0 if not detected or brain didn't work
@@ -135,7 +137,14 @@ def brain_pid_hybrid_controller(
 
     def next_action(state):
         (x, y, vx, vy, _, _), ball_detected, buttons = state
-        observables = {"ball_x": x, "ball_y": y, "ball_vel_x": vx, "ball_vel_y": vy}
+        observables = {
+            "state": {
+                "ball_x": x, 
+                "ball_y": y, 
+                "ball_vel_x": vx, 
+                "ball_vel_y": vy
+            }
+        }
 
         try:
             return brain_fn(state)
@@ -186,7 +195,14 @@ def brain_controller_quick_switch(
     def next_action(state):
         nonlocal current_controller
         (x, y, vx, vy, _, _), ball_detected, buttons = state
-        observables = {"ball_x": x, "ball_y": y, "ball_vel_x": vx, "ball_vel_y": vy}
+        observables = {
+            "state": {
+                "ball_x": x, 
+                "ball_y": y, 
+                "ball_vel_x": vx, 
+                "ball_vel_y": vy
+            }
+        }
 
         try:
             if current_controller == 1:
