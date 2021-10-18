@@ -299,7 +299,8 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                 controller = controller_closure(**kwargs)
 
                 # Reset brain memory
-                forget_memory('http://localhost:{}/v2/clients/12345'.format(kwargs['port']))
+                if 'port' in kwargs:
+                    forget_memory('http://localhost:{}/v2/clients/12345'.format(kwargs['port']))
 
                 # Wrap a decorator if it has one
                 if menu_list[index].decorators:
