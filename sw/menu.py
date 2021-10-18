@@ -29,6 +29,7 @@ from controllers import (
     brain_controller,
     joystick_controller,
     BrainNotFound,
+    forget_memory
 )
 
 LOG = logging.getLogger(__name__)
@@ -296,6 +297,9 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                 controller_closure = menu_list[index].closure
                 kwargs = menu_list[index].kwargs
                 controller = controller_closure(**kwargs)
+
+                # Reset brain memory
+                forget_memory('http://localhost:{}/v2/clients/12345'.format(kwargs['port']))
 
                 # Wrap a decorator if it has one
                 if menu_list[index].decorators:
