@@ -1,5 +1,13 @@
 #!/usr/bin/env bats
 
+@test "Factory servo calibration found" {
+  fwservos | grep -i "found"
+}
+
+@test "Factory joystick calibration found" {
+  fwjoystick | grep -i "found"
+}
+
 @test "DNS working" {
   ping -c 1 github.com
 }

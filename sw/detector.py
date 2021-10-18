@@ -88,7 +88,7 @@ def hsv_detector(
         # run through each triplet and perform our masking filter on it.
         # hue_mask coverts the hsv image into a grayscale image with a
         # bandpass applied centered around hue, with width sigma
-        hue_mask(img_hsv, hue / 2, 0.05, 12.0, 4.0)
+        hue_mask(img_hsv, hue / 2, 0.03, 60.0, 1.5)
 
         # convert to b&w mask from grayscale image
         mask = cv2.inRange(
