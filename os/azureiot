@@ -52,15 +52,10 @@ wget https://github.com/microsoft/moabian/releases/download/v.2.4.0/brain.77b0.t
 docker load < /tmp/brain.tar.gz
 docker tag 77b0 moab/brain:latest
 
-# change branches
-cd ~/moab
-git checkout main
-git pull
-git checkout IOTPrototype
 bot reset
 
 # restart Moab as-is
 sudo systemctl start brain menu
 
-# Azure IoT Edge version 1.2
-sudo apt-get install -y aziot-edge
+# Azure IoT Edge version 1.1 (LTS)
+sudo apt-get install -y iotedge=1.1.1-1
