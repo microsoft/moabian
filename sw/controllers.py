@@ -72,13 +72,13 @@ def _brain_controller(
 
     def next_action(state):
         env_state, ball_detected, buttons = state
-        x, y, vel_x, vel_y, sum_x, sum_y = env_state
+        x, y, vx, vy, sum_x, sum_y = env_state
 
         observables = {
             "state": {
-                "ball_x": x, 
-                "ball_y": y, 
-                "ball_vel_x": vx, 
+                "ball_x": x,
+                "ball_y": y,
+                "ball_vel_x": vx,
                 "ball_vel_y": vy
             }
         }
@@ -87,21 +87,21 @@ def _brain_controller(
         info = {"status": 400, "resp": ""}
         if ball_detected:
 
-            # Trap on GET failures so we can restart the brain without
+            # Trap on POST failures so we can restart the brain without
             # bringing down this run loop. Plate will default to level
             # when it loses the connection.
             try:
                 # Get action from brain
-                response = requests.get(prediction_url, json=observables)
+                response = requests.post(prediction_url, json=observables)
                 info = {"status": response.status_code, "resp": response.json()}
                 action_json = response.json()
 
                 if response.ok:
                     if alert_fn is not None:
                         alert_fn(False)
-                    action_json = requests.get(prediction_url, json=observables).json()
-                    pitch = action_json["input_pitch"]
-                    roll = action_json["input_roll"]
+                    action_json = requests.post(prediction_url, json=observables).json()
+                    pitch = action_json["concepts"]["MoveToCenter"]["action"]["input_pitch"]
+                    roll = action_json["concepts"]["MoveToCenter"]["action"]["input_roll"]
 
                     # Scale and clip
                     pitch = np.clip(pitch * max_angle, -max_angle, max_angle)
@@ -139,9 +139,9 @@ def brain_pid_hybrid_controller(
         (x, y, vx, vy, _, _), ball_detected, buttons = state
         observables = {
             "state": {
-                "ball_x": x, 
-                "ball_y": y, 
-                "ball_vel_x": vx, 
+                "ball_x": x,
+                "ball_y": y,
+                "ball_vel_x": vx,
                 "ball_vel_y": vy
             }
         }
@@ -197,9 +197,9 @@ def brain_controller_quick_switch(
         (x, y, vx, vy, _, _), ball_detected, buttons = state
         observables = {
             "state": {
-                "ball_x": x, 
-                "ball_y": y, 
-                "ball_vel_x": vx, 
+                "ball_x": x,
+                "ball_y": y,
+                "ball_vel_x": vx,
                 "ball_vel_y": vy
             }
         }
@@ -227,5 +227,6 @@ def brain_controller_quick_switch(
 # Export as the default brain controller
 #brain_controller = brain_controller_quick_switch
 brain_controller = brain_pid_hybrid_controller
+#brain_controller = _brain_controller
 
 
