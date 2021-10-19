@@ -6,6 +6,7 @@ import time
 import json
 import numpy as np
 
+from common import Vector2
 from detector import hsv_detector
 from typing import Tuple, Optional
 from camera import OpenCVCameraSensor
@@ -91,9 +92,9 @@ class MoabHardware:
                 calib = json.load(f)
         else:  # Use defaults
             calib = {
-                "ball_hue": 44,
-                "plate_offsets": (0.0, 0.0),
-                "servo_offsets": (0.0, 0.0, 0.0),
+                "ball_hue": 44,  # Hue
+                "plate_offsets": (0.0, 0.0),  # X,Y offset in meters
+                "servo_offsets": (0.0, 0.0, 0.0),  # Servo angle offset in degrees
             }
 
         self.plate_offsets = calib["plate_offsets"]
@@ -128,7 +129,12 @@ class MoabHardware:
         s3 += self.servo_offsets[2]
         self.hat.set_servos((s1, s2, s3))
 
-    def display(self, text: Optional[str]=None, icon: Optional[str]=None, scrolling: bool=False):
+    def display(
+        self,
+        text: Optional[str] = None,
+        icon: Optional[str] = None,
+        scrolling: bool = False,
+    ):
         # Optionally display the controller active text
         if icon and text:
             if scrolling:
@@ -147,6 +153,12 @@ class MoabHardware:
     def step(self, pitch, roll) -> Buttons:
         self.set_angles(pitch, roll)
         frame, elapsed_time = self.camera()
-        buttons = self.hat.get_buttons()        
+        buttons = self.hat.get_buttons()
         ball_detected, (ball_center, ball_radius) = self.detector(frame, hue=self.hue)
+
+        # plate_offsets = Vector2(*self.plate_offsets).rotate(np.radians(-30))
+        ball_center.x -= self.plate_offsets[0]
+        ball_center.y -= self.plate_offsets[1]
+        print(ball_center)
+
         return ball_center, ball_detected, buttons

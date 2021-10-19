@@ -47,6 +47,14 @@ def draw_ball(img, center, radius, hue):
     return img
 
 
+def draw_crosshairs(img, crosshairs=None):
+    x, y = crosshairs
+    lx, ly = img.shape[:2]
+    cv2.line(img, (0, ly // 2 + y), (ly, ly // 2 + y), (0, 0, 255), 2)  # X axis
+    cv2.line(img, (lx // 2 + x, 0), (lx // 2 + x, lx), (0, 0, 255), 2)  # Y axis
+    return img
+
+
 def save_img(filepath, img, rotated=False, quality=80):
     if rotated:
         # Rotate the image -30 degrees so it looks normal
@@ -79,7 +87,9 @@ def hsv_detector(
         hue = calibration.ball_hue
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, tuple(kernel_size))
 
-    def detect_features(img, hue=hue, debug=debug, filename="/tmp/camera/frame.jpg"):
+    def detect_features(
+        img, hue=hue, debug=debug, filename="/tmp/camera/frame.jpg", crosshairs=None
+    ):
         # covert to HSV space
         img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
@@ -114,12 +124,15 @@ def hsv_detector(
                 ball_detected = True
 
                 # Convert from pixels to absolute with 0,0 as center of detected plate
-                x = x_obs - frame_size // 2
-                y = y_obs - frame_size // 2
+                x = int(x_obs - frame_size // 2)
+                y = int(y_obs - frame_size // 2)
+                print(f"x_pix={x}, y_pix={y}")
 
                 if debug:
                     ball_center_pixels = (int(x_obs), int(y_obs))
                     draw_ball(img, ball_center_pixels, radius, hue)
+                    if crosshairs is not None:
+                        draw_crosshairs(img, crosshairs)
                     save_img(filename, img, rotated=False, quality=80)
 
                 # Rotate the x, y coordinates by -30 degrees
@@ -130,6 +143,8 @@ def hsv_detector(
         # If there were no contours or no contours the size of the ball
         ball_detected = False
         if debug:
+            if crosshairs is not None:
+                draw_crosshairs(img, crosshairs)
             save_img(filename, img, rotated=False, quality=80)
         return ball_detected, (Vector2(0, 0), 0.0)
 
