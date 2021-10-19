@@ -99,7 +99,6 @@ def _brain_controller(
                 if response.ok:
                     if alert_fn is not None:
                         alert_fn(False)
-                    action_json = requests.post(prediction_url, json=observables).json()
                     pitch = action_json["concepts"]["MoveToCenter"]["action"]["input_pitch"]
                     roll = action_json["concepts"]["MoveToCenter"]["action"]["input_roll"]
 
@@ -236,7 +235,7 @@ def forget_memory(
 
 # Export as the default brain controller
 #brain_controller = brain_controller_quick_switch
-brain_controller = brain_pid_hybrid_controller
-#brain_controller = _brain_controller
+#brain_controller = brain_pid_hybrid_controller
+brain_controller = _brain_controller
 
 
