@@ -99,6 +99,7 @@ def _brain_controller(
                 if response.ok:
                     if alert_fn is not None:
                         alert_fn(False)
+                    
                     pitch = action_json["concepts"]["MoveToCenter"]["action"]["input_pitch"]
                     roll = action_json["concepts"]["MoveToCenter"]["action"]["input_roll"]
 

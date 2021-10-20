@@ -1,81 +1,16 @@
-# Moab Guide
+# Welcome to Project Moab
 
-### Connect to your Moab
+Project Moab is an open source ball balancing robot built to demonstrate the end-to-end Microsoft Project Bonsai Platform, a low-code AI platform for building autonomous systems.
 
-The easiest way to connect to your Moab is to use a LAN cable and connect it to
-a router/switch. If this is not possible, you can connect to Wi-Fi as well, but
-will need an HDMI cable and a USB keyboard to configure your wifi connection. 
+If you have the hardware kit, you can find all the setup documentation in the [Wiki](https://github.com/microsoft/moabian/wiki).
 
-#### Ethernet method
+You can find an introduction to Autonomous systems and an overview of the Project Bonsai platform [here](https://innovation.microsoft.com/en-us/exploring-autonomous-systems).
 
-* If you have an available router/switch, connect the LAN cable to the Moab unit
-  and then power it on. 
+For step-by-step tutorials of how to train a brain to balance a ball on Moab, visit the [Project Moab Website](https://microsoft.github.io/moab/).
 
-* From your PC (also connected to the same network), type `ping moab.local`
+Simulation is a huge component of Project Bonsai. You can find the python simulator for Project Moab [here](https://github.com/microsoft/moabsim-py). This is also where you can find the inkling files for the Project Moab tutorials.
 
-  You should see output like the following:
-
-```
-PING moab.local (XXX.XXX.XXX.XXX) 56(84) bytes of data.
-64 bytes from moab.home (XXX.XXX.XXX.XXX): icmp_seq=1 ttl=64 time=0.218 ms
-64 bytes from moab.home (XXX.XXX.XXX.XXX): icmp_seq=2 ttl=64 time=0.259 ms
-64 bytes from moab.home (XXX.XXX.XXX.XXX): icmp_seq=3 ttl=64 time=0.259 ms
-```
-
-If you see this,
-
-```
-ping: moab.local: Name or service not known
-```
-
-then your moab is unreachable for some reason. Follow the HDMI method to
-connect, instead. If you see an IP address, you can simple SSH onto it using
-
-```
-ssh pi@moab.local
-```
-
-#### HDMI method
-
-* Connect the HDMI cable to the Moab unit and plug the other end into a monitor
-* Connect a USB keyboard to Moab
-* Power on the unit with the supplied 12V barrel adapter
-* Once Raspbian has booted up, use the following default credentials to log on
-
-  | Username | Password  |
-  | -------- | --------- |
-  | pi       | raspberry |
-
-#### Finding out the IP address
-
-To find out the IP address of your moab, type `hostname -I` at the command prompt
-
-```
-XXX.XXX.XXX.XXX 172.17.0.1 172.18.0.1
-```
-
-Usually, the first IP address is the IP address of your Moab (mostly of the form 192.168.X.XXX). You can use this to SSH onto it
-
-```
-ssh pi@XXX.XXX.XXX.XXX
-```
-
-#### Wi-Fi setup
-
-If you want to configure Wi-Fi at this point, you will already need to be logged
-onto the unit using either the LAN or HDMI methods. If not, please follow the
-steps for those sections and then come back here.
-
-- Now use `raspi-config` to connect to your WiFi network, and follow the steps in the GIF below to enter your SSID and passphrase for you Wi-Fi network.
-
-  ![Connect-Wifi-raspi-config](docs/wifi.gif)
-
-  Use your WiFi router's administration page to look for a client called
-  "moab" and use that IP address to SSH onto the device.
-
-```
-ssh pi@XXX.XXX.XXX.XXX
-```
+There is also a MathWorks Project Moab simulation. You can find the Simulink and Simscape Multibody model [here](https://github.com/microsoft/bonsai-simulink/tree/main/samples/moab). Connecting this simulation to Project Bonsai requires the [Microsoft Project Bonsai Simulink Toolbox](https://www.mathworks.com/matlabcentral/fileexchange/75512-microsoft-project-bonsai-simulink-toolbox).
 
 ## Microsoft Open Source Code of Conduct
 
