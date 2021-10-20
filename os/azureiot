@@ -58,6 +58,7 @@ git checkout main
 git pull
 git checkout iot_telem_v2
 bot reset
+dc down
 
 # restart Moab as-is
 sudo systemctl start brain menu
