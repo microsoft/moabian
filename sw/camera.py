@@ -24,6 +24,8 @@ class OpenCVCameraSensor:
         frequency=30,
         x_offset_pixels=0.0,
         y_offset_pixels=0.0,
+        auto_exposure=True,
+        exposure=50,  # int for manual (each 1 is 100µs of exposure)
     ):
         self.device_id = device_id
         # self.width = width
@@ -32,6 +34,8 @@ class OpenCVCameraSensor:
         self.brightness = brightness
         self.contrast = contrast
         self.frequency = frequency
+        self.auto_exposure = auto_exposure
+        self.exposure = exposure
         self.prev_time = 0.0
         self.source = None
         self.last_frame = None
@@ -47,6 +51,10 @@ class OpenCVCameraSensor:
             self.source.set(cv2.CAP_PROP_MODE, 0)  # Not meant to be configurable
             self.source.set(cv2.CAP_PROP_BRIGHTNESS, self.brightness)
             self.source.set(cv2.CAP_PROP_CONTRAST, self.contrast)
+            self.source.set(
+                cv2.CAP_PROP_AUTO_EXPOSURE, 0.25 if self.auto_exposure else 0.75
+            )
+            self.source.set(cv2.CAP_PROP_EXPOSURE, self.exposure)
         else:
             raise Exception("Couldn't create camera.")
 
