@@ -10,6 +10,7 @@ import logging as log
 from env import MoabEnv
 from common import Vector2
 
+
 class BrainNotFound(Exception):
     pass
 
