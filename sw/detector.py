@@ -47,6 +47,26 @@ def draw_ball(img, center, radius, hue):
     return img
 
 
+def draw_crosshairs(img, crosshairs=None):
+    x, y = crosshairs
+    ly, lx = img.shape[:2]
+    cv2.line(img, (0, ly // 2 + y), (lx, ly // 2 + y), (0, 0, 255), 2)  # X axis
+    cv2.line(img, (lx // 2 + x, 0), (lx // 2 + x, ly), (0, 0, 255), 2)  # Y axis
+    return img
+
+
+def draw_axis(img, offsets=(0, 0)):
+    x, y = offsets
+    ly, lx = img.shape[:2]
+    center = Vector2(lx // 2 + x, ly // 2 + y)
+    x_ax1 = (center - Vector2(ly, 0)).rotate(np.radians(+30), center).to_int_tuple()
+    x_ax2 = (center + Vector2(ly, 0)).rotate(np.radians(+30), center).to_int_tuple()
+    y_ax1 = (center - Vector2(0, lx)).rotate(np.radians(+30), center).to_int_tuple()
+    y_ax2 = (center + Vector2(0, lx)).rotate(np.radians(+30), center).to_int_tuple()
+    cv2.line(img, x_ax1, x_ax2, (200, 200, 200), 2)  # X axis
+    cv2.line(img, y_ax1, y_ax2, (200, 200, 200), 2)  # Y axis
+
+
 def save_img(filepath, img, rotated=False, quality=80):
     if rotated:
         # Rotate the image -30 degrees so it looks normal
@@ -79,7 +99,14 @@ def hsv_detector(
         hue = calibration.ball_hue
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, tuple(kernel_size))
 
-    def detect_features(img, hue=hue, debug=debug, filename="/tmp/camera/frame.jpg"):
+    def detect_features(
+        img,
+        hue=hue,
+        debug=debug,
+        filename="/tmp/camera/frame.jpg",
+        offsets=(0, 0),
+        crosshairs=None,
+    ):
         # covert to HSV space
         img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
@@ -114,12 +141,17 @@ def hsv_detector(
                 ball_detected = True
 
                 # Convert from pixels to absolute with 0,0 as center of detected plate
-                x = x_obs - frame_size // 2
-                y = y_obs - frame_size // 2
+                len_y, len_x, _ = img.shape  # Should be (288, 384, 3)
+                x = int(x_obs - len_x // 2 - offsets[0])
+                y = int(y_obs - len_y // 2 - offsets[1])
 
                 if debug:
                     ball_center_pixels = (int(x_obs), int(y_obs))
                     draw_ball(img, ball_center_pixels, radius, hue)
+                    if crosshairs is not None:
+                        draw_crosshairs(img, crosshairs)
+                    else:
+                        draw_axis(img, offsets)
                     save_img(filename, img, rotated=False, quality=80)
 
                 # Rotate the x, y coordinates by -30 degrees
@@ -130,6 +162,10 @@ def hsv_detector(
         # If there were no contours or no contours the size of the ball
         ball_detected = False
         if debug:
+            if crosshairs is not None:
+                draw_crosshairs(img, crosshairs)
+            else:
+                draw_axis(img, offsets)
             save_img(filename, img, rotated=False, quality=80)
         return ball_detected, (Vector2(0, 0), 0.0)
 

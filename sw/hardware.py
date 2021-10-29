@@ -92,7 +92,7 @@ class MoabHardware:
         else:  # Use defaults
             calib = {
                 "ball_hue": 44,
-                "plate_offsets": (0.0, 0.0),
+                "plate_offsets": (0, 0),
                 "servo_offsets": (0.0, 0.0, 0.0),
             }
 
@@ -153,5 +153,9 @@ class MoabHardware:
         self.set_angles(pitch, roll)
         frame, elapsed_time = self.camera()
         buttons = self.hat.get_buttons()
-        ball_detected, (ball_center, ball_radius) = self.detector(frame, hue=self.hue)
-        return ball_center, ball_detected, buttons
+
+        detected, (center, radius) = self.detector(
+            frame, hue=self.hue, offsets=self.plate_offsets
+        )
+
+        return center, detected, buttons

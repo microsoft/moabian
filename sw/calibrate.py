@@ -37,7 +37,7 @@ class CalibHue:
 
 @dataclass
 class CalibPos:
-    position: Tuple[float, float] = (0.0, 0.0)
+    position: Tuple[int, int] = (0, 0)
     success: bool = False
     early_quit: bool = False  # If menu is pressed before the calibration is complete
 
@@ -57,6 +57,7 @@ class CalibServos:
 
 def ball_close_enough(x, y, radius, max_ball_dist=0.045, min_ball_dist=0.01):
     # reject balls which are too far from the center and too small
+    print(x, y, max_ball_dist)
     return (
         np.abs(x) < max_ball_dist
         and np.abs(y) < max_ball_dist
@@ -106,7 +107,7 @@ def calibrate_hue(camera_fn, detector_fn, is_menu_down_fn):
         return CalibHue()
 
 
-def calibrate_pos(camera_fn, detector_fn, hue, is_menu_down_fn):
+def calibrate_pos_manual(camera_fn, detector_fn, hue, is_menu_down_fn):
     for i in range(10):  # Try and detect for 10 frames before giving up
         if is_menu_down_fn():
             return CalibPos(early_quit=True)
@@ -124,6 +125,36 @@ def calibrate_pos(camera_fn, detector_fn, hue, is_menu_down_fn):
 
     log.warning(f"Offset calibration failed.")
     return CalibPos()
+
+
+def calibrate_pos(
+    camera_fn,
+    detector_fn,
+    get_buttons_fn,
+    prev_plate_offsets,
+    sleep_time=1 / 30,
+):
+    clip = lambda x, low, high: max(0, min(high, x))
+
+    x, y = prev_plate_offsets
+    x, y = int(x), int(y)
+    img_frame, _ = camera_fn()
+    len_y, len_x, _ = img_frame.shape  # Should be (288, 384, 3)
+    menu_button, joy_button, joy_x, joy_y = get_buttons_fn()
+
+    while True:
+        if menu_button:
+            return CalibPos(early_quit=True)
+        if joy_button:
+            return CalibPos(position=(x, y), success=True)
+
+        x = clip(x + int(joy_x * 2), -len_x // 2, len_x // 2)
+        y = clip(x + int(-joy_y * 2), -len_y // 2, len_y // 2)
+
+        img_frame, _ = camera_fn()
+        _ = detector_fn(img_frame, crosshairs=(x, y))
+
+        menu_button, joy_button, joy_x, joy_y = get_buttons_fn()
 
 
 def calibrate_servo_offsets(pid_fn, env, stationary_vel=0.005, time_limit=20):
@@ -187,7 +218,7 @@ def read_calibration(calibration_file="bot.json"):
     else:  # Use defaults
         calibration_dict = {
             "ball_hue": 44,
-            "plate_offsets": (0.0, 0.0),
+            "plate_offsets": (0, 0),
             "servo_offsets": (0.0, 0.0, 0.0),
         }
     return calibration_dict
@@ -216,11 +247,31 @@ def run_calibration(env, pid_fn, calibration_file):
     camera_fn = hardware.camera
     detector_fn = hardware.detector
 
+    # Read calibration
+    calibration_dict = read_calibration(calibration_file)
+
     def is_menu_down(hardware=hardware) -> bool:
         return hardware.get_buttons().menu_button
 
     # lift plate up first
     hardware.set_angles(0, 0)
+
+    # Display message
+    hardware.display("adjust\ncrosshaiars", scrolling=True)
+
+    # Calibrate position
+    # pos_calib = calibrate_pos(camera_fn, detector_fn, hue_calib.hue, is_menu_down)
+    pos_calib = calibrate_pos(
+        camera_fn,
+        detector_fn,
+        hardware.get_buttons,
+        calibration_dict["plate_offsets"],
+        # hue_calib.hue,
+        sleep_time=1 / 30,
+    )
+    if pos_calib.early_quit:
+        hardware.go_up()
+        return
 
     # Display message and wait for joystick
     hardware.display(
@@ -239,14 +290,7 @@ def run_calibration(env, pid_fn, calibration_file):
         hardware.go_up()
         return
 
-    # Calibrate position
-    pos_calib = calibrate_pos(camera_fn, detector_fn, hue_calib.hue, is_menu_down)
-    if pos_calib.early_quit:
-        hardware.go_up()
-        return
-
     # Save calibration
-    calibration_dict = read_calibration(calibration_file)
     calibration_dict["ball_hue"] = hue_calib.hue
     calibration_dict["plate_offsets"] = pos_calib.position
     x_offset, y_offset = pos_calib.position
