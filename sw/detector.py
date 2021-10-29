@@ -55,16 +55,32 @@ def draw_crosshairs(img, crosshairs=None):
     return img
 
 
-def draw_axis(img, offsets=(0, 0)):
+def draw_axis(img, offsets=(0, 0), draw_axis_labels=False):
     x, y = offsets
     ly, lx = img.shape[:2]
+    rot = -30  # Rotate the axis and labels so they match the environment
+
     center = Vector2(lx // 2 + x, ly // 2 + y)
-    x_ax1 = (center - Vector2(ly, 0)).rotate(np.radians(+30), center).to_int_tuple()
-    x_ax2 = (center + Vector2(ly, 0)).rotate(np.radians(+30), center).to_int_tuple()
-    y_ax1 = (center - Vector2(0, lx)).rotate(np.radians(+30), center).to_int_tuple()
-    y_ax2 = (center + Vector2(0, lx)).rotate(np.radians(+30), center).to_int_tuple()
+    x_ax1 = (center - Vector2(ly, 0)).rotate(np.radians(-rot), center).to_int_tuple()
+    x_ax2 = (center + Vector2(ly, 0)).rotate(np.radians(-rot), center).to_int_tuple()
+    y_ax1 = (center - Vector2(0, lx)).rotate(np.radians(-rot), center).to_int_tuple()
+    y_ax2 = (center + Vector2(0, lx)).rotate(np.radians(-rot), center).to_int_tuple()
     cv2.line(img, x_ax1, x_ax2, (200, 200, 200), 2)  # X axis
     cv2.line(img, y_ax1, y_ax2, (200, 200, 200), 2)  # Y axis
+
+    # Draw the axis labels
+    if draw_axis_labels:
+        img_ax_labels = np.zeros_like(img, dtype=np.uint8)
+        # fmt:off
+        cx, cy = center.to_int_tuple()
+        cv2.putText(img_ax_labels, "-x", (0, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+        cv2.putText(img_ax_labels, "+x", (lx - 65, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+        cv2.putText(img_ax_labels, "-y", (cx + 10, 15), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+        cv2.putText(img_ax_labels, "+y", (cx + 10, ly - 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+        # fmt: on
+        M = cv2.getRotationMatrix2D((cx, cy), rot, 1)
+        img_ax_labels = cv2.warpAffine(img_ax_labels, M, (lx, ly))
+        img[img_ax_labels[:, :, 2] > 0] = (0, 0, 255)
 
 
 def save_img(filepath, img, rotated=False, quality=80):
