@@ -17,7 +17,7 @@ import numpy as np
 import logging as log
 
 from env import MoabEnv
-from typing import Tuple
+from typing import Tuples
 from common import Vector2
 from detector import hsv_detector
 from controllers import pid_controller
@@ -57,7 +57,6 @@ class CalibServos:
 
 def ball_close_enough(x, y, radius, max_ball_dist=0.045, min_ball_dist=0.01):
     # reject balls which are too far from the center and too small
-    print(x, y, max_ball_dist)
     return (
         np.abs(x) < max_ball_dist
         and np.abs(y) < max_ball_dist
@@ -134,7 +133,7 @@ def calibrate_pos(
     prev_plate_offsets,
     sleep_time=1 / 30,
 ):
-    clip = lambda x, low, high: max(0, min(high, x))
+    clip = lambda x, low, high: max(low, min(high, x))
 
     x, y = prev_plate_offsets
     x, y = int(x), int(y)
@@ -149,7 +148,7 @@ def calibrate_pos(
             return CalibPos(position=(x, y), success=True)
 
         x = clip(x + int(joy_x * 2), -len_x // 2, len_x // 2)
-        y = clip(x + int(-joy_y * 2), -len_y // 2, len_y // 2)
+        y = clip(y + int(-joy_y * 2), -len_y // 2, len_y // 2)
 
         img_frame, _ = camera_fn()
         _ = detector_fn(img_frame, crosshairs=(x, y))
