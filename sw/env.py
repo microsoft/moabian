@@ -71,8 +71,8 @@ class MoabEnv:
         # pass filtered signal: fc*s / (s + fc) = fc*s * 1 / (s + fc)
         # For more info: https://en.wikipedia.org/wiki/Differentiator
         # Or: https://www.youtube.com/user/ControlLectures/
-        self.vel_x = self.derivative_fn(self.frequency)
-        self.vel_y = self.derivative_fn(self.frequency)
+        self.vel_x, self.vel_x_reset = self.derivative_fn(self.frequency)
+        self.vel_y, self.vel_y_reset = self.derivative_fn(self.frequency)
         # Reset the integral of the position
         self.sum_x, self.sum_y = 0, 0
 
@@ -88,6 +88,11 @@ class MoabEnv:
         # Update the summation (integral calculation)
         self.sum_x += x
         self.sum_y += y
+        
+        if not ball_detected:
+            # TODO don't call this every time
+            self.vel_x_reset()
+            self.vel_y_reset()
 
         state = EnvState(x, y, vel_x, vel_y, self.sum_x, self.sum_y)
 
