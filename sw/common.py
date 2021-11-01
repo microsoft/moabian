@@ -7,6 +7,10 @@ from dataclasses import dataclass
 
 def high_pass_filter(frequency, fc=50):
     x_dot_cstate = 0
+    
+    def reset():
+        nonlocal x_dot_cstate
+        x_dot_cstate = 0
 
     def hpf(x):
         nonlocal x_dot_cstate  # allow x_dot_cstate to be updated in inner scope
@@ -14,7 +18,7 @@ def high_pass_filter(frequency, fc=50):
         x_dot_cstate += (-fc * x_dot_cstate + x) / frequency
         return x_dot
 
-    return hpf
+    return hpf, reset
 
 
 def low_pass_filter(frequency, fc=50):
@@ -23,17 +27,28 @@ def low_pass_filter(frequency, fc=50):
     tau = 1 / (2 * math.pi * fc)
     alpha = dt / (tau + dt)
 
+    def reset():
+        nonlocal y_prev, dt, tau, alpha
+        y_prev = 0.0
+        dt = 1 / frequency
+        tau = 1 / (2 * math.pi * fc)
+        alpha = dt / (tau + dt)
+
     def lpf(x):
         nonlocal y_prev  # allow y_prev to be updated in inner scope
         y = alpha * x + (1 - alpha) * y_prev
         y_prev = y
         return y
 
-    return lpf
+    return lpf, reset
 
 
 def derivative(frequency, fc=None):
     prev_x = 0
+    
+    def reset():
+        nonlocal prev_x
+        prev_x = 0
 
     def derivate(x):
         nonlocal prev_x
@@ -41,7 +56,7 @@ def derivative(frequency, fc=None):
         prev_x = x
         return x_dot
 
-    return derivate
+    return derivate, reset
 
 
 class Vector2:
