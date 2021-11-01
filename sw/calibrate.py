@@ -17,7 +17,7 @@ import numpy as np
 import logging as log
 
 from env import MoabEnv
-from typing import Tuples
+from typing import Tuple
 from common import Vector2
 from detector import hsv_detector
 from controllers import pid_controller
