@@ -44,7 +44,7 @@ curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/mi
 sudo cp /tmp/microsoft.gpg /etc/apt/trusted.gpg.d
 
 # Install docker "moby-engine"
-sudo apt-get update -y || $TRUE
+sudo apt-get update --allow-releaseinfo-change -y || $TRUE
 sudo apt-get install moby-engine -y
 
 # Reload default brain
