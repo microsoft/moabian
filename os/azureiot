@@ -64,5 +64,5 @@ bot reset
 sudo systemctl start brain menu
 
 # Azure IoT Edge version 1.1 (LTS)
-sudo apt-get install -y iotedge=1.1.1-1
+sudo apt-get install -y libiothsm=1.1.1-1 iotedge=1.1.1-1
 
