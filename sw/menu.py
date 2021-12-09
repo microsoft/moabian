@@ -26,6 +26,7 @@ from procid import setup_signal_handlers, stop_doppelgänger
 from info_screen import info_screen_controller, info_config_controller
 from controllers import (
     pid_controller,
+    BrainController,
     brain_controller,
     joystick_controller,
     BrainNotFound,
@@ -109,7 +110,7 @@ def build_menu(env, log_on, logfile):
     for brain_image in docker.ps():
         m = MenuOption(
             name=brain_image.short_name,
-            closure=brain_controller,
+            closure=BrainController,
             kwargs={"port": brain_image.port, "alert_fn": alert_callback},
             decorators=[log_csv] if log_on else none,
         )
@@ -297,10 +298,6 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                 controller_closure = menu_list[index].closure
                 kwargs = menu_list[index].kwargs
                 controller = controller_closure(**kwargs)
-
-                # Reset brain memory
-                if 'port' in kwargs:
-                    forget_memory('http://localhost:{}/v2/clients/12345'.format(kwargs['port']))
 
                 # Wrap a decorator if it has one
                 if menu_list[index].decorators:
