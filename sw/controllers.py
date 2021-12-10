@@ -3,6 +3,7 @@
 
 import sys
 import time
+import pprint
 import requests
 import numpy as np
 import logging as log
@@ -99,7 +100,7 @@ def _brain_controller(
                 if response.ok:
                     if alert_fn is not None:
                         alert_fn(False)
-                    
+
                     pitch = action_json["concepts"]["MoveToCenter"]["action"]["input_pitch"]
                     roll = action_json["concepts"]["MoveToCenter"]["action"]["input_roll"]
 
@@ -149,15 +150,22 @@ class BrainController:
         status = requests.get(f"http://localhost:{port}/v1/status").status_code
         valid_brain = status == 200
 
-        raise ValueError(f"Port {port} is not a valid Bonsai brain")
+        if not valid_brain:
+            raise ValueError(f"Port {port} is not a valid Bonsai brain")
 
         # Test whether the brain is v1 or v2 (also resets memory if a v2 brain)
         status = requests.delete(f"http://localhost:{port}/v2/clients/{client_id}").status_code
-        v2 = True if status == 204 else False
+        self.version = 2 if status == 204 else 1
 
-        v1_prediction_url = f"http://localhost:{port}/v1/prediction"
-        v2_prediction_url = f"http://localhost:{port}/v2/clients/{client_id}/predict"
-        self.prediction_url = v2_prediction_url if v2 else v1_prediction_url
+        if self.version == 1:
+            self.prediction_url = f"http://localhost:{port}/v1/prediction"
+        elif self.version == 2:
+            self.prediction_url = f"http://localhost:{port}/v2/clients/{client_id}/predict"
+        else:
+            raise ValueError("Brain version `{self.version}` is not supported.")
+
+        print(self.prediction_url)
+
         self.client_id = client_id
         self.max_angle = max_angle
         self.alert_fn = alert_fn
@@ -178,7 +186,7 @@ class BrainController:
 
         action = Vector2(0, 0)  # Action is 0,0 if not detected or brain didn't work
         info = {"status": 400, "resp": ""}
-        if ball_detected:
+        if True:#ball_detected:
 
             # Trap on POST failures so we can restart the brain without
             # bringing down this run loop. Plate will default to level
@@ -189,12 +197,21 @@ class BrainController:
                 info = {"status": response.status_code, "resp": response.json()}
                 action_json = response.json()
 
+                print(f"\n\n\nResponse: {repsonse}, \naction_json:\n{action_json}")
+
                 if response.ok:
                     if self.alert_fn is not None:
                         self.alert_fn(False)
-                    
-                    pitch = action_json["concepts"]["MoveToCenter"]["action"]["input_pitch"]
-                    roll = action_json["concepts"]["MoveToCenter"]["action"]["input_roll"]
+
+                    print(action_json)
+                    if self.version == 1:
+                        pitch = action_json["input_pitch"]
+                        roll = action_json["input_roll"]
+                    elif self.version == 2:
+                        pitch = action_json["concepts"]["MoveToCenter"]["action"]["input_pitch"]
+                        roll = action_json["concepts"]["MoveToCenter"]["action"]["input_roll"]
+                    else:
+                        raise ValueError(f"Brain version `{self.version}` is not supported.")
 
                     # Scale and clip
                     pitch = np.clip(pitch * self.max_angle, -self.max_angle, self.max_angle)
