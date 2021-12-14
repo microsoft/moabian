@@ -111,8 +111,7 @@ function layer-classic-moabian
     install -pvm 644 files/etc/* /etc
 }
 
-
-function layer-pip-docker
+function layer-pip
 {
     # Also leverages pre-built binary wheels for Rpi4 via /etc/pip.conf
     apt-get install -y --no-install-recommends python3-dev
@@ -129,7 +128,10 @@ function layer-pip-docker
     # Pointer for pip to download pre-compiled Raspberry Pi binary wheels
     echo "[global]" > /etc/pip.conf
     echo "extra-index-url=https://www.piwheels.org/simple" >> /etc/pip.conf
+}
 
+function layer-docker
+{
     # Install docker
     if ! command -v docker &> /dev/null; then
         curl -sSL https://get.docker.com | sh
@@ -281,7 +283,8 @@ function main
     info "01/10: updating system packages" && layer-run-first
     info "02/10: setting up boot files" && touch-files
     info "03/10: moabian package install" && layer-classic-moabian
-    info "04/10: installing docker" && layer-pip-docker
+    info "04.0/10: installing python" && layer-pip
+    info "04.5/10: installing docker (moby)" && layer-pip
     info "05/10: firmware tooling" && layer-mcumgr
     info "06/10: python packages for moab" && layer-baremetal
     info "07/10: autorun services setup" && layer-moab-services
