@@ -100,7 +100,7 @@ def get_api_url(port, version):
     ip = ip.strip()  # remove newline
 
     if version == 1:
-        api_url = f"http://{ip}:{port}/v1/prediction"   
+        api_url = f"http://{ip}:{port}/v1/doc/index.html"   
     elif version == 2:
         api_url = f"http://{ip}:{port}/swagger.html"
     return api_url
