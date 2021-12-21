@@ -3,13 +3,15 @@ import json
 import sys
 from dataclasses import dataclass
 
+
 @dataclass
 class BonsaiImage:
-    image: str  # image     scotstanws.azurecr.io/d83f2142-1c3c-4ae4-84fa-4e9ff3aa5ed9/circle:2-linux-arm32v7
+    image: str  # image		scotstanws.azurecr.io/d83f2142-1c3c-4ae4-84fa-4e9ff3aa5ed9/circle:2-linux-arm32v7
     brain_id: str  # 'circle'
     version: str  # 2 or empty ''
     short_name: str  # 'circle:2'  (maximum of 9 chars if no version else truncated to 6 chars)
     port: int  # port number
+    iotedge: bool  # true if this brain is managed by IOT Edge
 
 
 def ps():
@@ -44,6 +46,7 @@ def reformat_json(stdout):
     json += "]"
     return json
 
+
 def get_port(splitports):
     # port format: 'Ports': '0.0.0.0:5005->5000/tcp, :::5005->5000/tcp'
     print(splitports)
@@ -56,24 +59,25 @@ def get_port(splitports):
         port = splitport_2.split(":")[1]
     else:
         port = 0
-    
+
     return port
 
-def get_image_info(image_name, port):
+
+def get_image_info(image_name, networks, port):
     # split image on slashes
     version = 0
     slashes = image_name.split("/")
-    if slashes is not None: 
-	
-    # if image tag or no slashes, use the image name		
+    if slashes is not None:
+
+        # if image tag or no slashes, use the image name
         if len(slashes) == 1:
             brain_id = image_name
             short_name = brain_id[:9]
-		
+
         else:
             # if there's a colon in the name, use it for version
             colon = slashes[-1].split(":")
-			
+
             if colon and len(colon) > 1:
                 version_split = colon[1].split("-")
                 # if version_split, account for dashes
@@ -95,6 +99,7 @@ def get_image_info(image_name, port):
         version=version,
         short_name=short_name,
         port=int(port),
+        iotedge=networks=="azure-iot-edge"
     )
     return bonsai_image
 
@@ -105,16 +110,17 @@ def list_to_bonsai_images(iot_dict):
 
     # parse the iot_dict list
     for x, info in enumerate(iot_dict):
-             
+
         if (info["Names"] != "edgeHub") and (info["Names"] != "edgeAgent"):
             # check for port
-            if "Ports" in info.keys():                
-                port = get_port(info["Ports"])        
-                bonsai_image = get_image_info(info["Image"], port)
+            if "Ports" in info.keys():
+                port = get_port(info["Ports"])
+                bonsai_image = get_image_info(info["Image"], info["Networks"], port)
                 bonsai_images.append(bonsai_image)
-    
+
     return bonsai_images
 
+
 if __name__ == "__main__":
-   # print(ps()[0])
+    # print(ps()[0])
     print(ps())
