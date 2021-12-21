@@ -14,6 +14,8 @@ brain_sha() {
 save_brains() {
     local p=$(brain_paths)
 
+    mkdir --parents /tmp/brains
+
     for i in $p; do
         sha=$(brain_sha "$i")
         sha4=${sha:0:4}
