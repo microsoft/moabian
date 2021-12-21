@@ -17,6 +17,7 @@ class BonsaiImage:
     version: str  # 2 or empty ''
     short_name: str  # 'circle:2'  (maximum of 9 chars if no version else truncated to 6 chars)
     port: int  # port number
+    iotedge: bool  # true if this brain is managed by IOT Edge    
 
 
 def ps():
@@ -103,19 +104,28 @@ def get_api_url(port, version):
         api_url = f"http://{ip}:{port}/v1/doc/index.html"   
     elif version == 2:
         api_url = f"http://{ip}:{port}/swagger.html"
+    else:
+        raise ValueError("Brain version `{version}` is not supported.")
     return api_url
 
 
-def get_image_info(image_name, port):
+def get_image_info(info, port):
+    image_name = info["Image"]
+    container_name = info["Names"]
+
+    # Use image name if there are no container names
+    if container_name is None:
+        container_name = image_name
+
     # split image on slashes
     version = 0
     slashes = image_name.split("/")
-    if slashes is not None:
-
+    
     # if image tag or no slashes, use the image name
+    if slashes is not None:
         if len(slashes) == 1:
             brain_id = image_name
-            short_name = brain_id[:9]
+            short_name = container_name[:9]
 
         else:
             # if there's a colon in the name, use it for version
@@ -127,14 +137,14 @@ def get_image_info(image_name, port):
                 if version_split is not None:
                     version = version_split[0]
                     brain_id = colon[0]
-                    short_name = brain_id[:6] + ":" + version
+                    short_name = container_name[:6] + ":" + version
                 else:
                     brain_id = colon[0]
-                    short_name = brain_id[:9]
+                    short_name = container_name[:9]
             else:
                 # brain_id will be the last split on slashes
                 brain_id = slashes[-1]
-                short_name = brain_id[:9]
+                short_name = container_name[:9]
 
     bonsai_image = BonsaiImage(
         image=image_name,
@@ -142,6 +152,7 @@ def get_image_info(image_name, port):
         version=version,
         short_name=short_name,
         port=int(port),
+        iotedge=info["Networks"] == "azure-iot-edge",
     )
     return bonsai_image
 
@@ -156,14 +167,14 @@ def list_to_bonsai_images(iot_dict):
             # check for port
             if "Ports" in info.keys():
                 port = get_port(info["Ports"])
-                bonsai_image = get_image_info(info["Image"], port)
+                bonsai_image = get_image_info(info, port)
                 bonsai_images.append(bonsai_image)
 
     return bonsai_images
 
 
 def brains():
-    title = ["PORT ", "NAME     ", "VER", "API URL"]
+    title = ["PORT ", "NAME     ", "VER", "IOT EDGE", "API URL"]
     widths = [len(el) + 3 for el in title]
 
     # Print the column titles with a minimum of 3 spaces in between each column
@@ -184,12 +195,13 @@ def brains():
             str(x.port).ljust(widths[0])
             + brain_name.ljust(widths[1])
             + f"v{bonsai_version}".ljust(widths[2])
-            + get_api_url(x.port, bonsai_version).ljust(widths[3])
+            + ("*" if x.iotedge else "").ljust(widths[3])
+            + get_api_url(x.port, bonsai_version).ljust(widths[4])
         )
 
 
 def brains_long():
-    title = ["PORT ", "NAME     ", "VER", "RESP STATUS", "RESP DELETE", "BRAIN IMAGE"]
+    title = ["PORT ", "NAME     ", "VER", "IOT EDGE", "RESP STATUS", "RESP DELETE", "BRAIN IMAGE"]
     widths = [len(el) + 3 for el in title]
 
     # Print the column titles with a minimum of 3 spaces in between each column
@@ -210,9 +222,10 @@ def brains_long():
             str(x.port).ljust(widths[0])
             + brain_name.ljust(widths[1])
             + f"v{bonsai_version}".ljust(widths[2])
+            + ("*" if x.iotedge else "").ljust(widths[3])
             + str(resp_status).ljust(widths[4])
-            + str(resp_delete).ljust(widths[3])
-            + brain_url.ljust(widths[5])
+            + str(resp_delete).ljust(widths[5])
+            + brain_url.ljust(widths[6])
         )
 
 
