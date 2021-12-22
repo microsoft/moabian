@@ -49,8 +49,9 @@ exec 2> >(tee "/tmp/stderr.log")
 # 3.0.29: skip
 # 3.0.30: Zephyr 2.1 patch for SPI CS peripheral mode
 # "    ": compile against Zephyr 2.1 from this fork: https://github.com/scotstan/zephyr/tree/Moabian_SPI_v3_fixes
+# 3.1.__: Version sync with v3.1.0 of Moabian. Dropping the last set of digits
 
-VERSION="3.0.30"
+VERSION="3.1"
 
 # YRDDDHR: 2103908. 2021, 39th day of the year, 08th hour (PDT)
 TIMESTAMP=$(TZ='America/Los_Angeles' date +"%j%H%M")
