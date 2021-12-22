@@ -234,7 +234,7 @@ function layer-docker
     add_moby_keys
     install_moby
     systemctl start docker
-    load_brains
+    load_brains || true
     download_default_brain
 
     # If docker-compose.yml is missing OR it has evidence of 2.4.1 version (moab-control),
