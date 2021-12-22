@@ -119,7 +119,7 @@ function layer-pip
     # Install pip3 via bootstrap.pypa.io as it also installs setuptools
     # Unable to install reliably with apt-get python3-pip
     if ! command -v pip3 &> /dev/null; then
-        wget https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py
+        wget --no-verbose https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py
         python3 /tmp/get-pip.py
     else
         python3 -m pip install --upgrade pip
@@ -222,7 +222,7 @@ load_brains () {
 }
 
 download_default_brain () {
-    wget https://github.com/microsoft/moabian/releases/download/v.2.4.0/brain.77b0.tar.gz -O /tmp/brain.tar.gz
+    wget --no-verbose https://github.com/microsoft/moabian/releases/download/v.2.4.0/brain.77b0.tar.gz -O /tmp/brain.tar.gz
     docker load < /tmp/brain.tar.gz
     docker tag 77b0 moab/brain:latest
 }
