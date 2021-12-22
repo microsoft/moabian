@@ -143,8 +143,9 @@ function layer-docker
         pip3 install docker-compose
     fi
 
-    # Setup a default docker-compose.yml
-    if ! [[ -e ../docker-compose.yml ]]; then 
+    # If docker-compose.yml is missing OR it has evidence of 2.4.1 version (moab-control),
+    # copy a new one.
+    if [[ ! -e ../docker-compose.yml ]] || [[ grep moab-control ../docker-compose.yml ]]; then 
         cp ../bin/template.yml ../docker-compose.yml
         chown pi:pi ../docker-compose.yml
     fi
@@ -284,7 +285,7 @@ function main
     info "02/10: setting up boot files" && touch-files
     info "03/10: moabian package install" && layer-classic-moabian
     info "04.0/10: installing python" && layer-pip
-    info "04.5/10: installing docker (moby)" && layer-pip
+    info "04.5/10: installing docker (moby)" && layer-docker
     info "05/10: firmware tooling" && layer-mcumgr
     info "06/10: python packages for moab" && layer-baremetal
     info "07/10: autorun services setup" && layer-moab-services
