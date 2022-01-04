@@ -28,8 +28,8 @@
   python3 -c "import cv2"
 }
 
-@test "opencv version 4.1.0.25" {
-  pip3 list | grep -i -E 'opencv-python-headless.*4.1.0.25'
+@test "opencv version 4.5.3.56" {
+  pip3 list | grep -i -E 'opencv-python-headless.*4.5.3.56'
 }
 
 @test "huemask python library installed" {
@@ -71,5 +71,9 @@
 
 @test "one or more brains are running" {
   pgrep -f predict
+}
+
+@test "power button fast tap working" {
+  journalctl -u menu | grep -v "Can't set pin value"
 }
 
