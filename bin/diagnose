@@ -73,7 +73,3 @@
   pgrep -f predict
 }
 
-@test "power button fast tap working" {
-  journalctl -u menu | grep -v "Can't set pin value"
-}
-
