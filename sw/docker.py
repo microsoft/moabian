@@ -1,12 +1,17 @@
-import subprocess
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 import json
-import sys
+import argparse
+import requests
+import subprocess
+
 from dataclasses import dataclass
 
 
 @dataclass
 class BonsaiImage:
-    image: str  # image	scotstanws.azurecr.io/00000000-0000-0000-0000-000000000000/circle:2-linux-arm32v7
+    image: str  # scotstanws.azurecr.io/00000000-0000-0000-0000-000000000000/circle:2-linux-arm32v7
     brain_id: str  # 'circle'
     version: str  # 2 or empty ''
     short_name: str  # 'circle:2'  (maximum of 9 chars if no version else truncated to 6 chars)
@@ -27,6 +32,7 @@ def ps():
     if docker_ps.returncode == 0:
         docker_images = json.loads(reformat_json(stdout))
         bonsai_images = list_to_bonsai_images(docker_images)
+        bonsai_images = sorted(bonsai_images, key=lambda x: x.port)
         return bonsai_images
 
 
@@ -49,7 +55,6 @@ def reformat_json(stdout):
 
 def get_port(splitports):
     # port format: 'Ports': '0.0.0.0:5005->5000/tcp, :::5005->5000/tcp'
-    print(splitports)
     if splitports is not None:
         # split on comma first - 0.0.0.0:5005->5000/tcp
         splitport_1 = splitports.split(",")[0]
@@ -63,16 +68,66 @@ def get_port(splitports):
     return port
 
 
-def get_image_info(image_name, networks, port):
+def get_resp(port, client_id=123):
+    # Test that port has a valid brain
+    resp_status = requests.get(f"http://localhost:{port}/v1/status").status_code
+    valid_brain = resp_status == 200
+
+    if not valid_brain:
+        raise ValueError(f"Port {port} is not a valid Bonsai brain")
+
+    # Test whether the brain is v1 or v2 (also resets memory if a v2 brain)
+    resp_delete = requests.delete(
+        f"http://localhost:{port}/v2/clients/{client_id}"
+    ).status_code
+    version = 2 if resp_delete == 204 else 1
+
+    if version == 1:
+        prediction_url = f"http://localhost:{port}/v1/prediction"
+    elif version == 2:
+        prediction_url = f"http://localhost:{port}/v2/clients/{client_id}/predict"
+    else:
+        raise ValueError("Brain version `{version}` is not supported.")
+
+    return version, resp_status, resp_delete
+
+
+def get_api_url(port, version):
+    process = subprocess.Popen(
+        "ip route get 1.1.1.1 | head -1 | cut -d' ' -f7",
+        stdout=subprocess.PIPE,
+        shell=True,
+        universal_newlines=True,
+    )
+    ip, stderr = process.communicate()
+    ip = ip.strip()  # remove newline
+
+    if version == 1:
+        api_url = f"http://{ip}:{port}/v1/doc/index.html"
+    elif version == 2:
+        api_url = f"http://{ip}:{port}/swagger.html"
+    else:
+        raise ValueError("Brain version `{version}` is not supported.")
+    return api_url
+
+
+def get_image_info(info, port):
+    image_name = info["Image"]
+    container_name = info["Names"]
+
+    # Use image name if there are no container names
+    if container_name is None:
+        container_name = image_name
+
     # split image on slashes
     version = 0
     slashes = image_name.split("/")
-    if slashes is not None:
 
-        # if image tag or no slashes, use the image name
+    # if image tag or no slashes, use the image name
+    if slashes is not None:
         if len(slashes) == 1:
             brain_id = image_name
-            short_name = brain_id[:9]
+            short_name = container_name[:9]
 
         else:
             # if there's a colon in the name, use it for version
@@ -84,14 +139,14 @@ def get_image_info(image_name, networks, port):
                 if version_split is not None:
                     version = version_split[0]
                     brain_id = colon[0]
-                    short_name = brain_id[:6] + ":" + version
+                    short_name = container_name[:6] + ":" + version
                 else:
                     brain_id = colon[0]
-                    short_name = brain_id[:9]
+                    short_name = container_name[:9]
             else:
                 # brain_id will be the last split on slashes
                 brain_id = slashes[-1]
-                short_name = brain_id[:9]
+                short_name = container_name[:9]
 
     bonsai_image = BonsaiImage(
         image=image_name,
@@ -99,7 +154,7 @@ def get_image_info(image_name, networks, port):
         version=version,
         short_name=short_name,
         port=int(port),
-        iotedge=networks=="azure-iot-edge"
+        iotedge=info["Networks"] == "azure-iot-edge",
     )
     return bonsai_image
 
@@ -109,13 +164,12 @@ def list_to_bonsai_images(iot_dict):
     bonsai_images = []
 
     # parse the iot_dict list
-    for x, info in enumerate(iot_dict):
-
+    for info in iot_dict:
         if (info["Names"] != "edgeHub") and (info["Names"] != "edgeAgent"):
             # check for port
             if "Ports" in info.keys():
                 port = get_port(info["Ports"])
-                bonsai_image = get_image_info(info["Image"], info["Networks"], port)
+                bonsai_image = get_image_info(info, port)
                 bonsai_images.append(bonsai_image)
 
     return bonsai_images
