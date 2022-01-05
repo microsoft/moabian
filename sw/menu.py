@@ -27,10 +27,8 @@ from info_screen import info_screen_controller, info_config_controller
 from controllers import (
     pid_controller,
     BrainController,
-    brain_controller,
     joystick_controller,
     BrainNotFound,
-    forget_memory
 )
 
 LOG = logging.getLogger(__name__)

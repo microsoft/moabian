@@ -101,16 +101,16 @@ class BrainController:
 
     def __call__(self, state):
         env_state, ball_detected, buttons = state
-        x, y, vx, vy, sum_x, sum_y = env_state
+        x, y, vel_x, vel_y, sum_x, sum_y = env_state
 
         observables = {
-            "state": {"ball_x": x, "ball_y": y, "ball_vel_x": vx, "ball_vel_y": vy}
+            "state": {"ball_x": x, "ball_y": y, "ball_vel_x": vel_x, "ball_vel_y": vel_y}
         }
 
         action = Vector2(0, 0)  # Action is 0,0 if not detected or brain didn't work
         info = {"status": 400, "resp": ""}
-        if True:  # ball_detected:
 
+        if ball_detected:
             # Trap on POST failures so we can restart the brain without
             # bringing down this run loop. Plate will default to level
             # when it loses the connection.
