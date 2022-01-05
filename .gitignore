@@ -6,6 +6,9 @@
 **/*.pem
 docker-compose.yml
 
+### Vim ###
+**/[._]*.sw[a-p]
+
 ### C ###
 
 # Object files
