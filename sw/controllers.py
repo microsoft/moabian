@@ -75,14 +75,8 @@ def brain_controller(
     """
     prediction_url = f"http://localhost:{port}/v1/prediction"
 
-    # Test that port has a valid brain
-    status = requests.get(prediction_url).status_code
-    if status != 200:
-        raise ValueError(f"Port {port} is not a valid Bonsai brain")
-
-    # Test whether the brain is v1 or v2 (and reset memory if a v2 brain)
+    # Reset memory if a v2 brain
     status = requests.delete(f"http://localhost:{port}/v2/clients/{client_id}")
-    version = 2 if status.status_code == 204 else 1
 
     def next_action(state):
         env_state, ball_detected, buttons = state
