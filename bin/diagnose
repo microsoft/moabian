@@ -69,3 +69,7 @@
   pgrep -f predict
 }
 
+@test "docker version is microsoft moby-engine" {
+    docker -v | grep "azure"
+}
+
