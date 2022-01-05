@@ -76,6 +76,7 @@ def brain_controller(
 
     # Reset memory if a v2 brain
     status = requests.delete(f"http://localhost:{port}/v2/clients/{client_id}")
+    version = 2 if status.status_code == 204 else 1
 
     def next_action(state):
         env_state, ball_detected, buttons = state
@@ -97,7 +98,7 @@ def brain_controller(
             # when it loses the connection.
             try:
                 # Get action from brain
-                response = requests.post(prediction_url, json=observables)
+                response = requests.get(prediction_url, json=observables)
                 info = {"status": response.status_code, "resp": response.json()}
 
                 if response.ok:
