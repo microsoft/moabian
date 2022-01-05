@@ -8,10 +8,6 @@
   fwjoystick | grep -i "found"
 }
 
-@test "DNS working" {
-  ping -c 1 github.com
-}
-
 @test "raspi-gpio installed" {
     which raspi-gpio
 }
