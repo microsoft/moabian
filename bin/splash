@@ -57,7 +57,7 @@ fw_version="$([ -e ~/moab/bin/fwversion ] && ~/moab/bin/fwversion | awk  '{print
 
 cat <<EOF
 
-${h2} · IP         ${r}${ip}
+${h2} · IP         ${r}http://${ip}
 ${h2} · Kernel     ${r}${kernel}
 ${h2} · Load       ${r}${load}
 ${h2} · CPU        ${r}${temps}
