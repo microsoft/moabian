@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 @dataclass
 class BonsaiImage:
-    image: str  # image		scotstanws.azurecr.io/d83f2142-1c3c-4ae4-84fa-4e9ff3aa5ed9/circle:2-linux-arm32v7
+    image: str  # image	scotstanws.azurecr.io/00000000-0000-0000-0000-000000000000/circle:2-linux-arm32v7
     brain_id: str  # 'circle'
     version: str  # 2 or empty ''
     short_name: str  # 'circle:2'  (maximum of 9 chars if no version else truncated to 6 chars)
@@ -122,5 +122,4 @@ def list_to_bonsai_images(iot_dict):
 
 
 if __name__ == "__main__":
-    # print(ps()[0])
     print(ps())
