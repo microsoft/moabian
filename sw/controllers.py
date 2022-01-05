@@ -3,7 +3,6 @@
 
 import sys
 import time
-import pprint
 import requests
 import numpy as np
 import logging as log
