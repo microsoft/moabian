@@ -16,7 +16,7 @@
 
 set -euo pipefail   # unofficial bash strict mode
 
-require() { hash "$@" || exit 127; }
+require() { hash "$@" || return -1; }
 println() { printf '%s\n' "$*"; }
 die()     { ret=$?; printf "%s\n" "$@" >&2; exit "$ret"; }
 
@@ -111,8 +111,7 @@ function layer-classic-moabian
     install -pvm 644 files/etc/* /etc
 }
 
-
-function layer-pip-docker
+function layer-pip
 {
     # Also leverages pre-built binary wheels for Rpi4 via /etc/pip.conf
     apt-get install -y --no-install-recommends python3-dev
@@ -120,7 +119,7 @@ function layer-pip-docker
     # Install pip3 via bootstrap.pypa.io as it also installs setuptools
     # Unable to install reliably with apt-get python3-pip
     if ! command -v pip3 &> /dev/null; then
-        wget https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py
+        wget --no-verbose https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py
         python3 /tmp/get-pip.py
     else
         python3 -m pip install --upgrade pip
@@ -129,20 +128,118 @@ function layer-pip-docker
     # Pointer for pip to download pre-compiled Raspberry Pi binary wheels
     echo "[global]" > /etc/pip.conf
     echo "extra-index-url=https://www.piwheels.org/simple" >> /etc/pip.conf
+}
 
-    # Install docker
-    if ! command -v docker &> /dev/null; then
-        curl -sSL https://get.docker.com | sh
-        usermod -aG docker pi
-    fi
+##
+## DOCKER-CE and MOBY
+##
 
-    # Install docker-compose
+
+brain_paths () {
+    docker-compose config | grep "image:" | sed -r 's/.*image: (.+)/\1/'
+}
+
+brain_sha () {
+    docker inspect "$1" | grep Id | sed -r 's/.*:([a-z0-9]*)",/\1/'
+}
+
+save_brains () {
+    require "docker"
+    require "docker-compose"
+
+    if $(grep "MOABIAN=2" /etc/environment);  then
+		return -1
+	fi
+
+    local p=$(brain_paths)
+
+    mkdir --parents /tmp/brains
+
+    for i in $p; do
+        sha=$(brain_sha "$i")
+        sha4=${sha:0:4}
+
+        echo "docker save $sha4 > /tmp/brains/$sha4.tar.gz"
+        docker save $sha4 > /tmp/brains/$sha4.tar.gz
+    done
+}
+
+uninstall_docker_ce () {
+    require "docker"
+	if [[ $(docker --version | grep -i azure) ]]; then
+		echo "Moby installed... "
+		docker --version
+	fi
+
+    # stop everything before continuing
+    systemctl stop menu brain docker iotedge || true
+
+    # purge apt packages
+    apt-get purge -y docker-ce docker-ce-cli
+    apt-get autoremove -y --purge docker-ce docker-ce-cli
+
+    # purge all docker related files
+    rm -rf /var/lib/docker /etc/docker
+    rm -rf /etc/apparmor.d/docker
+    #groupdel docker
+    rm -rf /var/run/docker.sock
+
+    # remove docker ethernet bridge
+    ifconfig docker0 down
+    ip link delete docker0
+}
+
+
+load_brains () {
+	echo "load_brains()"
+	# test for /tmp/brains first
+	return -1 # if it doesn't exist
+}
+
+add_moby_keys () {
+    curl https://packages.microsoft.com/config/debian/stretch/multiarch/prod.list > /etc/apt/sources.list.d/microsoft.list
+    curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.gpg
+    apt-get update --allow-releaseinfo-change -y
+}
+
+install_moby () {
+    apt-get install moby-engine -y
+    usermod -aG docker pi
+}
+
+install_docker_compose () {
     if ! command -v docker-compose &> /dev/null; then
         pip3 install docker-compose
     fi
+}
 
-    # Setup a default docker-compose.yml
-    if ! [[ -e ../docker-compose.yml ]]; then 
+load_brains () {
+    if [[ -d /tmp/brains ]]; then
+        for i in /tmp/brains/*; do
+            docker load < $i
+        done
+    fi
+}
+
+download_default_brain () {
+    wget --no-verbose https://github.com/microsoft/moabian/releases/download/v.2.4.0/brain.77b0.tar.gz -O /tmp/brain.tar.gz
+    docker load < /tmp/brain.tar.gz
+    docker tag 77b0 moab/brain:latest
+}
+
+function layer-docker
+{
+    save_brains || true
+    uninstall_docker_ce || true
+    add_moby_keys
+    install_moby
+    systemctl start docker
+    load_brains || true
+    download_default_brain
+
+    # If docker-compose.yml is missing OR it has evidence of 2.4.1 version (moab-control),
+    # copy a new one.
+    if [[ ! -e ../docker-compose.yml ]] || [[ $(grep moab-control ../docker-compose.yml) ]]; then 
         cp ../bin/template.yml ../docker-compose.yml
         chown pi:pi ../docker-compose.yml
     fi
@@ -236,7 +333,7 @@ function layer-baremetal
 
 function layer-flash
 {
-    $_P/bin/flash $_P/fw/v3.bin
+    $_P/bin/flash $_P/fw/v3.1.bin
 }
 
 function layer-mcumgr
@@ -281,7 +378,8 @@ function main
     info "01/10: updating system packages" && layer-run-first
     info "02/10: setting up boot files" && touch-files
     info "03/10: moabian package install" && layer-classic-moabian
-    info "04/10: installing docker" && layer-pip-docker
+    info "04.0/10: installing python" && layer-pip
+    info "04.5/10: installing docker (moby)" && layer-docker
     info "05/10: firmware tooling" && layer-mcumgr
     info "06/10: python packages for moab" && layer-baremetal
     info "07/10: autorun services setup" && layer-moab-services

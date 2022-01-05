@@ -13,8 +13,8 @@ import RPi.GPIO as gpio
 
 from hexyl import hexyl
 from enum import IntEnum
-from typing import Union, List, Tuple
 from dataclasses import dataclass, astuple
+from typing import Union, List, Tuple, Optional
 
 # fmt: off
 # Define which bytes represent which commands
@@ -98,37 +98,6 @@ def _xy_offsets(
     return x_offset, y_offset
 
 
-def plate_angles_to_servo_positions(
-    pitch: float,
-    roll: float,
-    arm_len: float = 55.0,
-    side_len: float = 170.87,
-    pivot_height: float = 80.0,
-    angle_max: float = 160,
-    angle_min: float = 90,
-) -> Tuple[float, float, float]:
-    servo_angles = [0.0, 0.0, 0.0]
-
-    z1 = pivot_height + np.sin(np.radians(roll)) * (side_len / np.sqrt(3))
-    r = pivot_height - np.sin(np.radians(roll)) * (side_len / (2 * np.sqrt(3)))
-    z2 = r + np.sin(np.radians(-pitch)) * (side_len / 2)
-    z3 = r - np.sin(np.radians(-pitch)) * (side_len / 2)
-
-    if z1 > 2 * arm_len:
-        z1 = 2 * arm_len
-    if z2 > 2 * arm_len:
-        z2 = 2 * arm_len
-    if z3 > 2 * arm_len:
-        z3 = 2 * arm_len
-
-    servo_angles[0] = 180 - (np.degrees(np.arcsin(z1 / (2 * arm_len))))
-    servo_angles[1] = 180 - (np.degrees(np.arcsin(z2 / (2 * arm_len))))
-    servo_angles[2] = 180 - (np.degrees(np.arcsin(z3 / (2 * arm_len))))
-
-    servo_angles = np.clip(servo_angles, angle_min, angle_max)
-    return servo_angles
-
-
 # Return an exact 8 byte numpy array
 def pad(*args, **kwargs):
     data = [*args][:8]
@@ -138,20 +107,22 @@ def pad(*args, **kwargs):
 
 
 class Hat:
+    """
+    A helper class that solely does SPI messages. It contains some state for the
+    SPI connection, GPIO pins, and saves responses from the hat. Nothing at a
+    higher level of abstraction should be done here.
+    """
+
     def __init__(
         self,
-        servo_offsets: Tuple[float, float, float] = (0, 0, 0),
         debug=False,
         verbose=0,
     ):
-        self.servo_offsets: Tuple[float, float, float] = servo_offsets
         self.buttons = Buttons(False, False, 0.0, 0.0)
-
         self.debug = debug
         self.verbose = verbose
         if debug:
             self.hex_printer = hexyl()
-
         self.spi = None
 
     def open(self):
@@ -231,27 +202,22 @@ class Hat:
         self.transceive(pad(SendCommand.NOOP))
 
     def enable_servos(self):
-        """ Set the plate to track plate angles. """
+        """Set the plate to track plate angles."""
         self.transceive(pad(SendCommand.SERVO_ENABLE))
 
     def disable_servos(self):
-        """ Disables the power to the servos. """
+        """Disables the power to the servos."""
         self.transceive(pad(SendCommand.SERVO_DISABLE))
 
-    def set_angles(self, pitch: float, roll: float):
-        s1, s2, s3 = plate_angles_to_servo_positions(pitch, roll)
-        self.set_servos(s1, s2, s3)
-
-    def set_servos(self, servo1: float, servo2: float, servo3: float):
+    def set_servos(
+        self,
+        servos: Tuple[float, float, float],
+    ):
         # Note the off by 1 for indexing
-        servo1 += self.servo_offsets[0]
-        servo2 += self.servo_offsets[1]
-        servo3 += self.servo_offsets[2]
-
         # Use fixed point 16-bit numbers, with precision of hundredths
-        servo1_centi_degrees = np.int16(servo1 * 100)
-        servo2_centi_degrees = np.int16(servo2 * 100)
-        servo3_centi_degrees = np.int16(servo3 * 100)
+        servo1_centi_degrees = np.int16(servos[0] * 100)
+        servo2_centi_degrees = np.int16(servos[1] * 100)
+        servo3_centi_degrees = np.int16(servos[2] * 100)
 
         # Get the first 8 bits and last 8 bits of every 16-bit integer
         # (To send it as indivdual bytes)
@@ -273,32 +239,6 @@ class Hat:
                 servo2_centi_degrees_low_byte,
             )
         )
-
-    def set_servo_offsets(self, servo1: int, servo2: int, servo3: int):
-        """
-        Set post-factory calibration offsets for each servo.
-        Normally this call should not be needed.
-        """
-        self.servo_offsets = (servo1, servo2, servo3)
-
-    def go_up(self):
-        """
-        Set the plate to its hover position.
-        This was experimentally found to be 150 (down but still leaving some
-        space at the bottom).
-        """
-        self.set_servos(150, 150, 150)
-        # Give enough time for the action to be taken
-        time.sleep(0.200)  # Make sure this action gets taken before turning off servos
-
-    def go_down(self):
-        """
-        Set the plate to its lower position (usually powered-off state).
-        This was experimentally found to be 155 (lowest possible position).
-        """
-        self.set_servos(155, 155, 155)
-        # Give enough time for the action to be taken
-        time.sleep(0.200)  # Make sure this action gets taken before turning off servos
 
     def _copy_buffer(self, s: str):
         s = s.upper()  # The firware currently only has uppercase fonts

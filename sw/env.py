@@ -1,15 +1,10 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-import os
-import time
-import json
-
-from typing import Tuple
-from hat import Hat, Buttons, Icon, PowerIcon
-from camera import OpenCVCameraSensor
+from hardware import MoabHardware
+from typing import Tuple, Optional
 from dataclasses import dataclass, astuple
-from detector import hsv_detector, meters_to_pixels
+from hat import Hat, Buttons, Icon, PowerIcon
 from common import high_pass_filter, low_pass_filter, derivative
 
 
@@ -52,62 +47,23 @@ class MoabEnv:
         self.vel_y = self.derivative_fn(frequency)
         self.sum_x, self.sum_y = 0, 0
 
-        self.hat = Hat(debug=debug, verbose=verbose)
-        self.hat.open()
-        self.camera = OpenCVCameraSensor(frequency=frequency)
-        self.detector = hsv_detector(debug=debug)
-
-        self.calibration_file = calibration_file
-        self.reset_calibration()
+        self.hardware = MoabHardware(
+            frequency=frequency,
+            debug=debug,
+            verbose=verbose,
+            calibration_file=calibration_file,
+        )
 
     def __enter__(self):
-        self.camera.start()
+        self.hardware.__enter__()
         return self
 
     def __exit__(self, type, value, traceback):
-        self.hat.go_down()
-        self.hat.disable_servos()
-        self.hat.display_power_symbol("TO WAKE", PowerIcon.POWER)
-        self.hat.close()
-        self.camera.stop()
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __str__(self):
-        return f"hue: {self.hue}, offsets: {self.servo_offsets}"
-
-    def reset_calibration(self, calibration_file=None):
-        # Use default if not defined
-        calibration_file = calibration_file or self.calibration_file
-
-        # Get calibration settings
-        if os.path.isfile(calibration_file):
-            with open(calibration_file, "r") as f:
-                calib = json.load(f)
-        else:  # Use defaults
-            calib = {
-                "ball_hue": 44,
-                "plate_offsets": (0.0, 0.0),
-                "servo_offsets": (0.0, 0.0, 0.0),
-            }
-
-        plate_offsets = calib["plate_offsets"]
-        self.plate_offsets_pixels = meters_to_pixels(plate_offsets)
-        self.servo_offsets = calib["servo_offsets"]
-        self.hue = calib["ball_hue"]
-
-        # Set the servo offsets (self.hue & self.plate_offsets_pixels are used in step)
-        self.hat.set_servo_offsets(*self.servo_offsets)
-        self.camera.x_offset_pixels = self.plate_offsets_pixels[0]
-        self.camera.y_offset_pixels = self.plate_offsets_pixels[1]
+        self.hardware.__exit__(type, value, traceback)
 
     def reset(self, text=None, icon=None):
         # Optionally display the controller active text
-        if icon and text:
-            self.hat.display_string_icon(text, icon)
-        elif text:
-            self.hat.display_string(text)
+        self.hardware.display(text, icon)
 
         # Reset the derivative of the position
         # Use a high pass filter instead of a numerical derivative for stability.
@@ -124,14 +80,8 @@ class MoabEnv:
         return self.step((0, 0))
 
     def step(self, action) -> Tuple[EnvState, bool, Buttons]:
-        plate_x, plate_y = action
-        self.hat.set_angles(plate_x, plate_y)
-
-        frame, elapsed_time = self.camera()
-        ball_detected, cicle_feature = self.detector(frame, hue=self.hue)
-        ball_center, ball_radius = cicle_feature
-
-        x, y = ball_center
+        pitch, roll = action
+        (x, y), ball_detected, buttons = self.hardware.step(pitch, roll)
 
         # Update derivate calulation
         vel_x, vel_y = self.vel_x(x), self.vel_y(y)
@@ -139,7 +89,6 @@ class MoabEnv:
         self.sum_x += x
         self.sum_y += y
 
-        buttons = self.hat.get_buttons()
         state = EnvState(x, y, vel_x, vel_y, self.sum_x, self.sum_y)
 
         return state, ball_detected, buttons

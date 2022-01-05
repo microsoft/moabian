@@ -6,6 +6,9 @@
 **/*.pem
 docker-compose.yml
 
+### Vim ###
+**/[._]*.sw[a-p]
+
 ### C ###
 
 # Object files
@@ -36,6 +39,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .Python
+*.egg-info/
 
 # pyenv
 .python-version
@@ -56,6 +60,7 @@ ENV/
 env.bak/
 venv.bak/
 pythonenv*
+*.bak
 
 # End of https://www.toptal.com/developers/gitignore/api/c,macos,python
 

@@ -117,18 +117,6 @@ def build_menu(env, log_on, logfile):
         middle_menu.append(m)
 
     bottom_menu = [
-        # MenuOption(
-        #     name="IOT",
-        #     closure=brain_controller,
-        #     kwargs={"port": 5005, "alert_fn":alert_callback},
-        #     decorators=[log_csv] if log_on else none,
-        # ),
-        # MenuOption(
-        #     name="IOT2",
-        #     closure=brain_controller,
-        #     kwargs={"port": 5006, "alert_fn":alert_callback},
-        #     decorators=[log_csv] if log_on else none,
-        # ),
         MenuOption(
             name="Hue Info",
             closure=info_config_controller,
@@ -168,7 +156,7 @@ def _handle_debug(ctx, param, debug):
 
 
 @click.command()
-@click.version_option(version="3.0.31")
+@click.version_option(version="3.1.0")
 @click.option(
     "-c",
     "--cont",
@@ -248,15 +236,15 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
 
         # Default menu raises the plate to alert the user the system is ready
         if cont == -1:
-            env.hat.enable_servos()
-            env.hat.go_up()
-            buttons = env.hat.get_buttons()
-            time.sleep(1 / env.frequency)
-            env.hat.disable_servos()
+            env.hardware.enable_servos()
+            env.hardware.go_up()
+            buttons = env.hardware.get_buttons()
+            env.hardware.disable_servos()
 
         while True:
             time.sleep(1 / env.frequency)
 
+            # In the first level of the menu (select between menu options)
             if current == MenuState.first_level:
                 # Depends on if it's the first/last icon
                 if index == 0:
@@ -266,27 +254,24 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                 else:
                     icon = Icon.UP_DOWN
 
+                # Only update text and icon if it has changed
                 if last_index != index:
-                    env.hat.display_string_icon(menu_list[index].name, icon)
+                    env.hardware.display(menu_list[index].name, icon)
                     last_index = index
 
-                # Noop is needed since display string only sends msg when it has
-                # a new string (different from previous string)
-                env.hat.noop()
-                buttons = env.hat.get_buttons()
-
-                if buttons.joy_button:  # Selected controller
+                buttons = env.hardware.get_buttons()
+                if buttons.joy_button:  # Enter the menu option
                     current = MenuState.second_level
-                elif buttons.joy_y < -0.8:  # Flicked joystick down
+                elif buttons.joy_y < -0.8:  # Flick joystick down
                     index = min(index + 1, len(menu_list) - 1)
                     time.sleep(0.1)
-                elif buttons.joy_y > 0.8:  # Flicked joystick up
+                elif buttons.joy_y > 0.8:  # Flick joystick up
                     index = max(index - 1, 0)
                     time.sleep(0.1)
 
             else:  # current == MenuState.second_level:
                 if menu_list[index].require_servos:
-                    env.hat.enable_servos()
+                    env.hardware.enable_servos()
 
                 # Reset the controller
                 if menu_list[index].is_controller:
@@ -319,7 +304,7 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                     except BrainNotFound:
                         print(f"caught BrainNotFound in loop")
 
-                    env.hat.go_up()
+                    env.hardware.go_up()
                 else:
                     # If not a controller, let it do it's own thing. We assume
                     # it's a blocking call that will return when menu is pressed
@@ -330,7 +315,7 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                 last_index = -1
 
                 if menu_list[index].require_servos:
-                    env.hat.disable_servos()
+                    env.hardware.disable_servos()
 
 
 if __name__ == "__main__":
