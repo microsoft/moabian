@@ -135,7 +135,7 @@ int display_init()
 
     //LOG_INF("Version %s", log_strdup(APP_SEMVER));
     static char splash[30] = {0};
-    sprintf(splash, "PROJECT  MOAB\n%s", APP_MAJORMINORPATCH);
+    sprintf(splash, "PROJECT  MOAB\nv%s", APP_MAJORMINORPATCH);
 
     display_small_text(splash);
 
