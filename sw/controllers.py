@@ -149,7 +149,6 @@ def brain_controller(
                 # Get action from brain
                 response = requests.post(prediction_url, json=observables)
                 info = {"status": response.status_code, "resp": response.json()}
-                print(response.ok)
 
                 if response.ok:
                     concepts = info["resp"]["concepts"]
@@ -170,8 +169,6 @@ def brain_controller(
                 raise BrainNotFound
             except Exception as e:
                 print(f"Brain exception: {e}")
-
-        print(f"Brain action: {action}")
         return action, info
 
     if version == 1:
