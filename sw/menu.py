@@ -154,7 +154,7 @@ def _handle_debug(ctx, param, debug):
 
 
 @click.command()
-@click.version_option(version="3.1.0")
+@click.version_option(version="3.1.1")
 @click.option(
     "-c",
     "--cont",
