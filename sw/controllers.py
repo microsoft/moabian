@@ -10,6 +10,7 @@ import logging as log
 from env import MoabEnv
 from common import Vector2
 
+
 class BrainNotFound(Exception):
     pass
 
@@ -55,6 +56,7 @@ def joystick_controller(max_angle=16, **kwargs):
 def _brain_controller(
     max_angle=22,
     port=5555,
+    client_id=123,
     alert_fn=lambda toggle: None,
     **kwargs,
 ):
@@ -62,11 +64,19 @@ def _brain_controller(
     This class interfaces with an HTTP server running locally.
     It passes the current hardware state and gets new plate
     angles in return.
-
     The hardware state is unprojected from camera pixel space
     back to real space by using the calculated plate surface plane.
+
+    Note: Still use v1 endpoint even if it's a v2 brain because on every new
+    creation of a brain controller we still call DELETE on the v2 brain
+    endpoint. This way we don't need to know information about what the trained
+    brain was called to navigate the json response.
     """
     prediction_url = f"http://localhost:{port}/v1/prediction"
+
+    # Reset memory if a v2 brain
+    status = requests.delete(f"http://localhost:{port}/v2/clients/{client_id}")
+    version = 2 if status.status_code == 204 else 1
 
     def next_action(state):
         env_state, ball_detected, buttons = state
@@ -90,14 +100,12 @@ def _brain_controller(
                 # Get action from brain
                 response = requests.get(prediction_url, json=observables)
                 info = {"status": response.status_code, "resp": response.json()}
-                action_json = response.json()
 
                 if response.ok:
                     if alert_fn is not None:
                         alert_fn(False)
-                    action_json = requests.get(prediction_url, json=observables).json()
-                    pitch = action_json["input_pitch"]
-                    roll = action_json["input_roll"]
+                    pitch = info["resp"]["input_pitch"]
+                    roll = info["resp"]["input_roll"]
 
                     # Scale and clip
                     pitch = np.clip(pitch * max_angle, -max_angle, max_angle)

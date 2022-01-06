@@ -112,7 +112,7 @@ class Hat:
     SPI connection, GPIO pins, and saves responses from the hat. Nothing at a
     higher level of abstraction should be done here.
     """
-    
+
     def __init__(
         self,
         debug=False,

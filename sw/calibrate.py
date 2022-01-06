@@ -266,6 +266,12 @@ def run_calibration(env, pid_fn, calibration_file):
         hardware.go_up()
         return
 
+    # Calibrate position
+    pos_calib = calibrate_pos(camera_fn, detector_fn, hue_calib.hue, is_menu_down)
+    if pos_calib.early_quit:
+        hardware.go_up()
+        return
+
     # Save calibration
     calibration_dict["ball_hue"] = hue_calib.hue
     calibration_dict["plate_offsets"] = pos_calib.position

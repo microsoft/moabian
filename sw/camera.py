@@ -47,7 +47,9 @@ class OpenCVCameraSensor:
             self.source.set(cv2.CAP_PROP_MODE, 0)  # Not meant to be configurable
             self.source.set(cv2.CAP_PROP_BRIGHTNESS, self.brightness)
             self.source.set(cv2.CAP_PROP_CONTRAST, self.contrast)
-            self.source.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25 if self.auto_exposure else 0.75)
+            self.source.set(
+                cv2.CAP_PROP_AUTO_EXPOSURE, 0.25 if self.auto_exposure else 0.75
+            )
             self.source.set(cv2.CAP_PROP_EXPOSURE, self.exposure)
         else:
             raise Exception("Couldn't create camera.")

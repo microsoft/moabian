@@ -12,6 +12,8 @@ import click
 import procid
 import logging
 import subprocess
+import json
+import docker
 
 from hat import Icon
 from enum import Enum
@@ -119,102 +121,16 @@ def build_menu(env, log_on, logfile):
 
     # Parse the docker-compose.yml file for a list of brains
     middle_menu = []
-    # if os.path.isfile("../docker-compose.yml"):
-    #     with open("../docker-compose.yml", "r") as f:
-    #         docker_compose = yaml.safe_load(f)
-
-    #     # limit to services node in docker compose
-    #     services = docker_compose["services"]
-
-    #     for service, info in services.items():
-    #         # host:image port convention (need host)
-    #         splitports = info["ports"]
-    #         port = splitports[0].split(":")[0]
-
-    #         # if container name exists, use it, else use image name
-    #         if "container_name" in info.keys():
-    #             menu_name = info["container_name"]
-    #         else:
-    #             slashes = info["image"].split("/")
-    #             # if image tag or no slashes, use the image name
-    #             if slashes is not None and len(slashes) == 1:
-    #                 menu_name = info["image"]
-    #             else:
-    #                 colon = slashes[-1].split(":")
-    #                 menu_name = colon[0]
-
-    #         m = MenuOption(
-    #             name=menu_name,
-    #             closure=brain_controller,
-    #             kwargs={"port": port, "alert_fn":alert_callback},
-    #             decorators=[log_csv] if log_on else none,
-    #         )
-    #         middle_menu.append(m)
-
-    # Parse Azure IOT brains from docker ps and add to middle_menu
-
-    docker_ps = subprocess.Popen(
-        "docker ps --format '{{json .}}'",
-        stdout=subprocess.PIPE,
-        shell=True,
-        universal_newlines=True,
-    )
-    _iot_json = "["
-    stdout = docker_ps.communicate()[0]
-    if docker_ps.returncode == 0:
-        # split the json objects on the newline
-        lines = stdout.splitlines()
-
-        for i, line in enumerate(lines):
-            _iot_json += line
-            # add comma between each json object
-            if i != len(lines) - 1:
-                _iot_json += ","
-
-        # Add ending bracket for well-formed json
-        _iot_json += "]"
-
-        # Load the json objects into a list
-        iot_dict = json.loads(_iot_json)
-
-        # parse the list
-        for x, info in enumerate(iot_dict):
-
-            if (
-                (info["Names"] != "edgeHub")
-                and (info["Names"] != "edgeAgent")
-            ):
-                # check for port
-                if "Ports" in info.keys():
-                    # port format: 'Ports': '0.0.0.0:5005->5000/tcp, :::5005->5000/tcp'
-                    splitports = info["Ports"]
-
-                    if splitports is not None:
-                        # split on comma first - 0.0.0.0:5005->5000/tcp
-                        splitport_1 = splitports.split(",")[0]
-                        # split next on arrow - 0.0.0.0:5005
-                        splitport_2 = splitport_1.split("->")[0]
-                        # finally split on colon and take last element - 5005
-                        port = splitport_2.split(":")[1]
-
-                # split image on slashes
-                slashes = info["Image"].split("/")
-
-                # if image tag or no slashes, use the image name
-                if slashes is not None and len(slashes) == 1:
-                    menu_name = info["Image"]
-                else:
-                    # split on colon
-                    colon = slashes[-1].split(":")
-                    menu_name = colon[0]
-
-                m = MenuOption(
-                    name=menu_name,
-                    closure=brain_controller,
-                    kwargs={"port": port, "alert_fn": alert_callback},
-                    decorators=[log_csv] if log_on else none,
-                )
-                middle_menu.append(m)
+    # Parse brains from docker ps and add to middle_menu
+    # parse the list
+    for brain_image in docker.ps():
+        m = MenuOption(
+            name=brain_image.short_name,
+            closure=brain_controller,
+            kwargs={"port": brain_image.port, "alert_fn": alert_callback},
+            decorators=[log_csv] if log_on else none,
+        )
+        middle_menu.append(m)
 
     bottom_menu = [
         # MenuOption(
@@ -268,7 +184,7 @@ def _handle_debug(ctx, param, debug):
 
 
 @click.command()
-@click.version_option(version="3.0.31")
+@click.version_option(version="3.1.0")
 @click.option(
     "-c",
     "--cont",
@@ -378,6 +294,14 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                     index = min(index + 1, len(menu_list) - 1)
                     time.sleep(0.1)
                 elif buttons.joy_y > 0.8:  # Flick joystick up
+                    # "Pull to refresh"
+                    # If you go above the top of the menu, refresh the menu list
+                    if index == 0:
+                        menu_list = build_menu(env, log, file)
+                        env.hardware.display("Refreshing", icon.BLANK)
+                        time.sleep(0.5)
+                        env.hardware.display(menu_list[index].name, icon)
+
                     index = max(index - 1, 0)
                     time.sleep(0.1)
 

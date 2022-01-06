@@ -51,7 +51,7 @@ class MoabEnv:
             frequency=frequency,
             debug=debug,
             verbose=verbose,
-            calibration_file=calibration_file
+            calibration_file=calibration_file,
         )
 
     def __enter__(self):

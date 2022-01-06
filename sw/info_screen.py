@@ -13,7 +13,7 @@ from env import MoabEnv
 
 
 def _get_host_ip():
-    ip = '127.0.0.1'
+    ip = "127.0.0.1"
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("1.1.1.1", 1))
