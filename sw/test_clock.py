@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 import sys
 import time
 import argparse
@@ -19,18 +22,17 @@ def main(port=5000):
 
     t0 = time.time()
     # Hit the brain prediction as fast as possible for 5 seconds (at 30 Hz)
-    print(f'Testing brain at port {port}')
+    print(f"Testing brain at port {port}")
     try:
-        for x in range(1, 30*5):
+        for x in range(1, 30 * 5):
             a, i = f(state)
-            #print(i)
+            # print(i)
         dt = time.time() - t0
-        print(f'{dt/5*1000:0.1f} msec out of 1000 msec')
+        print(f"{dt/5*1000:0.1f} msec out of 1000 msec")
 
     except Exception as ex:
         print(ex)
         sys.exit(1)
-
 
 
 def brain_controller(
@@ -97,9 +99,8 @@ def brain_controller(
     return next_action
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('port', metavar='port', type=int, help='port for brain to test')
+    parser.add_argument("port", metavar="port", type=int, help="port for brain to test")
     args = parser.parse_args()
     main(port=args.port)

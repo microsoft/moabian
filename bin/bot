@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # vim:filetype=sh:
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 # http://www.binaryphile.com/bash/2018/07/26/approach-bash-like-a-developer-part-1-intro.html
 # https://github.com/MatthewZito/sh/pull/1
 

@@ -36,7 +36,7 @@ def shutdown():
     global too_late
     too_late = True
 
-    # Send SIGTERM to moab/control container; when caught, Moab 
+    # Send SIGTERM to moab/control container; when caught, Moab
     # will drop the plate, kill the servo power and clear the screen
 
     cmd = "/bin/kill -s TERM $(cat /tmp/menu.pid) &> /dev/null"

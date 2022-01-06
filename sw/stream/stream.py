@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 import os
 import socket
 import logging
@@ -7,48 +10,53 @@ from flask import Flask, render_template, Response, url_for, redirect
 from camera_file import CameraFile
 from camera_opencv import CameraOpenCV
 
-app = Flask(__name__, static_url_path='', static_folder='static', template_folder='static')
+app = Flask(
+    __name__, static_url_path="", static_folder="static", template_folder="static"
+)
 
-if __name__ != '__main__':
-    gunicorn_logger = logging.getLogger('gunicorn.error')
+if __name__ != "__main__":
+    gunicorn_logger = logging.getLogger("gunicorn.error")
     app.logger.handlers = gunicorn_logger.handlers
     app.logger.setLevel(gunicorn_logger.level)
 
-@app.route('/')
+
+@app.route("/")
 def default():
-    return render_template('index.html')
+    return render_template("index.html")
+
 
 def gen(camera):
     while True:
         frame = camera.get_frame()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+        yield (b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
 
 
-@app.route('/file_mjpeg')
+@app.route("/file_mjpeg")
 def video_mjpeg():
-    return Response(gen(CameraFile()),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(
+        gen(CameraFile()), mimetype="multipart/x-mixed-replace; boundary=frame"
+    )
 
-@app.route('/opencv_mjpeg')
+
+@app.route("/opencv_mjpeg")
 def opencv_mjpeg():
-    return Response(gen(CameraOpenCV()),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(
+        gen(CameraOpenCV()), mimetype="multipart/x-mixed-replace; boundary=frame"
+    )
 
 
 def getHostIP():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(('1.1.1.1', 1))
+    s.connect(("1.1.1.1", 1))
     local_ip = s.getsockname()[0]
     return local_ip
 
-if __name__ == '__main__':
-    port = int(os.getenv('PORT', 8000))
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 8000))
     hostname = socket.gethostname()
 
     ip = getHostIP()
     app.logger.info(f" • Home http://{ip}:{port}/index.html")
     # print(f" • OpenCV View    http://{ip}:{port}/opencv.html")
     app.run(host=ip, port=port, threaded=True, debug=True)
-
-

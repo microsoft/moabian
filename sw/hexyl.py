@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 import time
-import numpy as np
 import itertools
+import numpy as np
+
 from operator import add
 from typing import Union, List, Tuple, Dict
 

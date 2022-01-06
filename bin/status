@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 [[ $TERM == "alacritty" ]] && TERM=xterm-256color 
 sudo systemctl status fan power nginx stream brain menu

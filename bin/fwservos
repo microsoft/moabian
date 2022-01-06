@@ -2,30 +2,33 @@
 
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
-import serial       # PySerial
-import time
+
 import sys
+import time
+import serial  # PySerial
 
 # Interactive TTY shell with Moab Hat:
 # sudo minicom --device=/dev/ttyAMA1
 
+
 def main():
-    ser = serial.Serial('/dev/ttyAMA1', 115200, timeout = 0.5)
+    ser = serial.Serial("/dev/ttyAMA1", 115200, timeout=0.5)
 
     ser.write("calibservo\n".encode())
-    out_a = ser.read_until(b'uart')       # read until the "uart" prompt it seen
+    out_a = ser.read_until(b"uart")  # read until the "uart" prompt it seen
 
-    out_u = out_a.decode('ascii')
+    out_u = out_a.decode("ascii")
 
     # 0: version\n
     # 1: Moab version 3.0.1.04321
     # 2: uart
 
-    if out_u != '':
-        print('\n'.join(out_u.splitlines()))
+    if out_u != "":
+        print("\n".join(out_u.splitlines()))
         sys.exit(0)
     else:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

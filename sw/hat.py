@@ -4,7 +4,6 @@
 import os
 import time
 import signal
-
 import socket
 import spidev
 import numpy as np

@@ -1,5 +1,8 @@
-import psutil
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 import time
+import psutil
 
 with open("/tmp/menu.pid", "r") as f:
     other_pid = int(f.read())
