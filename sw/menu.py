@@ -8,12 +8,12 @@ import sys
 import time
 import json
 import yaml
+import json
 import click
+import docker
 import procid
 import logging
 import subprocess
-import json
-import docker
 
 from hat import Icon
 from enum import Enum
