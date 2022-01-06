@@ -264,6 +264,14 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                     index = min(index + 1, len(menu_list) - 1)
                     time.sleep(0.1)
                 elif buttons.joy_y > 0.8:  # Flick joystick up
+                    # "Pull to refresh"
+                    # If you go above the top of the menu, refresh the menu list
+                    if index == 0:
+                        menu_list = build_menu(env, log, file)
+                        env.hardware.display("Refreshing", icon.BLANK)
+                        time.sleep(0.5)
+                        env.hardware.display(menu_list[index].name, icon)
+
                     index = max(index - 1, 0)
                     time.sleep(0.1)
 
