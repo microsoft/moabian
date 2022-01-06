@@ -159,8 +159,12 @@ save_brains () {
         sha=$(brain_sha "$i")
         sha4=${sha:0:4}
 
-        echo "docker save $sha4 > /tmp/brains/$sha4.tar.gz"
-        docker save $sha4 > /tmp/brains/$sha4.tar.gz
+        # Skip a56e: remnant of v2.4.1 when the controller was in docker
+        # Skip 77b0: as it's the classic moab/brain which we download later
+        if [[ "$sha4" != "a56e" ]] && [[ "$sha4" != "77b0" ]]; then
+            echo "docker save $sha4 > /tmp/brains/$sha4.tar.gz"
+            docker save $sha4 > /tmp/brains/$sha4.tar.gz
+        fi
     done
 }
 
@@ -237,12 +241,15 @@ function layer-docker
     load_brains || true
     download_default_brain
 
-    # If docker-compose.yml is missing OR it has evidence of 2.4.1 version (moab-control),
-    # copy a new one.
-    if [[ ! -e ../docker-compose.yml ]] || [[ $(grep moab-control ../docker-compose.yml) ]]; then 
-        cp ../bin/template.yml ../docker-compose.yml
-        chown pi:pi ../docker-compose.yml
+    # If docker-compose.yml is from 2.4.1 version, replace it 
+    if grep -q moab-control ../docker-compose.yml ; then 
+        echo "deleting old 2.4 docker-compose.yml"
+        rm ../docker-compose.yml
     fi
+
+    # Copy template docker-compose if there isn't one
+    cp --no-clobber ../bin/template.yml ../docker-compose.yml
+    chown pi:pi ../docker-compose.yml
 }
 
 
