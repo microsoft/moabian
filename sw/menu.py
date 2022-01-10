@@ -10,6 +10,9 @@ import yaml
 import click
 import procid
 import logging
+import subprocess
+import json
+import docker
 
 from hat import Icon
 from enum import Enum
@@ -100,37 +103,16 @@ def build_menu(env, log_on, logfile):
 
     # Parse the docker-compose.yml file for a list of brains
     middle_menu = []
-    if os.path.isfile("../docker-compose.yml"):
-        with open("../docker-compose.yml", "r") as f:
-            docker_compose = yaml.safe_load(f)
-
-        # limit to services node in docker compose
-        services = docker_compose["services"]
-
-        for service, info in services.items():
-            # host:image port convention (need host)
-            splitports = info["ports"]
-            port = splitports[0].split(":")[0]
-
-            # if container name exists, use it, else use image name
-            if "container_name" in info.keys():
-                menu_name = info["container_name"]
-            else:
-                slashes = info["image"].split("/")
-                # if image tag or no slashes, use the image name
-                if slashes is not None and len(slashes) == 1:
-                    menu_name = info["image"]
-                else:
-                    colon = slashes[-1].split(":")
-                    menu_name = colon[0]
-
-            m = MenuOption(
-                name=menu_name,
-                closure=brain_controller,
-                kwargs={"port": port, "alert_fn": alert_callback},
-                decorators=[log_csv] if log_on else none,
-            )
-            middle_menu.append(m)
+    # Parse brains from docker ps and add to middle_menu
+    # parse the list
+    for brain_image in docker.ps():
+        m = MenuOption(
+            name=brain_image.short_name,
+            closure=brain_controller,
+            kwargs={"port": brain_image.port, "alert_fn": alert_callback},
+            decorators=[log_csv] if log_on else none,
+        )
+        middle_menu.append(m)
 
     bottom_menu = [
         MenuOption(
@@ -148,6 +130,7 @@ def build_menu(env, log_on, logfile):
             require_servos=False,
         ),
     ]
+
     return top_menu + middle_menu + bottom_menu
 
 
@@ -171,7 +154,7 @@ def _handle_debug(ctx, param, debug):
 
 
 @click.command()
-@click.version_option(version="3.0.31")
+@click.version_option(version="3.1.1")
 @click.option(
     "-c",
     "--cont",
@@ -281,6 +264,14 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                     index = min(index + 1, len(menu_list) - 1)
                     time.sleep(0.1)
                 elif buttons.joy_y > 0.8:  # Flick joystick up
+                    # "Pull to refresh"
+                    # If you go above the top of the menu, refresh the menu list
+                    if index == 0:
+                        menu_list = build_menu(env, log, file)
+                        env.hardware.display("Refreshing", icon.BLANK)
+                        time.sleep(0.5)
+                        env.hardware.display(menu_list[index].name, icon)
+
                     index = max(index - 1, 0)
                     time.sleep(0.1)
 

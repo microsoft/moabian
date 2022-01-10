@@ -4,6 +4,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+readonly _D="$(dirname "$(readlink -f "$0")")" && cd $_D
+
 ansi_colors()
 {
   esc=""
@@ -30,6 +32,7 @@ ansi_colors
 # 32, 33, 36
 # green, yellow, cyan
 
+h3="$reset$bold$purple"
 h2="$reset$bold$yellow"
 h1="$reset$bold$green"
 p1="$reset"
@@ -42,19 +45,24 @@ gpu_t="$(vcgencmd measure_temp | cut -d '=' -f 2)"
 cpu_t1k=$(cat /sys/class/thermal/thermal_zone0/temp)
 cpu_t=$(printf %.1f "$((10**3 * $cpu_t1k / 1000))e-3")
 temps="$cpu_t° C"
-moabian_version="${MOABIAN:-3.0.0}"
+
+version="${MOABIAN:-3.0.0}"
+branch="$(git status | head -n 1 | cut -d " " -f 3)"
+sha="$(git rev-parse HEAD | cut -c 1-4)"
+moabian_version="${version} · ${branch}:${sha^^}"
+
 fw_version="$([ -e ~/moab/bin/fwversion ] && ~/moab/bin/fwversion | awk  '{print $NF}')"
 
 # ☉
 
 cat <<EOF
 
-${h2} · IP         ${r}${ip}
+${h2} · IP         ${r}http://${ip}
 ${h2} · Kernel     ${r}${kernel}
 ${h2} · Load       ${r}${load}
 ${h2} · CPU        ${r}${temps}
 ${h2} · URL        ${r}https://aka.ms/moab
 ${h2} · FW         ${r}${fw_version}
-${h1} ○ Moabian    ${r}${moabian_version}
+${h1} ○ Moabian    ${h3}${version}${r} · ${branch}:${sha^^}
 
 EOF
