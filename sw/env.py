@@ -89,10 +89,11 @@ class MoabEnv:
         self.sum_x += x
         self.sum_y += y
         
-        if not ball_detected:
-            # TODO don't call this every time
+        if not ball_detected:  # TODO don't call this every time
             self.vel_x_reset()
             self.vel_y_reset()
+            self.sum_x = 0
+            self.sum_y = 0
 
         state = EnvState(x, y, vel_x, vel_y, self.sum_x, self.sum_y)
 
