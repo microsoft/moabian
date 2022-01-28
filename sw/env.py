@@ -38,6 +38,7 @@ class MoabEnv:
         verbose=0,
         derivative_fn=derivative,
         calibration_file="bot.json",
+        use_servo_control=False,
     ):
         self.debug = debug
         self.verbose = verbose
@@ -46,6 +47,7 @@ class MoabEnv:
         self.vel_x = self.derivative_fn(frequency)
         self.vel_y = self.derivative_fn(frequency)
         self.sum_x, self.sum_y = 0, 0
+        self.use_servo_control = use_servo_control
 
         self.hardware = MoabHardware(
             frequency=frequency,
@@ -76,12 +78,20 @@ class MoabEnv:
         # Reset the integral of the position
         self.sum_x, self.sum_y = 0, 0
 
-        # Return the state after a step with no motor actions
-        return self.step((0, 0))
+        if self.use_servo_control:
+            # Return the state after a step setting servos to level position
+            return self.step(133.34, 133.34, 133.34)
+        else:
+            # Return the state after a step with no motor actions
+            return self.step((0, 0))
 
     def step(self, action) -> Tuple[EnvState, bool, Buttons]:
-        pitch, roll = action
-        (x, y), ball_detected, buttons = self.hardware.step(pitch, roll)
+        if self.use_servo_control:
+            s1, s2, s3 = action
+            (x, y), ball_detected, buttons = self.hardware.step(s1, s2, s3)
+        else:
+            pitch, roll = action
+            (x, y), ball_detected, buttons = self.hardware.step(pitch, roll)
 
         # Update derivate calulation
         vel_x, vel_y = self.vel_x(x), self.vel_y(y)

@@ -149,8 +149,18 @@ class MoabHardware:
         s1, s2, s3 = plate_angles_to_servo_positions(pitch, roll)
         self.set_servos(s1, s2, s3)
 
-    def step(self, pitch, roll) -> Buttons:
-        self.set_angles(pitch, roll)
+    def step(self, *args) -> Buttons:
+        if len(args) == 2:
+            pitch, roll = args
+            self.set_angles(pitch, roll)
+        elif len(args) == 3:
+            s1, s2, s3 = args
+            self.set_servos(s1, s2, s3)
+        else:
+            raise ValueError(
+                "Invalid number of arguments. "
+                "Must pass either 2 for [pitch, roll] or 3 for [s1, s2, s3]."
+            )
         frame, elapsed_time = self.camera()
         buttons = self.hat.get_buttons()
         ball_detected, (ball_center, ball_radius) = self.detector(frame, hue=self.hue)
