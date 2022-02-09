@@ -26,8 +26,10 @@ from procid import setup_signal_handlers, stop_doppelgänger
 from info_screen import info_screen_controller, info_config_controller
 from controllers import (
     pid_controller,
+    zero_controller,
     brain_controller,
     joystick_controller,
+    dump_ball_controller,
     BrainNotFound,
 )
 
@@ -134,6 +136,43 @@ def build_menu(env, log_on, logfile):
     return top_menu + middle_menu + bottom_menu
 
 
+def museum_mode(env, dump_angle):
+    dump_ball_fn = dump_ball_controller(angle=dump_angle, tilt_angle=5)
+    zero_fn = zero_controller()
+
+    # Dump the ball for 1 second
+    for _ in range(env.frequency * 1):
+        action, _ = dump_ball_fn((None, None, None))
+        _ = env.step(action)
+        time.sleep(1 / env.frequency)
+
+    # Level the plate
+    action, _ = zero_fn((None, None, None))
+    _ = env.step(action)
+    time.sleep(1 / env.frequency)
+
+    # Disable servos
+    env.hardware.disable_servos()
+    time.sleep(1 / env.frequency)
+
+    # Wait until the ball is detected again for 3 consecutive frames
+    detected_count = 0
+    detected = False
+    while detected_count < 3:
+        action, _ = zero_fn((None, None, None))
+        _, detected, _ = env.step(action)
+        time.sleep(1 / env.frequency)
+
+        if detected:
+            detected_count += 1
+        else:
+            detected_count = 0
+
+    # Re-enable servos
+    env.hardware.enable_servos()
+    time.sleep(1 / env.frequency)
+
+
 # color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
 out = partial(click.secho, bold=False, err=True)
 err = partial(click.secho, fg="red", err=True)
@@ -203,6 +242,26 @@ def _handle_debug(ctx, param, debug):
     default=1,
     help="verbose tx/rx (-v=OLED changes, -vv=servo commands, -vvv=NOOPs)",
 )
+@click.option(
+    "--museum/--no-museum",
+    default=False,
+    help=(
+        "Enables the museum mode. "
+        "Exit controllers after a set time and dump the ball towards one side"
+    ),
+)
+@click.option(
+    "--museum-timeout",
+    type=int,
+    default=300,  # 5 minutes
+    help="Timeout before museum mode is enabled (in seconds)",
+)
+@click.option(
+    "--museum-dump-angle",
+    type=click.IntRange(0, 360),
+    default=90,
+    help="Angle to dump the ball towards in museum mode",
+)
 @click.pass_context
 def main(ctx: click.core.Context, **kwargs: Any) -> None:
     if kwargs["verbose"] == 2:
@@ -212,7 +271,18 @@ def main(ctx: click.core.Context, **kwargs: Any) -> None:
     main_menu(**kwargs)
 
 
-def main_menu(cont, debug, file, hertz, log, reset, verbose):
+def main_menu(
+    cont,
+    debug,
+    file,
+    hertz,
+    log,
+    reset,
+    verbose,
+    museum,
+    museum_dump_angle,
+    museum_timeout,
+):
 
     if reset:
         out("Resetting firmware")
@@ -302,11 +372,22 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                 time.sleep(1 / env.frequency)
 
                 if menu_list[index].is_controller:
+                    controller_start_time = time.time()
+
                     # If it's a controller run the control loop
                     try:
                         while not buttons.menu_button:
                             action, info = controller((state, detected, buttons))
                             state, detected, buttons = env.step(action)
+
+                            # If the controller has been running for more than
+                            # museum_timeout seconds, exit, and dump the ball towards
+                            # one side and wait until the ball is detected again
+                            if museum:
+                                if time.time() - controller_start_time > museum_timeout:
+                                    museum_mode(env, museum_dump_angle)
+                                    controller_start_time = time.time()
+
                     except BrainNotFound:
                         print(f"caught BrainNotFound in loop")
 
