@@ -136,20 +136,23 @@ def build_menu(env, log_on, logfile):
     return top_menu + middle_menu + bottom_menu
 
 
-def museum_mode(env, dump_angle):
+def museum_mode(env, prev_state, dump_angle):
     dump_ball_fn = dump_ball_controller(angle=dump_angle, tilt_angle=5)
     zero_fn = zero_controller()
+    state, detected, buttons = prev_state
 
     # Dump the ball for 1 second
     for _ in range(env.frequency * 1):
-        action, _ = dump_ball_fn((None, None, None))
-        _ = env.step(action)
+        action, _ = dump_ball_fn((state, detected, buttons))
+        state, detected, buttons = env.step(action)
         time.sleep(1 / env.frequency)
 
+        if buttons.menu_button:
+            return (state, detected, buttons), True
+
     # Level the plate
-    action, _ = zero_fn((None, None, None))
-    _ = env.step(action)
-    time.sleep(1 / env.frequency)
+    action, _ = zero_fn((state, detected, buttons))
+    state, detected, buttons = env.step(action)
 
     # Disable servos
     env.hardware.disable_servos()
@@ -159,8 +162,8 @@ def museum_mode(env, dump_angle):
     detected_count = 0
     detected = False
     while detected_count < 3:
-        action, _ = zero_fn((None, None, None))
-        _, detected, _ = env.step(action)
+        action, _ = zero_fn((state, detected, buttons))
+        state, detected, buttons = env.step(action)
         time.sleep(1 / env.frequency)
 
         if detected:
@@ -168,9 +171,15 @@ def museum_mode(env, dump_angle):
         else:
             detected_count = 0
 
+        if buttons.menu_button:
+            env.hardware.enable_servos()
+            return (state, detected, buttons), True
+
     # Re-enable servos
     env.hardware.enable_servos()
     time.sleep(1 / env.frequency)
+
+    return (state, detected, buttons), False
 
 
 # color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
@@ -385,8 +394,15 @@ def main_menu(
                             # one side and wait until the ball is detected again
                             if museum:
                                 if time.time() - controller_start_time > museum_timeout:
-                                    museum_mode(env, museum_dump_angle)
+                                    prev_state = (state, detected, buttons)
+                                    next_state, museum_exit = museum_mode(
+                                        env, prev_state, museum_dump_angle
+                                    )
+                                    state, detected, buttons = next_state
                                     controller_start_time = time.time()
+                                    # Whether the menu button was pressed in museum mode
+                                    if museum_exit:
+                                        break
 
                     except BrainNotFound:
                         print(f"caught BrainNotFound in loop")
