@@ -15,4 +15,4 @@ missing-compose() {
 
 [[ -e docker-compose.yml ]] || missing-compose
 
-docker-compose up --remove-orphans -d
+docker-compose up --remove-orphans --detach
