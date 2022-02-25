@@ -300,7 +300,7 @@ function touch-console-setup
     cat <<- EOF >> /etc/default/console-setup
 		##moabian
 		FONTFACE="TerminusBold"
-		FONTSIZE="14x28"
+		FONTSIZE="10x20"
 	EOF
 }
 
