@@ -145,27 +145,18 @@ brain_sha () {
 
 save_brains () {
     require "docker"
-    require "docker-compose"
 
     if $(grep "MOABIAN=2" /etc/environment);  then
 		return -1
 	fi
 
-    local p=$(brain_paths)
+    # Skip moab/control a56e: remnant of v2.4.1 when the controller was in docker
+    # Skip moab/brain 77b0: as it's the classic moab/brain which we download later
+    docker save $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -v -e moab/control) -o /tmp/brains.tar
+}
 
-    mkdir --parents /tmp/brains
-
-    for i in $p; do
-        sha=$(brain_sha "$i")
-        sha4=${sha:0:4}
-
-        # Skip a56e: remnant of v2.4.1 when the controller was in docker
-        # Skip 77b0: as it's the classic moab/brain which we download later
-        if [[ "$sha4" != "a56e" ]] && [[ "$sha4" != "77b0" ]]; then
-            echo "docker save $sha4 > /tmp/brains/$sha4.tar.gz"
-            docker save $sha4 > /tmp/brains/$sha4.tar.gz
-        fi
-    done
+load_brains () {
+    docker load --input /tmp/brains.tar
 }
 
 uninstall_docker_ce () {
@@ -193,13 +184,6 @@ uninstall_docker_ce () {
     ip link delete docker0
 }
 
-
-load_brains () {
-	echo "load_brains()"
-	# test for /tmp/brains first
-	return -1 # if it doesn't exist
-}
-
 add_moby_keys () {
     curl https://packages.microsoft.com/config/debian/stretch/multiarch/prod.list > /etc/apt/sources.list.d/microsoft.list
     curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.gpg
@@ -217,18 +201,13 @@ install_docker_compose () {
     fi
 }
 
-load_brains () {
-    if [[ -d /tmp/brains ]]; then
-        for i in /tmp/brains/*; do
-            docker load < $i
-        done
-    fi
-}
-
 download_default_brain () {
-    wget --no-verbose https://github.com/microsoft/moabian/releases/download/v.2.4.0/brain.77b0.tar.gz -O /tmp/brain.tar.gz
-    docker load < /tmp/brain.tar.gz
-    docker tag 77b0 moab/brain:latest
+    # check for the default brain "moab/brain" with SHA 77b0
+    if [[ $(docker images | grep --invert-match 77b01e) ]]; then
+        wget --no-verbose https://github.com/microsoft/moabian/releases/download/v.2.4.0/brain.77b0.tar.gz -O /tmp/brain.tar.gz
+        docker load < /tmp/brain.tar.gz
+        docker tag 77b0 moab/brain:latest
+    fi
 }
 
 function layer-docker
