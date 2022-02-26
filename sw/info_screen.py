@@ -4,12 +4,13 @@
 # Licensed under the MIT License.
 
 import os
-from random import *
-from time import *
 import socket
 import logging as log
-from hat import Hat, Icon
+
+from time import sleep
 from env import MoabEnv
+from hat import Hat, Icon
+from random import randint
 
 
 def _get_host_ip():

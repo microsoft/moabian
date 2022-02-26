@@ -6,6 +6,7 @@ import time
 import json
 import numpy as np
 
+from common import Vector2
 from detector import hsv_detector
 from typing import Tuple, Optional
 from camera import OpenCVCameraSensor
@@ -91,9 +92,9 @@ class MoabHardware:
                 calib = json.load(f)
         else:  # Use defaults
             calib = {
-                "ball_hue": 44,
-                "plate_offsets": (0.0, 0.0),
-                "servo_offsets": (0.0, 0.0, 0.0),
+                "ball_hue": 44,  # Hue
+                "plate_offsets": (0.0, 0.0),  # X,Y offset in meters
+                "servo_offsets": (0.0, 0.0, 0.0),  # Servo angle offset in degrees
             }
 
         self.plate_offsets = calib["plate_offsets"]
@@ -154,4 +155,8 @@ class MoabHardware:
         frame, elapsed_time = self.camera()
         buttons = self.hat.get_buttons()
         ball_detected, (ball_center, ball_radius) = self.detector(frame, hue=self.hue)
+
+        ball_center.x -= self.plate_offsets[0]
+        ball_center.y -= self.plate_offsets[1]
+
         return ball_center, ball_detected, buttons

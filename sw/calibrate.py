@@ -19,10 +19,10 @@ import logging as log
 from env import MoabEnv
 from typing import Tuple
 from common import Vector2
-from detector import hsv_detector
 from controllers import pid_controller
 from dataclasses import dataclass, astuple
 from hardware import plate_angles_to_servo_positions
+from detector import hsv_detector, pixels_to_meters, meters_to_pixels
 
 
 @dataclass
@@ -106,24 +106,35 @@ def calibrate_hue(camera_fn, detector_fn, is_menu_down_fn):
         return CalibHue()
 
 
-def calibrate_pos(camera_fn, detector_fn, hue, is_menu_down_fn):
-    for i in range(10):  # Try and detect for 10 frames before giving up
-        if is_menu_down_fn():
+def calibrate_pos(
+    camera_fn, detector_fn, get_buttons_fn, prev_plate_offsets, sleep_time=1 / 30
+):
+    def clip(x, low, high):
+        return max(0, min(high, x))
+
+    x_pixels, y_pixels = meters_to_pixels(prev_plate_offsets)
+    x_pixels, y_pixels = list(Vector2(x_pixels, y_pixels).rotate(30))
+    menu_button, joy_button, joy_x, joy_y = get_buttons_fn()
+
+    while True:
+        if menu_button:
             return CalibPos(early_quit=True)
+        if joy_button:
+            break
 
-        img_frame, elapsed_time = camera_fn()
-        ball_detected, ((x, y), radius) = detector_fn(img_frame, hue=hue)
+        img_frame, _ = camera_fn()
+        lx, ly = img_frame.shape[:2]
+        x_pixels = int(x_pixels + round(joy_x * 2))
+        y_pixels = int(y_pixels + -round(joy_y * 2))
+        _ = detector_fn(img_frame, hue=0, debug=True, crosshairs=(x_pixels, y_pixels))
 
-        # If we found a ball roughly in the center that is large enough
-        if ball_detected and ball_close_enough(x, y, radius):
-            x_offset = round(x, 3)
-            y_offset = round(y, 3)
+        time.sleep(sleep_time)
+        menu_button, joy_button, joy_x, joy_y = get_buttons_fn()
 
-            log.info(f"Offset calibrated: [{x_offset:.3f}, {y_offset:.3f}]")
-            return CalibPos(position=(x_offset, y_offset), success=True)
-
-    log.warning(f"Offset calibration failed.")
-    return CalibPos()
+    # Rotate by -30 degrees then convert to meters
+    x_offset, y_offset = pixels_to_meters(Vector2(x_pixels, y_pixels).rotate(-30))
+    log.info(f"Offset calibrated: [{x_offset:.3f}, {y_offset:.3f}]")
+    return CalibPos(position=(x_offset, y_offset), success=True)
 
 
 def calibrate_servo_offsets(pid_fn, env, stationary_vel=0.005, time_limit=20):
@@ -216,6 +227,9 @@ def run_calibration(env, pid_fn, calibration_file):
     camera_fn = hardware.camera
     detector_fn = hardware.detector
 
+    # Get old calibration (occasionally useful as a starting point)
+    calibration_dict = read_calibration(calibration_file)
+
     def is_menu_down(hardware=hardware) -> bool:
         return hardware.get_buttons().menu_button
 
@@ -224,14 +238,27 @@ def run_calibration(env, pid_fn, calibration_file):
 
     # Display message and wait for joystick
     hardware.display(
+        "move crosshairs\nclick joystick",
+        scrolling=True,
+    )
+
+    # Calibrate position
+    pos_calib = calibrate_pos(
+        camera_fn, detector_fn, hardware.get_buttons, calibration_dict["plate_offsets"]
+    )
+    if pos_calib.early_quit:
+        hardware.go_up()
+        return
+
+    hardware.display(
         "put ball on stand\nclick joystick",
         # "Place ball in\ncenter using\nclear stand.\n\n" "Click joystick\nwhen ready."
         scrolling=True,
     )
-    buttons = wait_for_joystick_or_menu(hardware)
-    if buttons.menu_button:  # Early quit
-        hardware.go_up()
-        return
+    # buttons = wait_for_joystick_or_menu(hardware)
+    # if buttons.menu_button:  # Early quit
+    #     hardware.go_up()
+    #     return
 
     hardware.display("Calibrating...")
     hue_calib = calibrate_hue(camera_fn, detector_fn, is_menu_down)
@@ -246,7 +273,6 @@ def run_calibration(env, pid_fn, calibration_file):
         return
 
     # Save calibration
-    calibration_dict = read_calibration(calibration_file)
     calibration_dict["ball_hue"] = hue_calib.hue
     calibration_dict["plate_offsets"] = pos_calib.position
     x_offset, y_offset = pos_calib.position
