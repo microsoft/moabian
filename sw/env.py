@@ -16,6 +16,7 @@ class EnvState:
     vel_y: float = 0.0
     sum_x: float = 0.0
     sum_y: float = 0.0
+    ball_detected: bool = False
 
     def __iter__(self):
         return iter(astuple(self))
@@ -76,12 +77,12 @@ class MoabEnv:
         # Reset the integral of the position
         self.sum_x, self.sum_y = 0, 0
 
-        # Return the state after a step with no motor actions
+        # Return a step with no motor actions
         return self.step((0, 0))
 
     def step(self, action) -> Tuple[EnvState, bool, Buttons]:
         pitch, roll = action
-        (x, y), ball_detected, buttons = self.hardware.step(pitch, roll)
+        (x, y), detected, btns, frame, elapsed_time = self.hardware.step(pitch, roll)
 
         # Update derivate calulation
         vel_x, vel_y = self.vel_x(x), self.vel_y(y)
@@ -89,6 +90,15 @@ class MoabEnv:
         self.sum_x += x
         self.sum_y += y
 
-        state = EnvState(x, y, vel_x, vel_y, self.sum_x, self.sum_y)
+        state = EnvState(x, y, vel_x, vel_y, self.sum_x, self.sum_y, detected)
 
-        return state, ball_detected, buttons
+        reward = 0.0
+        done = False
+        info = {
+            "ball_detected": detected,
+            "buttons": btns,
+            "frame": frame,
+            "elapsed_time": elapsed_time,
+        }
+
+        return state, reward, done, info

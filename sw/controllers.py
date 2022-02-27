@@ -23,9 +23,8 @@ def pid_controller(
     max_angle=22,
     **kwargs,
 ):
-    def next_action(state):
-        env_state, ball_detected, buttons = state
-        x, y, vel_x, vel_y, sum_x, sum_y = env_state
+    def next_action(state, info):
+        x, y, vel_x, vel_y, sum_x, sum_y, ball_detected = state
 
         if ball_detected:
             action_x = Kp * x + Ki * sum_x + Kd * vel_x
@@ -45,9 +44,10 @@ def pid_controller(
 
 
 def joystick_controller(max_angle=16, **kwargs):
-    def next_action(state):
-        env_state, ball_detected, buttons = state
-        action = Vector2(-buttons.joy_x, -buttons.joy_y)
+    def next_action(state, info):
+        buttons = info["buttons"]
+        x, y = -buttons.joy_x, -buttons.joy_y
+        action = Vector2()
         return action * max_angle, {}
 
     return next_action
@@ -83,9 +83,8 @@ def brain_controller(
     else:
         raise ValueError("Brain version `{self.version}` is not supported.")
 
-    def next_action_v1(state):
-        env_state, ball_detected, buttons = state
-        x, y, vel_x, vel_y, sum_x, sum_y = env_state
+    def next_action_v1(state, info):
+        x, y, vel_x, vel_y, sum_x, sum_y, ball_detected = state
 
         observables = {
             "ball_x": x,
@@ -125,9 +124,9 @@ def brain_controller(
                 print(f"Brain exception: {e}")
         return action, info
 
-    def next_action_v2(state):
-        env_state, ball_detected, buttons = state
-        x, y, vel_x, vel_y, sum_x, sum_y = env_state
+    def next_action_v2(state, info):
+        x, y, vel_x, vel_y, sum_x, sum_y, ball_detected = state
+        ball_detected = info["ball_detected"]
 
         observables = {
             "state": {

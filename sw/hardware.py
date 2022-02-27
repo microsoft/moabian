@@ -159,4 +159,4 @@ class MoabHardware:
         ball_center.x -= self.plate_offsets[0]
         ball_center.y -= self.plate_offsets[1]
 
-        return ball_center, ball_detected, buttons
+        return ball_center, ball_detected, buttons, frame, elapsed_time

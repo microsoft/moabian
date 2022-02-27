@@ -59,8 +59,8 @@ def squash_small_angles(controller_fn, min_angle=1.0):
     Decorates a controller that sets actions smaller than a certain angle to 0.
     """
     # Acts like a normal controller function
-    def decorated_controller(state):
-        action, info = controller_fn(state)  # The actual controller
+    def decorated_controller(state, env_info):
+        action, ctrl_info = controller_fn(state, env_info)  # The actual controller
         (pitch, roll) = action
 
         if abs(pitch) < min_angle:
@@ -69,7 +69,7 @@ def squash_small_angles(controller_fn, min_angle=1.0):
             roll = 0
 
         action = (pitch, roll)
-        return (action), info
+        return (action), ctrl_info
 
     return decorated_controller
 
@@ -282,7 +282,8 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
 
                 # Reset the controller
                 if menu_list[index].is_controller:
-                    state, detected, buttons = env.reset(
+                    # state, detected, buttons = env.reset(
+                    state, _, _, env_info = env.reset(
                         menu_list[index].name, Icon.DOT
                     )
 
@@ -305,9 +306,9 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                 if menu_list[index].is_controller:
                     # If it's a controller run the control loop
                     try:
-                        while not buttons.menu_button:
-                            action, info = controller((state, detected, buttons))
-                            state, detected, buttons = env.step(action)
+                        while not env_info["buttons"].menu_button:
+                            action, ctrl_info = controller((state, env_info))
+                            state, _, _, env_info = env.step(action)
                     except BrainNotFound:
                         print(f"caught BrainNotFound in loop")
 

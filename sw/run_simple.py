@@ -33,10 +33,10 @@ def main(controller_name, frequency, debug, max_angle, port):
     )
 
     with MoabEnv(frequency, debug) as env:
-        state = env.reset(text=controller_name, icon=ICONS[controller_name])
+        state, _, _, env_info = env.reset(text=controller_name, icon=ICONS[controller_name])
         while True:
-            action, info = controller(state)
-            state = env.step(action)
+            action, ctrl_info = controller(state, env_info)
+            state, _, _, env_info = env.step(action)
             print(state, action)
 
 
