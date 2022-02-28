@@ -154,9 +154,13 @@ class MoabHardware:
         self.set_angles(pitch, roll)
         frame, elapsed_time = self.camera()
         buttons = self.hat.get_buttons()
-        ball_detected, (ball_center, ball_radius) = self.detector(frame, hue=self.hue)
 
-        ball_center.x -= self.plate_offsets[0]
-        ball_center.y -= self.plate_offsets[1]
+        detected, (center, radius) = self.detector(
+            frame, hue=self.hue, axis=self.plate_offsets
+        )
 
-        return ball_center, ball_detected, buttons
+        center.x -= self.plate_offsets[0]
+        center.y -= self.plate_offsets[1]
+
+        # Return the ball center, ball betected, and buttons
+        return center, detected, buttons
