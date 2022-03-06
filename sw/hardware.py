@@ -6,11 +6,11 @@ import time
 import json
 import numpy as np
 
-from common import Vector2
-from detector import hsv_detector
-from typing import Tuple, Optional
-from camera import OpenCVCameraSensor
+from detector import hsv_detector, meters_to_pixels
 from hat import Hat, Buttons, Icon, PowerIcon
+from common import Vector2, read_calibration
+from camera import OpenCVCameraSensor
+from typing import Tuple, Optional
 
 
 def plate_angles_to_servo_positions(
@@ -80,24 +80,14 @@ class MoabHardware:
         return self.__str__()
 
     def __str__(self):
-        return f"hue: {self.hue}, servo offsets: {self.servo_offsets}, plate offsets: {self.plate_offsets}"
+        return f"hue: {self.hue}, servo offsets: {self.servo_offsets}, pixel offsets: {self.pixel_offsets}"
 
     def reset_calibration(self, calibration_file=None):
-        # Use default if not defined
+        # Use default file if not defined
         calibration_file = calibration_file or self.calibration_file
 
-        # Get calibration settings
-        if os.path.isfile(calibration_file):
-            with open(calibration_file, "r") as f:
-                calib = json.load(f)
-        else:  # Use defaults
-            calib = {
-                "ball_hue": 44,  # Hue
-                "plate_offsets": (0.0, 0.0),  # X,Y offset in meters
-                "servo_offsets": (0.0, 0.0, 0.0),  # Servo angle offset in degrees
-            }
-
-        self.plate_offsets = calib["plate_offsets"]
+        calib = read_calibration(calibration_file)
+        self.pixel_offsets = calib["pixel_offsets"]
         self.servo_offsets = calib["servo_offsets"]
         self.hue = calib["ball_hue"]
 
@@ -156,11 +146,8 @@ class MoabHardware:
         buttons = self.hat.get_buttons()
 
         detected, (center, radius) = self.detector(
-            frame, hue=self.hue, axis=self.plate_offsets
+            frame, hue=self.hue, pixel_offsets=self.pixel_offsets, axis=True
         )
-
-        center.x -= self.plate_offsets[0]
-        center.y -= self.plate_offsets[1]
 
         # Return the ball center, ball betected, and buttons
         return center, detected, buttons
