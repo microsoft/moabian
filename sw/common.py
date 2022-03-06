@@ -1,7 +1,11 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+import os
 import math
+import json
+import logging as log
+
 from dataclasses import dataclass
 
 
@@ -91,9 +95,18 @@ class Vector2:
         y = o.y + math.sin(theta) * (self.x - o.x) + math.cos(theta) * (self.y - o.y)
         return Vector2(x, y)
 
+    def rotate_deg(self, theta, o=None):
+        return self.rotate(math.radians(theta), o=o)
+
     def __iter__(self):
         yield self.x
         yield self.y
+
+    def __list__(self):
+        return [self.x, self.y]
+
+    def __tuple__(self):
+        return (self.x, self.y)
 
     def to_int_tuple(self):
         return (int(self.x), int(self.y))
@@ -113,9 +126,75 @@ class CircleFeature:
     radius = 0.0
 
 
-@dataclass
-class Calibration:
-    ball_hue = 22
-    plate_y_offset = 0.0  # -0.016
-    plate_x_offset = 0.0  # -0.092
-    rotation = -30.0
+def write_calibration(calibration_dict, calibration_file="bot.json"):
+    print("Writing calibration to file. File is:", calibration_file)
+    log.info("Writing calibration.")
+
+    # write out stuff
+    with open(calibration_file, "w+") as outfile:
+        log.info(f"Creating calibration file {calibration_file}")
+        json.dump(calibration_dict, outfile, indent=4, sort_keys=True)
+
+    print("Calibration written.")
+
+
+def validate_calibration(calibration_dict, calibration_file):
+    """Ensure that the calibration is valid. If not fix it."""
+    bh = calibration_dict.get("ball_hue")
+    po = calibration_dict.get("plate_offsets")
+    pix = calibration_dict.get("pixel_offsets")
+    so = calibration_dict.get("servo_offsets")
+
+    val_bh = bh is not None and type(bh) == int and 0 <= bh < 360
+    # Old calibration files have meter offsets not pixel offsets, ie should not exist
+    val_po = po is None
+    # New calibration files have pixel offsets
+    val_pix = (
+        pix is not None
+        and (type(pix) == tuple or type(pix) == list)
+        and len(pix) == 2
+        and type(pix[0]) == int
+        and type(pix[1]) == int
+    )
+    val_so = (
+        so is not None
+        and (type(so) == tuple or type(so) == list)
+        and len(so) == 3
+        and (type(so[0]) == int or type(so[0]) == float)
+        and (type(so[1]) == int or type(so[1]) == float)
+        and (type(so[2]) == int or type(so[2]) == float)
+    )
+    if not (val_bh and val_po and val_pix and val_so):
+        log.info("Calibration file is invalid. Fixing.")
+        log.info("Previous calibration:", calibration_dict)
+
+        # Set defaults if something is wrong
+        if not val_bh:
+            calibration_dict["ball_hue"] = 44
+        if not val_po:
+            del calibration_dict["plate_offsets"]
+        if not val_pix:
+            calibration_dict["pixel_offsets"] = (0, 0)
+        if not val_so:
+            calibration_dict["servo_offsets"] = (0.0, 0.0, 0.0)
+        write_calibration(calibration_dict, calibration_file)
+
+        log.info("Fixed calibration:", calibration_dict)
+
+    return calibration_dict
+
+
+def read_calibration(calibration_file="bot.json"):
+    log.info("Reading previous calibration.")
+
+    if os.path.isfile(calibration_file):
+        with open(calibration_file, "r") as f:
+            calibration_dict = json.load(f)
+    else:  # Use defaults
+        calibration_dict = {
+            "ball_hue": 44,
+            "pixel_offsets": (0, 0),
+            "servo_offsets": (0.0, 0.0, 0.0),
+        }
+    calibration_dict = validate_calibration(calibration_dict, calibration_file)
+    return calibration_dict

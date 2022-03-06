@@ -8,7 +8,6 @@ Performs calibration for hue, center of camera position, and servo offsets
 """
 
 import os
-import cv2
 import time
 import json
 import argparse
@@ -18,11 +17,11 @@ import logging as log
 
 from env import MoabEnv
 from typing import Tuple
-from common import Vector2
 from controllers import pid_controller
 from dataclasses import dataclass, astuple
 from hardware import plate_angles_to_servo_positions
-from detector import hsv_detector, pixels_to_meters, meters_to_pixels
+from detector import pixels_to_meters, meters_to_pixels
+from common import Vector2, write_calibration, read_calibration
 
 
 @dataclass
@@ -36,8 +35,8 @@ class CalibHue:
 
 
 @dataclass
-class CalibPos:
-    position: Tuple[float, float] = (0.0, 0.0)
+class CalibPixels:
+    offsets: Tuple[int, int] = (0, 0)
     success: bool = False
     early_quit: bool = False  # If menu is pressed before the calibration is complete
 
@@ -107,18 +106,19 @@ def calibrate_hue(camera_fn, detector_fn, is_menu_down_fn):
 
 
 def calibrate_pos(
-    camera_fn, detector_fn, get_buttons_fn, prev_plate_offsets, sleep_time=1 / 30
+    camera_fn, detector_fn, get_buttons_fn, prev_pixel_offsets, sleep_time=1 / 30
 ):
     def clip(x, low, high):
         return max(0, min(high, x))
 
-    x_pixels, y_pixels = meters_to_pixels(prev_plate_offsets)
-    x_pixels, y_pixels = list(Vector2(x_pixels, y_pixels).rotate(30))
+    img_frame, _ = camera_fn()
+    # Starting point for x and y pixels
+    x_pixels, y_pixels = prev_pixel_offsets
     menu_button, joy_button, joy_x, joy_y = get_buttons_fn()
 
     while True:
         if menu_button:
-            return CalibPos(early_quit=True)
+            return CalibPixels(early_quit=True)
         if joy_button:
             break
 
@@ -131,10 +131,8 @@ def calibrate_pos(
         time.sleep(sleep_time)
         menu_button, joy_button, joy_x, joy_y = get_buttons_fn()
 
-    # Rotate by -30 degrees then convert to meters
-    x_offset, y_offset = pixels_to_meters(Vector2(x_pixels, y_pixels).rotate(-30))
-    log.info(f"Offset calibrated: [{x_offset:.3f}, {y_offset:.3f}]")
-    return CalibPos(position=(x_offset, y_offset), success=True)
+    log.info(f"Offset calibrated: ({x_pixels}, {y_pixels})")
+    return CalibPixels(offsets=(x_pixels, y_pixels), success=True)
 
 
 def calibrate_servo_offsets(pid_fn, env, stationary_vel=0.005, time_limit=20):
@@ -161,7 +159,7 @@ def calibrate_servo_offsets(pid_fn, env, stationary_vel=0.005, time_limit=20):
             vel_y_hist.append(vel_y)
             prev_100_x = np.mean(np.abs(vel_x_hist[-100:]))
             prev_100_y = np.mean(np.abs(vel_y_hist[-100:]))
-            print("Prev 100: ", (prev_100_x, prev_100_y))
+            # print("Prev 100: ", (prev_100_x, prev_100_y))
 
             # If the average velocity for the last 100 timesteps is under the limit
             if (prev_100_x < stationary_vel) and (prev_100_y < stationary_vel):
@@ -178,30 +176,6 @@ def calibrate_servo_offsets(pid_fn, env, stationary_vel=0.005, time_limit=20):
     # If the plate could be stabilized in time_limit seconds, quit
     log.warning(f"Servo calibration failed.")
     return CalibServos()
-
-
-def write_calibration(calibration_dict, calibration_file="bot.json"):
-    log.info("Writing calibration.")
-
-    # write out stuff
-    with open(calibration_file, "w+") as outfile:
-        log.info(f"Creating calibration file {calibration_file}")
-        json.dump(calibration_dict, outfile, indent=4, sort_keys=True)
-
-
-def read_calibration(calibration_file="bot.json"):
-    log.info("Reading previous calibration.")
-
-    if os.path.isfile(calibration_file):
-        with open(calibration_file, "r") as f:
-            calibration_dict = json.load(f)
-    else:  # Use defaults
-        calibration_dict = {
-            "ball_hue": 44,
-            "plate_offsets": (0.0, 0.0),
-            "servo_offsets": (0.0, 0.0, 0.0),
-        }
-    return calibration_dict
 
 
 def wait_for_joystick_or_menu(hardware, sleep_time=1 / 30):
@@ -237,45 +211,28 @@ def run_calibration(env, pid_fn, calibration_file):
     hardware.set_angles(0, 0)
 
     # Display message and wait for joystick
-    hardware.display(
-        "move crosshairs\nclick joystick",
-        scrolling=True,
-    )
+    hardware.display("move crosshairs\nclick joystick", scrolling=True)
 
     # Calibrate position
-    pos_calib = calibrate_pos(
-        camera_fn, detector_fn, hardware.get_buttons, calibration_dict["plate_offsets"]
-    )
+    prev_pixel_offsets = calibration_dict["pixel_offsets"]
+    buttons = hardware.get_buttons
+    pos_calib = calibrate_pos(camera_fn, detector_fn, buttons, prev_pixel_offsets)
     if pos_calib.early_quit:
         hardware.go_up()
         return
 
-    hardware.display(
-        "put ball on stand\nclick joystick",
-        # "Place ball in\ncenter using\nclear stand.\n\n" "Click joystick\nwhen ready."
-        scrolling=True,
-    )
-    # buttons = wait_for_joystick_or_menu(hardware)
-    # if buttons.menu_button:  # Early quit
-    #     hardware.go_up()
-    #     return
-
+    # Calibrate hue
+    hardware.display("put ball on stand\nclick joystick", scrolling=True)
     hardware.display("Calibrating...")
     hue_calib = calibrate_hue(camera_fn, detector_fn, is_menu_down)
     if hue_calib.early_quit:
         hardware.go_up()
         return
 
-    # Calibrate position
-    pos_calib = calibrate_pos(camera_fn, detector_fn, hue_calib.hue, is_menu_down)
-    if pos_calib.early_quit:
-        hardware.go_up()
-        return
-
     # Save calibration
     calibration_dict["ball_hue"] = hue_calib.hue
-    calibration_dict["plate_offsets"] = pos_calib.position
-    x_offset, y_offset = pos_calib.position
+    calibration_dict["pixel_offsets"] = pos_calib.offsets
+    x_offset, y_offset = pos_calib.offsets
     write_calibration(calibration_dict)
 
     # Update the environment to use the new calibration
@@ -287,16 +244,18 @@ def run_calibration(env, pid_fn, calibration_file):
     elif not (pos_calib.success or hue_calib.success):  # or servo_calib.success):
         hardware.display("Calibration failed\nClick menu...", scrolling=True)
     else:
-        hue_str = (
-            f"Hue calib:\nsuccessful\nBall hue = {hue_calib.hue}\n\n"
-            if hue_calib.success
-            else "Hue calib:\nfailed\n\n"
-        )
-        pos_str = (
-            f"Position \ncalib:\nsuccessful\nPosition = \n({100*x_offset:.1f}, {100*y_offset:.1f})cm\n\n"
-            if hue_calib.success
-            else "(X, Y) calib:\nfailed\n\n"
-        )
+        # Calibration partially succeeded
+        if hue_calib.success:
+            hue_str = f"Ball hue = {hue_calib.hue}\n\n"
+        else:
+            hue_str = "Hue calib:\nfailed\n\n"
+
+        if pos_calib.success:
+            pos_str = f"Position = \n"
+            pos_str += f"({x_offset}, {y_offset})pix\n\n"
+        else:
+            pos_str = "(X, Y) calib:\nfailed\n\n"
+
         hardware.display(
             "Calibration\npartially succeeded\n\n"
             + hue_str
@@ -321,60 +280,6 @@ def run_calibration(env, pid_fn, calibration_file):
     # Huemask keeps an internal cache. By sending a new hue (hue + 1) invalidates
     # the cache. TODO: added this while searching for a state bug
     detector_fn(img_frame, hue=hue_calib.hue + 1, debug=True, filename=filename)
-
-    hardware.go_up()
-
-
-def run_servo_calibration(env, pid_fn, calibration_file):
-    # Warning: servo calib works but doesn't currently give a good calibration
-    raise NotImplementedError
-
-    # Get some hidden things from env
-    hardware = env.hardware
-    camera_fn = hardware.camera
-    detector_fn = hardware.detector
-
-    # Start the calibration with uncalibrated servos
-    hardware.servo_offsets = (0, 0, 0)
-    # lift plate up fist
-    hardware.set_angles(0, 0)
-
-    # Calibrate servo offsets
-    hardware.display(
-        "Calibarating\nservos\n\n"
-        "Place ball in\ncenter without\n stand.\n\n"
-        "Click joystick\nto continue.",
-        scrolling=True,
-    )
-    buttons = wait_for_joystick_or_menu(hardware)
-    if buttons.menu_button:  # Early quit
-        hardware.go_up()
-        return
-
-    hardware.display("Calibrating\nservos...", scrolling=True)
-    servo_calib = calibrate_servo_offsets(pid_fn, env)
-
-    # Save calibration
-    calibration_dict = read_calibration(calibration_file)
-    calibration_dict["servo_offsets"] = servo_calib.servos
-    s1, s2, s3 = servo_calib.servos
-    write_calibration(calibration_dict)
-
-    # Update the environment to use the new calibration
-    # Warning! This mutates the state!
-    env.reset_calibration(calibration_file=calibration_file)
-
-    if servo_calib.success:
-        hardware.display(
-            f"servo offsets =\n({s1:.2f}, {s2:.2f}, {s3:.2f})\n\n"
-            "Click menu\nto return...\n",
-            scrolling=True,
-        )
-        print(f"servo offsets =\n({s1:.2f}, {s2:.2f}, {s3:.2f})")
-    else:
-        hardware.display(
-            "Calibration\nfailed\n\nClick menu\nto return...", scrolling=True
-        )
 
     hardware.go_up()
 
