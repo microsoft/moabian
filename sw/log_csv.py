@@ -23,14 +23,14 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
     tick = -1  # Start at -1 since we do += 1 at the top (keep all updates together)
 
     # Acts like a normal controller function
-    def decorated_fn(state):
+    def decorated_fn(state, env_info):
         nonlocal prev_time, tick
         dt = time.time() - prev_time
         prev_time = time.time()
         tick += 1
 
         # Run the actual controller
-        action, info = fn(state)
+        action, info = fn(state, env_info)
 
         # If the status and resp are in the dictionary, save them, otherwise
         # use default values of 200 and empty string
@@ -40,8 +40,10 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
         resp = '"' + str(resp) + '"'
 
         # Deconstuct the state to get the values we want
-        env_state, ball_detected, buttons = state
-        x, y, vel_x, vel_y, sum_x, sum_y = env_state
+        x, y, vel_x, vel_y, sum_x, sum_y, ball_detected = state
+        ball_detected = env_info["ball_detected"]
+        buttons = env_info["buttons"]
+
         # Deconstruct action
         pitch, roll = action
         # combine all to a list for the log

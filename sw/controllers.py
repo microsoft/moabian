@@ -47,7 +47,7 @@ def joystick_controller(max_angle=16, **kwargs):
     def next_action(state, info):
         buttons = info["buttons"]
         x, y = -buttons.joy_x, -buttons.joy_y
-        action = Vector2()
+        action = Vector2(x, y)
         return action * max_angle, {}
 
     return next_action

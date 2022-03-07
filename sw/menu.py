@@ -69,7 +69,7 @@ def squash_small_angles(controller_fn, min_angle=1.0):
             roll = 0
 
         action = (pitch, roll)
-        return (action), ctrl_info
+        return action, ctrl_info
 
     return decorated_controller
 
@@ -168,7 +168,7 @@ def _handle_debug(ctx, param, debug):
     "-d",
     "--debug/--no-debug",
     default=True,
-    help="programmer details showing Tx/Rx buffers",
+    help="programmer details showing Tx/Rx buffers, camera streaming, etc.",
 )
 @click.option(
     "-f",
@@ -282,10 +282,7 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
 
                 # Reset the controller
                 if menu_list[index].is_controller:
-                    # state, detected, buttons = env.reset(
-                    state, _, _, env_info = env.reset(
-                        menu_list[index].name, Icon.DOT
-                    )
+                    state, _, _, env_info = env.reset(menu_list[index].name, Icon.DOT)
 
                 # Initialize the controller
                 controller_closure = menu_list[index].closure
@@ -307,7 +304,7 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                     # If it's a controller run the control loop
                     try:
                         while not env_info["buttons"].menu_button:
-                            action, ctrl_info = controller((state, env_info))
+                            action, ctrl_info = controller(state, env_info)
                             state, _, _, env_info = env.step(action)
                     except BrainNotFound:
                         print(f"caught BrainNotFound in loop")
