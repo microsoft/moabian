@@ -53,6 +53,26 @@ def joystick_controller(max_angle=16, **kwargs):
     return next_action
 
 
+def dump_ball_controller(angle=90, tilt_angle=16, **kwargs):
+    """Dump the ball towards angle."""
+
+    def next_action(state):
+        env_state, ball_detected, buttons = state
+        a = -tilt_angle * np.cos(np.radians(angle))
+        b = -tilt_angle * np.sin(np.radians(angle))
+        action = Vector2(a, b)
+        return action, {}
+
+    return next_action
+
+
+def zero_controller(**kwargs):
+    def next_action(state):
+        return Vector2(0.0, 0.0), {}
+
+    return next_action
+
+
 def brain_controller(
     max_angle=22,
     port=5555,
