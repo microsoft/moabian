@@ -60,7 +60,7 @@ def dump_ball_controller(angle=90, tilt_angle=16, **kwargs):
         env_state, ball_detected, buttons = state
         a = -tilt_angle * np.cos(np.radians(angle))
         b = -tilt_angle * np.sin(np.radians(angle))
-        action = Vector2(b, a)
+        action = Vector2(a, b)
         return action, {}
 
     return next_action

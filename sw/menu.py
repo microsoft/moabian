@@ -136,7 +136,9 @@ def build_menu(env, log_on, logfile):
     return top_menu + middle_menu + bottom_menu
 
 
-def museum_mode(env, prev_state, dump_angle):
+def kiosk_mode(env, prev_state, dump_location_clock_hand):
+    # Convert from hour hand location to degrees
+    dump_angle = ((-dump_location_clock_hand + 3) * (360 / 12)) % 360
     dump_ball_fn = dump_ball_controller(angle=dump_angle, tilt_angle=5)
     zero_fn = zero_controller()
     state, detected, buttons = prev_state
@@ -252,24 +254,27 @@ def _handle_debug(ctx, param, debug):
     help="verbose tx/rx (-v=OLED changes, -vv=servo commands, -vvv=NOOPs)",
 )
 @click.option(
-    "--museum/--no-museum",
+    "--kiosk/--no-kiosk",
     default=False,
     help=(
-        "Enables the museum mode. "
-        "Exit controllers after a set time and dump the ball towards one side"
+        "Enables the kiosk mode. "
+        "Exit controllers after a set time and dump the ball towards one side."
     ),
 )
 @click.option(
-    "--museum-timeout",
+    "--kiosk-timeout",
     type=int,
     default=300,  # 5 minutes
-    help="Timeout before museum mode is enabled (in seconds)",
+    help="Timeout before kiosk mode is enabled (in seconds)",
 )
 @click.option(
-    "--museum-dump-angle",
-    type=click.IntRange(0, 360),
-    default=90,
-    help="Angle to dump the ball towards in museum mode",
+    "--kiosk-dump-location",
+    type=click.IntRange(0, 12),
+    default=2,
+    help=(
+        "Where to dump the ball towards in kiosk mode. "
+        "Location to dump matches the hour hand of a clock."
+    ),
 )
 @click.pass_context
 def main(ctx: click.core.Context, **kwargs: Any) -> None:
@@ -288,9 +293,9 @@ def main_menu(
     log,
     reset,
     verbose,
-    museum,
-    museum_dump_angle,
-    museum_timeout,
+    kiosk,
+    kiosk_dump_location,
+    kiosk_timeout,
 ):
 
     if reset:
@@ -390,18 +395,18 @@ def main_menu(
                             state, detected, buttons = env.step(action)
 
                             # If the controller has been running for more than
-                            # museum_timeout seconds, exit, and dump the ball towards
+                            # kiosk_timeout seconds, exit, and dump the ball towards
                             # one side and wait until the ball is detected again
-                            if museum:
-                                if time.time() - controller_start_time > museum_timeout:
+                            if kiosk:
+                                if time.time() - controller_start_time > kiosk_timeout:
                                     prev_state = (state, detected, buttons)
-                                    next_state, museum_exit = museum_mode(
-                                        env, prev_state, museum_dump_angle
+                                    next_state, kiosk_exit = kiosk_mode(
+                                        env, prev_state, kiosk_dump_location
                                     )
                                     state, detected, buttons = next_state
                                     controller_start_time = time.time()
-                                    # Whether the menu button was pressed in museum mode
-                                    if museum_exit:
+                                    # Whether the menu button was pressed in kiosk mode
+                                    if kiosk_exit:
                                         break
 
                     except BrainNotFound:
