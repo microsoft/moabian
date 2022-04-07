@@ -3,7 +3,7 @@
 ## Train a brain
 
 If you have not trained a brain already, please follow [Project Moab
-tutorial](https://microsoft.github.io/moab/tutorials/) 1, 2 or 3 to
+tutorial](https://docs.microsoft.com/en-us/autonomous-systems/bonsai-samples/tutorials/moab/?tabs=camera) 1, 2 or 3 to
 train a brain. 
 
 **Prerequisites**: To complete the tutorials, you must have a Bonsai
