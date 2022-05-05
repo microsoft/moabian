@@ -390,15 +390,22 @@ def main_menu(
 
                     # If it's a controller run the control loop
                     try:
+                        bonsai_episode_status = 0
                         while not buttons.menu_button:
+                            state.bonsai_episode_status = bonsai_episode_status
                             action, info = controller((state, detected, buttons))
                             state, detected, buttons = env.step(action)
+
+                            bonsai_episode_status = 1
 
                             # If the controller has been running for more than
                             # kiosk_timeout seconds, exit, and dump the ball towards
                             # one side and wait until the ball is detected again
                             if kiosk:
                                 if time.time() - controller_start_time > kiosk_timeout:
+                                    bonsai_episode_status = 2
+                                    state.bonsai_episode_status = bonsai_episode_status
+
                                     prev_state = (state, detected, buttons)
                                     next_state, kiosk_exit = kiosk_mode(
                                         env, prev_state, kiosk_dump_location

@@ -147,7 +147,7 @@ def brain_controller(
 
     def next_action_v2(state):
         env_state, ball_detected, buttons = state
-        x, y, vel_x, vel_y, sum_x, sum_y = env_state
+        x, y, vel_x, vel_y, sum_x, sum_y, bonsai_episode_status = env_state
 
         observables = {
             "state": {
@@ -155,6 +155,7 @@ def brain_controller(
                 "ball_y": y,
                 "ball_vel_x": vel_x,
                 "ball_vel_y": vel_y,
+                "bonsai_episode_status": bonsai_episode_status
             }
         }
 
