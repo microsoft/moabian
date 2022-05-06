@@ -406,6 +406,9 @@ def main_menu(
                                     bonsai_episode_status = 2
                                     state.bonsai_episode_status = bonsai_episode_status
 
+                                    action, info = controller((state, detected, buttons))
+                                    state, detected, buttons = env.step(action)
+
                                     prev_state = (state, detected, buttons)
                                     next_state, kiosk_exit = kiosk_mode(
                                         env, prev_state, kiosk_dump_location

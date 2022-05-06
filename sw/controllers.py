@@ -155,41 +155,41 @@ def brain_controller(
                 "ball_y": y,
                 "ball_vel_x": vel_x,
                 "ball_vel_y": vel_y,
-                "bonsai_episode_status": bonsai_episode_status
+                "bonsai_episode_status": bonsai_episode_status,
             }
         }
 
         action = Vector2(0, 0)  # Action is 0,0 if not detected or brain didn't work
         info = {"status": 400, "resp": ""}
-        if ball_detected:
 
-            # Trap on GET failures so we can restart the brain without
-            # bringing down this run loop. Plate will default to level
-            # when it loses the connection.
-            try:
-                # Get action from brain
-                response = requests.post(prediction_url, json=observables)
-                info = {"status": response.status_code, "resp": response.json()}
+        # Trap on GET failures so we can restart the brain without
+        # bringing down this run loop. Plate will default to level
+        # when it loses the connection.
+        try:
+            # Get action from brain
+            response = requests.post(prediction_url, json=observables)
+            info = {"status": response.status_code, "resp": response.json()}
 
-                if response.ok:
-                    concepts = info["resp"]["concepts"]
-                    concept_name = list(concepts.keys())[0]  # Just use first concept
-                    pitch = concepts[concept_name]["action"]["input_pitch"]
-                    roll = concepts[concept_name]["action"]["input_roll"]
+            if response.ok and ball_detected:
+                concepts = info["resp"]["concepts"]
+                concept_name = list(concepts.keys())[0]  # Just use first concept
+                pitch = concepts[concept_name]["action"]["input_pitch"]
+                roll = concepts[concept_name]["action"]["input_roll"]
 
-                    # Scale and clip
-                    pitch = np.clip(pitch * max_angle, -max_angle, max_angle)
-                    roll = np.clip(roll * max_angle, -max_angle, max_angle)
+                # Scale and clip
+                pitch = np.clip(pitch * max_angle, -max_angle, max_angle)
+                roll = np.clip(roll * max_angle, -max_angle, max_angle)
 
-                    # To match how the old brain works (only integer plate angles)
-                    pitch, roll = int(pitch), int(roll)
-                    action = Vector2(-roll, pitch)
+                # To match how the old brain works (only integer plate angles)
+                pitch, roll = int(pitch), int(roll)
+                action = Vector2(-roll, pitch)
 
-            except requests.exceptions.ConnectionError as e:
-                print(f"No brain listening on port: {port}", file=sys.stderr)
-                raise BrainNotFound
-            except Exception as e:
-                print(f"Brain exception: {e}")
+        except requests.exceptions.ConnectionError as e:
+            print(f"No brain listening on port: {port}", file=sys.stderr)
+            raise BrainNotFound
+        except Exception as e:
+            print(f"Brain exception: {e}")
+
         return action, info
 
     if version == 1:
