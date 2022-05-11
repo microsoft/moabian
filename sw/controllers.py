@@ -25,7 +25,7 @@ def pid_controller(
 ):
     def next_action(state):
         env_state, ball_detected, buttons = state
-        x, y, vel_x, vel_y, sum_x, sum_y = env_state
+        x, y, vel_x, vel_y, sum_x, sum_y, bonsai_episode_status = env_state
 
         if ball_detected:
             action_x = Kp * x + Ki * sum_x + Kd * vel_x
@@ -105,7 +105,7 @@ def brain_controller(
 
     def next_action_v1(state):
         env_state, ball_detected, buttons = state
-        x, y, vel_x, vel_y, sum_x, sum_y = env_state
+        x, y, vel_x, vel_y, sum_x, sum_y, bonsai_episode_status = env_state
 
         observables = {
             "ball_x": x,

@@ -13,6 +13,8 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
     cols += ["x", "y", "vel_x", "vel_y"]  # State
     cols += ["pitch", "roll"]  # Action
     cols += ["status", "error_response"]  # Error status
+    cols += ["bonsai_episode_status", "input_pitch", "input_roll"]
+
 
     header = ",".join(cols)
     with open(logfile, "w") as fd:
@@ -44,8 +46,17 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
         x, y, vel_x, vel_y, sum_x, sum_y, bonsai_episode_status = env_state
         # Deconstruct action
         pitch, roll = action
+
+        # brain actions for log or PID
+        if status != 200:
+            input_pitch = resp["concepts"]["MoveToCenter"]["action"]["input_pitch"]
+            input_roll = resp["concepts"]["MoveToCenter"]["action"]["input_roll"]
+        else:
+            input_pitch = pitch / 22
+            input_roll = pitch / 22
+
         # combine all to a list for the log
-        l = [tick, dt] + [x, y, vel_x, vel_y] + [pitch, roll] + [status, resp]
+        l = [tick, dt] + [x, y, vel_x, vel_y] + [pitch, roll] + [status, resp] + [bonsai_episode_status, input_pitch, input_roll]
 
         # combine all to a list for the log
         # l = [tick, dt] + state + action + [status + resp]
