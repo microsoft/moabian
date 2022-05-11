@@ -396,7 +396,31 @@ def main_menu(
                             action, info = controller((state, detected, buttons))
                             state, detected, buttons = env.step(action)
 
-                            bonsai_episode_status = 1
+                            if detected:
+                                # Normal episode step
+                                bonsai_episode_status = 1
+                            elif detected == False and bonsai_episode_status == 1:
+                                # Ball not detected, let's terminate
+                                bonsai_episode_status = 2
+                                state.bonsai_episode_status = bonsai_episode_status
+
+                                action, info = controller((state, detected, buttons))
+                                state, detected, buttons = env.step(action)
+
+                                prev_state = (state, detected, buttons)
+                                next_state, kiosk_exit = kiosk_mode(
+                                    env, prev_state, kiosk_dump_location
+                                )
+                                state, detected, buttons = next_state
+                                
+                                # Reset
+                                bonsai_episode_status = 0
+                                state.bonsai_episode_status = bonsai_episode_status
+                                controller_start_time = time.time()
+
+                                # Whether the menu button was pressed in kiosk mode
+                                if kiosk_exit:
+                                    break
 
                             # If the controller has been running for more than
                             # kiosk_timeout seconds, exit, and dump the ball towards
@@ -414,6 +438,11 @@ def main_menu(
                                         env, prev_state, kiosk_dump_location
                                     )
                                     state, detected, buttons = next_state
+                                    
+                                    # Reset
+                                    bonsai_episode_status = 0
+                                    state.bonsai_episode_status = bonsai_episode_status
+
                                     controller_start_time = time.time()
                                     # Whether the menu button was pressed in kiosk mode
                                     if kiosk_exit:
