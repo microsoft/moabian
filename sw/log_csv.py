@@ -53,7 +53,7 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
             input_roll = resp["concepts"]["MoveToCenter"]["action"]["input_roll"]
         else:
             input_pitch = pitch / 22
-            input_roll = pitch / 22
+            input_roll = roll / 22
 
         # combine all to a list for the log
         l = [tick, dt] + [x, y, vel_x, vel_y] + [pitch, roll] + [status, resp] + [bonsai_episode_status, input_pitch, input_roll]
