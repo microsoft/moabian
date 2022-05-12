@@ -36,13 +36,15 @@ def drawtext(scr, vector, status):
     scr.addstr(0, 0, tabular("uio▲"))
     scr.addstr(1, 0, tabular(hw_to_user(vector)), curses.color_pair(1))
     scr.addstr(2, 0, tabular("jkl▼"))
-    scr.addstr(4, 0, status, curses.color_pair(2))
+    scr.addstr(4, 0, "<q>uit, <s>ave, <r>eset to [0,0,0], <space> bounce")
+    scr.addstr(5, 0, status, curses.color_pair(2))
 
 def main(scr):
     rc = read_calibration()
     s = read_calibration()["servo_offsets"]
     s = list(map(int, s))
-    status = f"bot.json offsets: {hw_to_user(s)}"
+
+    status = f"Saved offsets: {hw_to_user(s)}"
 
     with MoabHardware() as hw:
 
