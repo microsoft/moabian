@@ -1,8 +1,26 @@
-from hat import Hat
+import click
+import time
+from hardware import MoabHardware
 
-with Hat() as hat:
-    hat.enable_servos()
-    hat.set_angles(0, 0)
+@click.command()
+def main():
+    
+    with MoabHardware(debug=True, verbose=2) as hw:
+        hw.enable_servos()
 
-    input("Hit ENTER to stop...")
-    hat.go_down()
+        print(hw)
+        # hw.servo_offsets = list(map(int, [-4, 0, -4]))
+
+        for i in range(150, 130, -2):
+            hw.set_servos(i, i, i)
+            time.sleep(0.05)
+
+        # set_angles sets the 3 servo positions (offset included)
+        # pitch = 0, roll = 0
+        
+        hw.display(str(hw.servo_offsets))
+        input("Hit enter to continue")
+        print(hw)
+
+if __name__ == '__main__':
+    main()
