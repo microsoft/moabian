@@ -26,8 +26,10 @@ from procid import setup_signal_handlers, stop_doppelgänger
 from info_screen import info_screen_controller, info_config_controller
 from controllers import (
     pid_controller,
+    zero_controller,
     brain_controller,
     joystick_controller,
+    dump_ball_controller,
     BrainNotFound,
 )
 
@@ -134,6 +136,54 @@ def build_menu(env, log_on, logfile):
     return top_menu + middle_menu + bottom_menu
 
 
+def kiosk_mode(env, prev_state, dump_location_clock_hand):
+    # Convert from hour hand location to degrees
+    dump_angle = ((-dump_location_clock_hand + 3) * (360 / 12)) % 360
+    dump_ball_fn = dump_ball_controller(angle=dump_angle, tilt_angle=5)
+    zero_fn = zero_controller()
+    state, detected, buttons = prev_state
+
+    # Dump the ball for 1 second
+    for _ in range(env.frequency * 1):
+        action, _ = dump_ball_fn((state, detected, buttons))
+        state, detected, buttons = env.step(action)
+        time.sleep(1 / env.frequency)
+
+        if buttons.menu_button:
+            return (state, detected, buttons), True
+
+    # Level the plate
+    action, _ = zero_fn((state, detected, buttons))
+    state, detected, buttons = env.step(action)
+
+    # Disable servos
+    env.hardware.disable_servos()
+    time.sleep(1 / env.frequency)
+
+    # Wait until the ball is detected again for 3 consecutive frames
+    detected_count = 0
+    detected = False
+    while detected_count < 3:
+        action, _ = zero_fn((state, detected, buttons))
+        state, detected, buttons = env.step(action)
+        time.sleep(1 / env.frequency)
+
+        if detected:
+            detected_count += 1
+        else:
+            detected_count = 0
+
+        if buttons.menu_button:
+            env.hardware.enable_servos()
+            return (state, detected, buttons), True
+
+    # Re-enable servos
+    env.hardware.enable_servos()
+    time.sleep(1 / env.frequency)
+
+    return (state, detected, buttons), False
+
+
 # color list: https://github.com/pallets/click/blob/master/examples/colors/colors.py
 out = partial(click.secho, bold=False, err=True)
 err = partial(click.secho, fg="red", err=True)
@@ -203,6 +253,29 @@ def _handle_debug(ctx, param, debug):
     default=1,
     help="verbose tx/rx (-v=OLED changes, -vv=servo commands, -vvv=NOOPs)",
 )
+@click.option(
+    "--kiosk/--no-kiosk",
+    default=False,
+    help=(
+        "Enables the kiosk mode. "
+        "Exit controllers after a set time and dump the ball towards one side."
+    ),
+)
+@click.option(
+    "--kiosk-timeout",
+    type=int,
+    default=300,  # 5 minutes
+    help="Timeout before kiosk mode is enabled (in seconds)",
+)
+@click.option(
+    "--kiosk-dump-location",
+    type=click.IntRange(0, 12),
+    default=2,
+    help=(
+        "Where to dump the ball towards in kiosk mode. "
+        "Location to dump matches the hour hand of a clock."
+    ),
+)
 @click.pass_context
 def main(ctx: click.core.Context, **kwargs: Any) -> None:
     if kwargs["verbose"] == 2:
@@ -212,7 +285,18 @@ def main(ctx: click.core.Context, **kwargs: Any) -> None:
     main_menu(**kwargs)
 
 
-def main_menu(cont, debug, file, hertz, log, reset, verbose):
+def main_menu(
+    cont,
+    debug,
+    file,
+    hertz,
+    log,
+    reset,
+    verbose,
+    kiosk,
+    kiosk_dump_location,
+    kiosk_timeout,
+):
 
     if reset:
         out("Resetting firmware")
@@ -302,11 +386,29 @@ def main_menu(cont, debug, file, hertz, log, reset, verbose):
                 time.sleep(1 / env.frequency)
 
                 if menu_list[index].is_controller:
+                    controller_start_time = time.time()
+
                     # If it's a controller run the control loop
                     try:
                         while not buttons.menu_button:
                             action, info = controller((state, detected, buttons))
                             state, detected, buttons = env.step(action)
+
+                            # If the controller has been running for more than
+                            # kiosk_timeout seconds, exit, and dump the ball towards
+                            # one side and wait until the ball is detected again
+                            if kiosk:
+                                if time.time() - controller_start_time > kiosk_timeout:
+                                    prev_state = (state, detected, buttons)
+                                    next_state, kiosk_exit = kiosk_mode(
+                                        env, prev_state, kiosk_dump_location
+                                    )
+                                    state, detected, buttons = next_state
+                                    controller_start_time = time.time()
+                                    # Whether the menu button was pressed in kiosk mode
+                                    if kiosk_exit:
+                                        break
+
                     except BrainNotFound:
                         print(f"caught BrainNotFound in loop")
 
