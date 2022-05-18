@@ -1,4 +1,8 @@
+import sys
+sys.path.append("/home/pi/moab/sw")
+
 import docker
+
 # To run on moab: 
 #   pip3 install pytest
 #   cd moab/sw
