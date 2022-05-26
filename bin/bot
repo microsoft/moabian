@@ -79,7 +79,7 @@ main() {
     reset  ) reset;;
     fwreset  ) fw_reset;;
     log ) fw_log;;
-    shell ) fw_log;;
+    shell ) fw_shell;;
     ver | version ) fw_version;;
     fanon ) fw_fanon;;
     fanoff ) fw_fanoff;;
@@ -90,7 +90,7 @@ main() {
 }
 
 fw_log()     { sudo minicom --device=/dev/ttyAMA0; }
-fw_shell()   { sudo minicom --device=/dev/ttyAMA0; }
+fw_shell()   { sudo minicom --device=/dev/ttyAMA1; }
 fw_version() { fwversion; }
 fw_fanoff()  { raspi-gpio set 26 dl; }
 fw_fanon()   { raspi-gpio set 26 dh; }

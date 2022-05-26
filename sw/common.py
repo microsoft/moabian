@@ -84,7 +84,7 @@ class Vector2:
         return (self - o).length()
 
     def rotate(self, theta, o=None):
-        """ Return a point rotated `theta` radians around `o` """
+        """Return a point rotated `theta` radians around `o`"""
         if o is None:
             o = Vector2(0, 0)
         x = o.x + math.cos(theta) * (self.x - o.x) - math.sin(theta) * (self.y - o.y)

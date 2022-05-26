@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append("/home/pi/moab/sw")
+
 from hat import Hat, Icon, PowerIcon
 
 with Hat() as hat:
