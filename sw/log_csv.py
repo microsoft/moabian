@@ -47,13 +47,9 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
         # Deconstruct action
         pitch, roll = action
 
-        # brain actions for log or PID
-        if status != 200:
-            input_pitch = resp["concepts"]["MoveToCenter"]["action"]["input_pitch"]
-            input_roll = resp["concepts"]["MoveToCenter"]["action"]["input_roll"]
-        else:
-            input_pitch = pitch / 22
-            input_roll = roll / 22
+        # Brain actions for logging. Purposefully swapping to match sim
+        input_pitch = roll / 22
+        input_roll = -pitch / 22 
 
         # combine all to a list for the log
         l = [tick, dt] + [x, y, vel_x, vel_y] + [pitch, roll] + [status, resp] + [bonsai_episode_status, input_pitch, input_roll]
