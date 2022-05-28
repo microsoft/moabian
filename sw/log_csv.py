@@ -3,6 +3,9 @@
 
 import time
 import logging as log
+import pandas as pd
+import numpy as np
+import pdb
 
 from common import Vector2
 
@@ -53,6 +56,7 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
 
         # combine all to a list for the log
         l = [tick, dt] + [x, y, vel_x, vel_y] + [pitch, roll] + [status, resp] + [bonsai_episode_status, input_pitch, input_roll]
+        row = [tick, dt] + [x, y, vel_x, vel_y] + [pitch, roll] + [status, resp] + [bonsai_episode_status, input_pitch, input_roll]
 
         # combine all to a list for the log
         # l = [tick, dt] + state + action + [status + resp]
@@ -62,9 +66,46 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
 
         # Convert all fields into strings
         l = ",".join([str(e) for e in l])
+        
+        # Append to file depending on episode terminal or not
+        if bonsai_episode_status == 2:
+            df = pd.read_csv(logfile)
+            last_x_abs = abs(float(df['x'].iloc[-1]))
+            last_y_abs = abs(float(df['y'].iloc[-1]))
 
-        with open(logfile, "a") as fd:
-            print(l, file=fd)
+            # Check what the latest csv value was and clip
+            if float(df['x'].iloc[-1]) > 0.1125:
+                row[2] = df['x'].iloc[-1]
+            elif float(df['x'].iloc[-1]) <= 0.1125:
+                if row[2] == 0:
+                    if last_x_abs - last_y_abs > 0:
+                        row[2] = 0.1125 * np.sign(df['x'].iloc[-1])
+                    else:
+                        row[2] = float(df['x'].iloc[-1])
+                else:
+                    pass
+            
+            if float(df['y'].iloc[-1]) > 0.1125:
+                row[3] = df['y'].iloc[-1]
+            elif float(df['y'].iloc[-1]) <= 0.1125:
+                if row[3] == 0:
+                    if last_y_abs - last_x_abs > 0:
+                        row[3] = 0.1125 * np.sign(df['y'].iloc[-1])
+                    else:
+                        row[3] = float(df['y'].iloc[-1])
+                else:
+                    pass
+            del df
+            
+            row = [f"{n:8.5f}" if type(n) is float else n for n in row]
+            row = ",".join([str(e) for e in row])
+            
+            # Append final iteration when ball is missing
+            with open(logfile, "a") as fd:
+                print(row, file=fd)
+        else:
+            with open(logfile, "a") as fd:
+                print(l, file=fd)
 
         return action, info
 
