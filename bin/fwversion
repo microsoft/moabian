@@ -10,22 +10,26 @@ import sys
 # sudo minicom --device=/dev/ttyAMA1
 
 def main():
-    ser = serial.Serial('/dev/ttyAMA1', 115200, timeout = 0.5)
+    try:
+        ser = serial.Serial('/dev/ttyAMA1', 115200, timeout = 0.5)
 
-    ser.write("version\n".encode())
-    out_a = ser.read_until(b'uart')       # read until the "uart" prompt it seen
+        ser.write("version\n".encode())
+        out_a = ser.read_until(b'uart')       # read until the "uart" prompt it seen
 
-    out_u = out_a.decode('ascii')
+        out_u = out_a.decode('ascii')
 
-    # 0: version\n
-    # 1: Moab version 3.0.1.04321
-    # 2: uart
+        # 0: version\n
+        # 1: Moab version 3.0.1.04321
+        # 2: uart
 
-    if out_u != '':
-        print(out_u.splitlines()[1])
-        sys.exit(0)
-    else:
-        sys.exit(1)
+        if out_u != '':
+            print(out_u.splitlines()[1])
+            sys.exit(0)
+        else:
+            sys.exit(1)
+    except:
+        sys.exit(2)
+
 
 if __name__ == "__main__":
     main()
