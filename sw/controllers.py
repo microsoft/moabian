@@ -10,7 +10,6 @@ import logging as log
 from env import MoabEnv
 from common import Vector2
 
-
 class BrainNotFound(Exception):
     pass
 
@@ -25,7 +24,7 @@ def pid_controller(
 ):
     def next_action(state):
         env_state, ball_detected, buttons = state
-        x, y, vel_x, vel_y, sum_x, sum_y = env_state
+        x, y, vel_x, vel_y, sum_x, sum_y, bonsai_episode_status = env_state
 
         if ball_detected:
             action_x = Kp * x + Ki * sum_x + Kd * vel_x
@@ -40,6 +39,20 @@ def pid_controller(
             action = Vector2(0, 0)
 
         return action, {}
+
+    def random_action(state):
+        env_state, ball_detected, buttons = state
+        x, y, vel_x, vel_y, sum_x, sum_y, bonsai_episode_status = env_state
+
+        if ball_detected:
+            action = Vector2(np.random.uniform(-22, 22), np.random.uniform(-22, 22))
+
+        else:
+            # Move plate back to flat
+            action = Vector2(0, 0)
+
+        return action, {}
+
 
     return next_action
 
@@ -105,7 +118,7 @@ def brain_controller(
 
     def next_action_v1(state):
         env_state, ball_detected, buttons = state
-        x, y, vel_x, vel_y, sum_x, sum_y = env_state
+        x, y, vel_x, vel_y, sum_x, sum_y, bonsai_episode_status = env_state
 
         observables = {
             "ball_x": x,
@@ -147,7 +160,10 @@ def brain_controller(
 
     def next_action_v2(state):
         env_state, ball_detected, buttons = state
-        x, y, vel_x, vel_y, sum_x, sum_y = env_state
+        x, y, vel_x, vel_y, sum_x, sum_y, bonsai_episode_status = env_state
+        if bonsai_episode_status == 0:
+            # Reset memory if a v2 brain
+            requests.delete(f"http://localhost:{port}/v2/clients/{client_id}")
 
         observables = {
             "state": {
@@ -155,40 +171,41 @@ def brain_controller(
                 "ball_y": y,
                 "ball_vel_x": vel_x,
                 "ball_vel_y": vel_y,
+                "bonsai_episode_status": bonsai_episode_status,
             }
         }
 
         action = Vector2(0, 0)  # Action is 0,0 if not detected or brain didn't work
         info = {"status": 400, "resp": ""}
-        if ball_detected:
 
-            # Trap on GET failures so we can restart the brain without
-            # bringing down this run loop. Plate will default to level
-            # when it loses the connection.
-            try:
-                # Get action from brain
-                response = requests.post(prediction_url, json=observables)
-                info = {"status": response.status_code, "resp": response.json()}
+        # Trap on GET failures so we can restart the brain without
+        # bringing down this run loop. Plate will default to level
+        # when it loses the connection.
+        try:
+            # Get action from brain
+            response = requests.post(prediction_url, json=observables)
+            info = {"status": response.status_code, "resp": response.json()}
 
-                if response.ok:
-                    concepts = info["resp"]["concepts"]
-                    concept_name = list(concepts.keys())[0]  # Just use first concept
-                    pitch = concepts[concept_name]["action"]["input_pitch"]
-                    roll = concepts[concept_name]["action"]["input_roll"]
+            if response.ok and ball_detected:
+                concepts = info["resp"]["concepts"]
+                concept_name = list(concepts.keys())[0]  # Just use first concept
+                pitch = concepts[concept_name]["action"]["input_pitch"]
+                roll = concepts[concept_name]["action"]["input_roll"]
 
-                    # Scale and clip
-                    pitch = np.clip(pitch * max_angle, -max_angle, max_angle)
-                    roll = np.clip(roll * max_angle, -max_angle, max_angle)
+                # Scale and clip
+                pitch = np.clip(pitch * max_angle, -max_angle, max_angle)
+                roll = np.clip(roll * max_angle, -max_angle, max_angle)
 
-                    # To match how the old brain works (only integer plate angles)
-                    pitch, roll = int(pitch), int(roll)
-                    action = Vector2(-roll, pitch)
+                # To match how the old brain works (only integer plate angles)
+                pitch, roll = int(pitch), int(roll)
+                action = Vector2(-roll, pitch)
 
-            except requests.exceptions.ConnectionError as e:
-                print(f"No brain listening on port: {port}", file=sys.stderr)
-                raise BrainNotFound
-            except Exception as e:
-                print(f"Brain exception: {e}")
+        except requests.exceptions.ConnectionError as e:
+            print(f"No brain listening on port: {port}", file=sys.stderr)
+            raise BrainNotFound
+        except Exception as e:
+            print(f"Brain exception: {e}")
+
         return action, info
 
     if version == 1:

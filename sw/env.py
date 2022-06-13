@@ -16,6 +16,7 @@ class EnvState:
     vel_y: float = 0.0
     sum_x: float = 0.0
     sum_y: float = 0.0
+    bonsai_episode_status: int = 0
 
     def __iter__(self):
         return iter(astuple(self))
@@ -75,6 +76,7 @@ class MoabEnv:
         self.vel_y = self.derivative_fn(self.frequency)
         # Reset the integral of the position
         self.sum_x, self.sum_y = 0, 0
+        self.bonsai_episode_status = 0
 
         # Return the state after a step with no motor actions
         return self.step((0, 0))
@@ -89,6 +91,6 @@ class MoabEnv:
         self.sum_x += x
         self.sum_y += y
 
-        state = EnvState(x, y, vel_x, vel_y, self.sum_x, self.sum_y)
+        state = EnvState(x, y, vel_x, vel_y, self.sum_x, self.sum_y, self.bonsai_episode_status)
 
         return state, ball_detected, buttons
