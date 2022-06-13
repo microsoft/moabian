@@ -10,7 +10,6 @@ import logging as log
 from env import MoabEnv
 from common import Vector2
 
-
 class BrainNotFound(Exception):
     pass
 
@@ -40,6 +39,20 @@ def pid_controller(
             action = Vector2(0, 0)
 
         return action, {}
+
+    def random_action(state):
+        env_state, ball_detected, buttons = state
+        x, y, vel_x, vel_y, sum_x, sum_y, bonsai_episode_status = env_state
+
+        if ball_detected:
+            action = Vector2(np.random.uniform(-22, 22), np.random.uniform(-22, 22))
+
+        else:
+            # Move plate back to flat
+            action = Vector2(0, 0)
+
+        return action, {}
+
 
     return next_action
 
@@ -148,6 +161,9 @@ def brain_controller(
     def next_action_v2(state):
         env_state, ball_detected, buttons = state
         x, y, vel_x, vel_y, sum_x, sum_y, bonsai_episode_status = env_state
+        if bonsai_episode_status == 0:
+            # Reset memory if a v2 brain
+            requests.delete(f"http://localhost:{port}/v2/clients/{client_id}")
 
         observables = {
             "state": {
