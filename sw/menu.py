@@ -78,6 +78,7 @@ def squash_small_angles(controller_fn, min_angle=1.0):
 def build_menu(env, log_on, logfile):
     log_csv = lambda fn: log_decorator(fn, logfile)
 
+    # fmt: off
     top_menu = [
         MenuOption(
             name="Calibrate",
@@ -93,7 +94,7 @@ def build_menu(env, log_on, logfile):
             name="Joystick",
             closure=joystick_controller,
             kwargs={},
-            decorators=[squash_small_angles],
+            decorators=[squash_small_angles, log_csv] if log_on else [squash_small_angles],
         ),
         MenuOption(
             name="PID",
@@ -102,6 +103,7 @@ def build_menu(env, log_on, logfile):
             decorators=[log_csv] if log_on else None,
         ),
     ]
+    # fmt: on
 
     # Parse the docker-compose.yml file for a list of brains
     middle_menu = []
@@ -112,7 +114,7 @@ def build_menu(env, log_on, logfile):
             name=brain_image.short_name,
             closure=brain_controller,
             kwargs={"port": brain_image.port, "alert_fn": alert_callback},
-            decorators=[log_csv] if log_on else none,
+            decorators=[log_csv] if log_on else None,
         )
         middle_menu.append(m)
 
