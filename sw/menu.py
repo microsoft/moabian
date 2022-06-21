@@ -26,6 +26,7 @@ from procid import setup_signal_handlers, stop_doppelgänger
 from info_screen import info_screen_controller, info_config_controller
 from controllers import (
     pid_controller,
+    nn_controller,
     zero_controller,
     brain_controller,
     joystick_controller,
@@ -98,6 +99,12 @@ def build_menu(env, log_on, logfile):
         MenuOption(
             name="PID",
             closure=pid_controller,
+            kwargs={},
+            decorators=[log_csv] if log_on else None,
+        ),
+        MenuOption(
+            name="NN",
+            closure=nn_controller,
             kwargs={},
             decorators=[log_csv] if log_on else None,
         ),

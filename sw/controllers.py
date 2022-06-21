@@ -73,6 +73,20 @@ def zero_controller(**kwargs):
     return next_action
 
 
+def nn_controller(filepath="train_moab_weights.npz", **kwargs):
+    npz = np.load(filepath)
+    w0 = npz["w0"]
+    b0 = npz["b0"]
+    w1 = npz["w1"]
+    b1 = npz["b1"]
+    w_out = npz["w_out"]
+
+    def next_action(state):
+        state = np.array(state)
+        pitch, roll = w_out @ np.tanh(w1 @ np.tanh(w0 @ x + b0) + b1)
+        return Vector2(-roll, pitch), {}
+
+
 def brain_controller(
     max_angle=22,
     port=5555,
