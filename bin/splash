@@ -39,6 +39,7 @@ p1="$reset"
 
 ip="$(ip route get 1.1.1.1 | head -1 | cut -d' ' -f7)"
 kernel="$(uname -srm)"
+os="$(source /etc/os-release; echo $NAME $VERSION)"
 uptime="$(uptime -p | sed 's/up //')"
 load=$(cat /proc/loadavg | cut -d ' ' -f 1,2,3)
 gpu_t="$(vcgencmd measure_temp | cut -d '=' -f 2)"
@@ -58,10 +59,11 @@ fw_version="$([ -e ~/moab/bin/fwversion ] && ~/moab/bin/fwversion | awk  '{print
 cat <<EOF
 
 ${h2} · IP         ${r}http://${ip}
+${h2} · OS         ${r}${os}
 ${h2} · Kernel     ${r}${kernel}
 ${h2} · Load       ${r}${load}
 ${h2} · CPU        ${r}${temps}
-${h2} · URL        ${r}https://aka.ms/moab
+${h2} · URL        ${r}https://aka.ms/moabian
 ${h2} · FW         ${r}${fw_version}
 ${h1} ○ Moabian    ${h3}${version}${r} · ${branch}:${sha^^}
 
