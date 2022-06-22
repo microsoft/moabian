@@ -1,8 +1,7 @@
 import time
 import sys
 
-sys.path.append("/home/pi/moab/sw")
-
+import parent
 from hardware import MoabHardware
 import procid
 
