@@ -1,5 +1,9 @@
 #!/usr/bin/env bats
 
+@test "Missing flask library for streaming " {
+  python3 -c "import flask"
+}
+
 @test "Factory servo calibration found" {
   fwservos | grep -i "found"
 }
