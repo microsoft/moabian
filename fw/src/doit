@@ -70,7 +70,7 @@ build () {
     echo "Building Moab hat firmware with embedded version:" $SEMVER
 
     west build -b moab_hat --pristine auto
-    west sign -d build -t imgtool -- --key /app/root-rsa-2048.pem
+    west sign -d build -t imgtool -- --key ~/root-rsa-2048.pem
 
     # SHA=$(git rev-parse HEAD | cut -b 1-4)
     # DMY=$(date +"%Y%m%d-%H%M")

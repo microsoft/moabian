@@ -1,5 +1,5 @@
-# FROM [--platform=amd64] debian:buster-slim
-FROM debian:buster-slim
+FROM --platform=amd64 debian:buster-slim AS zephyr
+# FROM debian:buster-slim
 
 RUN apt-get update -y && apt-get upgrade -y
 
@@ -10,37 +10,35 @@ RUN apt install --no-install-recommends -y git cmake \
     xz-utils file make gcc gcc-multilib g++-multilib libsdl2-dev
 
 # TODO: Change app to src
-WORKDIR /app
+WORKDIR /root
 
 ENV ZEPHYR_TOOLCHAIN_VARIANT=zephyr
-ENV ZEPHYR_SDK_INSTALL_DIR=/app/zephyrproject/zephyr-sdk-0.10.3/
+ENV ZEPHYR_SDK_INSTALL_DIR=/root/zephyrproject/zephyr-sdk-0.10.3/
+ENV ZEPHYR_BASE=/root/zephyrproject/zephyr
 
-RUN mkdir /app/zephyrproject \
-    && mkdir /app/zephyrproject/zephyr \
-    && git clone --depth 1 --branch v2.1.0 https://github.com/zephyrproject-rtos/zephyr.git /app/zephyrproject/zephyr
+RUN mkdir /root/zephyrproject \
+    && mkdir /root/zephyrproject/zephyr \
+    && git clone --depth 1 --branch v2.1.0 https://github.com/zephyrproject-rtos/zephyr.git /root/zephyrproject/zephyr
 
 RUN python3 -m pip install --upgrade pip \
     && pip3 install west imgtool
 
-WORKDIR /app/zephyrproject
+WORKDIR /root/zephyrproject
 
-RUN west init -l /app/zephyrproject/zephyr
+RUN west init -l /root/zephyrproject/zephyr
 RUN west update
 
-RUN pip3 install -r /app/zephyrproject/zephyr/scripts/requirements.txt
+RUN pip3 install -r /root/zephyrproject/zephyr/scripts/requirements.txt
 
-RUN wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.3/zephyr-sdk-0.10.3-setup.run -P /app/zephyrproject/ \
-    && chmod +x /app/zephyrproject/zephyr-sdk-0.10.3-setup.run \
-    && /app/zephyrproject/zephyr-sdk-0.10.3-setup.run -- -d /app/zephyrproject/zephyr-sdk-0.10.3
-
-# TODO: Move this up to the top
-ENV ZEPHYR_BASE=/app/zephyrproject/zephyr
+RUN wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.3/zephyr-sdk-0.10.3-setup.run -P /root/zephyrproject/ \
+    && chmod +x /root/zephyrproject/zephyr-sdk-0.10.3-setup.run \
+    && /root/zephyrproject/zephyr-sdk-0.10.3-setup.run -- -d /root/zephyrproject/zephyr-sdk-0.10.3
 
 SHELL ["/bin/bash", "-c"]
-RUN source /app/zephyrproject/zephyr/zephyr-env.sh
+RUN source /root/zephyrproject/zephyr/zephyr-env.sh
 
 # TODO: Change app to src
-WORKDIR /app
-COPY . /app
+WORKDIR /root
+COPY . /root
 
-CMD ["bash", "-c", "./doit", "docker"]
+CMD ["./doit", "build"]
