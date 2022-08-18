@@ -5,6 +5,7 @@
 
 set -euo pipefail
 trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
+die() { ret=$?; printf "%s\n" "$@" >&2; exit "$ret"; }
 
 require() { hash "$@" || exit 127; }
 
@@ -51,7 +52,8 @@ exec 2> >(tee "/tmp/stderr.log")
 # "    ": compile against Zephyr 2.1 from this fork: https://github.com/scotstan/zephyr/tree/Moabian_SPI_v3_fixes
 # 3.1.__: Version sync with v3.1.0 of Moabian. Dropping the last set of digits
 
-VERSION="3.1"
+if [ -z ${VERSION+x} ]; then echo "Set VERSION environment variable"; else echo "Firmwire OLED: Moab v.'$VERSION'"; fi
+#VERSION="3.1"
 
 # YRDDDHR: 2103908. 2021, 39th day of the year, 08th hour (PDT)
 TIMESTAMP=$(TZ='America/Los_Angeles' date +"%j%H%M")
@@ -62,20 +64,25 @@ export SEMVER=$VERSION.$TIMESTAMP
 readonly _D="$(dirname "$(readlink -f "$0")")"  && cd $_D
 
 # Dump firmware binaries here
-[[ -d binaries ]] || mkdir binaries
-DEST="$_D/binaries"
+DEST="$_D/output"
+[[ -d $DEST ]] || die "Need $DEST folder created by host"
+echo "Saving firmware to $DEST"
+
+# check for private firmware signature before continuing
+[[ -e $DEST/root-rsa-2048.pem ]] || die "Need $DEST/root-rsa-2048.pem signature file"
+ls -l $DEST/root-rsa-2048.pem
 
 # production "app" folder
 build () {
     echo "Building Moab hat firmware with embedded version:" $SEMVER
 
     west build -b moab_hat --pristine auto
-    west sign -d build -t imgtool -- --key ~/root-rsa-2048.pem
+    west sign -d build -t imgtool -- --key $DEST/root-rsa-2048.pem
 
     # SHA=$(git rev-parse HEAD | cut -b 1-4)
     # DMY=$(date +"%Y%m%d-%H%M")
     FN="$SEMVER.bin"
-    cp build/zephyr/zephyr.signed.bin "$DEST/$FN"
+    cp build/zephyr/zephyr.signed.bin "$DEST/v$FN"
 }
 
 install() {
