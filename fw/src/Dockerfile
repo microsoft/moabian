@@ -34,6 +34,9 @@ RUN wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.3/
     && chmod +x /root/zephyrproject/zephyr-sdk-0.10.3-setup.run \
     && /root/zephyrproject/zephyr-sdk-0.10.3-setup.run -- -d /root/zephyrproject/zephyr-sdk-0.10.3
 
+ARG moab_version
+ENV VERSION=$moab_version
+
 SHELL ["/bin/bash", "-c"]
 RUN source /root/zephyrproject/zephyr/zephyr-env.sh
 
@@ -41,4 +44,8 @@ RUN source /root/zephyrproject/zephyr/zephyr-env.sh
 WORKDIR /root
 COPY . /root
 
+<<<<<<< HEAD
 CMD ["./doit", "build"]
+=======
+CMD ["bash", "-c", "./doit", "docker"]
+>>>>>>> 3aaae66 (Pass VERSION into Docker from host)
