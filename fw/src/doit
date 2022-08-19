@@ -83,6 +83,7 @@ build () {
     # DMY=$(date +"%Y%m%d-%H%M")
     FN="$SEMVER.bin"
     cp build/zephyr/zephyr.signed.bin "$DEST/v$FN"
+    shasum "$DEST/v$FN" > "$DEST/shasum.txt"
 }
 
 install() {
