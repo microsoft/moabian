@@ -335,7 +335,9 @@ function layer-mcumgr
     if ! [ -e /usr/local/bin/mcumgr ]; then
         local mcu_url="github.com/apache/mynewt-mcumgr-cli/mcumgr"
         /usr/local/go/bin/go get -v $mcu_url
-        cp $HOME/go/bin/mcumgr /usr/local/bin
+        cd $HOME/.go/src/$mcu_url
+        /usr/local/go/bin/go install mcumgr.go
+        cp $HOME/.go/bin/mcumgr /usr/local/bin
     fi
 }
 
@@ -361,17 +363,19 @@ function info {
 
 function main
 {
-    info "01/10: updating system packages" && layer-run-first
-    info "02/10: setting up boot files" && touch-files
-    info "03/10: moabian package install" && layer-classic-moabian
-    info "04.0/10: installing python" && layer-pip
-    info "04.5/10: installing docker (moby)" && layer-docker
-    info "05/10: firmware tooling" && layer-mcumgr
-    info "06/10: python packages for moab" && layer-baremetal
-    info "07/10: autorun services setup" && layer-moab-services
-    info "08/10: flashing Moab HAT to v3 firmware" && layer-flash
-    info "09/10: cleaning up" && sudo apt-get autoremove --yes
-    info "10/10: renaming bot to moab" && layer-rename
+    info "01: updating system packages" && layer-run-first
+    info "02: setting up boot files" && touch-files
+    info "03: moabian package install" && layer-classic-moabian
+    info "04: installing python" && layer-pip
+    info "05: installing docker (moby)" && layer-docker
+    info "06: firmware tooling" && layer-mcumgr
+    info "07: python packages for moab" && layer-baremetal
+    info "08: autorun services setup" && layer-moab-services
+    #info "08/10: flashing Moab HAT to v3 firmware" && layer-flash
+    info "09: renaming bot to moab" && layer-rename
+    info "Now reboot then install firmware:"
+    warn "sudo reboot 0"
+    warn "sudo moab/bin/flash"
 }
 
 main
