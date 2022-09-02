@@ -373,7 +373,9 @@ function main
     info "08: autorun services setup" && layer-moab-services
     #info "08/10: flashing Moab HAT to v3 firmware" && layer-flash
     info "09: renaming bot to moab" && layer-rename
-    info "Now reboot and install firmware"
+    info "Now reboot then install firmware:"
+    warn "sudo reboot 0"
+    warn "sudo moab/bin/flash"
 }
 
 main
