@@ -35,7 +35,7 @@ sudo raspi-gpio set 6 dl
 
 FN=$1
 echo "Uploading $FN firmware now"
-mcumgr --conntype=serial --connstring=/dev/ttyAMA1,baud=115200 image upload $FN
+$HOME/.go/bin/mcumgr --conntype=serial --connstring=/dev/ttyAMA1,baud=115200 image upload $FN
 
 sudo raspi-gpio set 5 dl
 sudo raspi-gpio set 6 dh
