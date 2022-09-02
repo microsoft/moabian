@@ -335,7 +335,9 @@ function layer-mcumgr
     if ! [ -e /usr/local/bin/mcumgr ]; then
         local mcu_url="github.com/apache/mynewt-mcumgr-cli/mcumgr"
         /usr/local/go/bin/go get -v $mcu_url
-        cp $HOME/go/bin/mcumgr /usr/local/bin
+        cd $HOME/.go/src/$mcu_url
+        /usr/local/go/bin/go install mcumgr.go
+        cp $HOME/.go/bin/mcumgr /usr/local/bin
     fi
 }
 
