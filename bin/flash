@@ -33,7 +33,7 @@ sudo raspi-gpio set 6 dh
 sleep 1
 sudo raspi-gpio set 6 dl
 
-FN=$1
+FN=$1-/home/pi/moab/fw/v3.bin
 echo "Uploading $FN firmware now"
 /usr/local/bin/mcumgr --conntype=serial --connstring=/dev/ttyAMA1,baud=115200 image upload $FN
 
