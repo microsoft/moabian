@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
@@ -94,14 +94,18 @@ def get_resp(port, client_id=123):
 
 
 def get_api_url(port, version):
-    process = subprocess.Popen(
-        "ip route get 1.1.1.1 | head -1 | cut -d' ' -f7",
-        stdout=subprocess.PIPE,
-        shell=True,
-        universal_newlines=True,
-    )
-    ip, stderr = process.communicate()
-    ip = ip.strip()  # remove newline
+    try:
+        process = subprocess.Popen(
+            "ip route get 1.1.1.1 | head -1 | cut -d' ' -f7",
+            stdout=subprocess.PIPE,
+            stderr=DEVNULL,
+            shell=True,
+            universal_newlines=True,
+        )
+        ip, stderr = process.communicate()
+        ip = ip.strip()  # remove newline
+    except:
+        ip = "localhost"
 
     if version == 1:
         api_url = f"http://{ip}:{port}/v1/doc/index.html"
