@@ -197,7 +197,8 @@ install_moby () {
 
 install_docker_compose () {
     if ! command -v docker-compose &> /dev/null; then
-        pip3 install docker-compose
+        curl -SL https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-linux-armv7 -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
     fi
 }
 
@@ -216,6 +217,7 @@ function layer-docker
     uninstall_docker_ce || true
     add_moby_keys
     install_moby
+    install_docker_compose
     systemctl start docker
     load_brains || true
     download_default_brain
@@ -317,11 +319,6 @@ function layer-baremetal
 	EOF
 }
 
-function layer-flash
-{
-    $_P/bin/flash $_P/fw/v3.1.bin
-}
-
 function layer-mcumgr
 {
     # Install Go language (you have your orders now, go bin go)
@@ -343,6 +340,13 @@ function layer-mcumgr
 			/usr/local/go/bin/go install mcumgr.go
 		EOF
         cp /home/pi/.go/bin/mcumgr /usr/local/bin
+    fi
+}
+
+function layer-flash-firmware
+{
+    if ! $_P/bin/flash; then
+        warn "Unable to flash firmware. Reboot, then run: sudo moab/bin/flash "
     fi
 }
 
@@ -376,10 +380,10 @@ function main
     info "06: Installing go and firmware tooling" && layer-mcumgr
     info "07: Installing python packages for moab" && layer-baremetal
     info "08: Installing autorun services" && layer-moab-services
-    info "09: renaming bot to moab" && layer-rename
-    info "Done: please reboot then install firmware:"
-    warn "sudo reboot 0"
-    warn "sudo moab/bin/flash"
+    info "09: Flashing firmware" && layer-flash-firmware
+    info "10: renaming bot to moab" && layer-rename
+    info "FINISHED. Now reboot by typing:"
+    warn "sudo reboot now"
 }
 
 main

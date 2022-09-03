@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-@test "Missing flask library for streaming " {
+@test "Python flask library found" {
   python3 -c "import flask"
 }
 
@@ -36,7 +36,7 @@
     pip3 list | grep -i huemask
 }
 
-@test "Camera detected" {
+@test "camera detected" {
   vcgencmd get_camera | grep 'detected=1'
 }
 
@@ -57,7 +57,7 @@
     systemctl is-active stream.service
 }
 
-@test "Docker is running" {
+@test "docker is running" {
   pgrep -l docker
 }
 
