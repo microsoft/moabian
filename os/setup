@@ -343,7 +343,7 @@ function layer-mcumgr
     fi
 }
 
-function layer-flash-firmare
+function layer-flash-firmware
 {
     if ! [ $_P/bin/flash ]; then
         warn "Unable to flash firmware. Reboot, then run: sudo moab/bin/flash "
