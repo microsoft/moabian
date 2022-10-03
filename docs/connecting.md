@@ -44,9 +44,9 @@ Software Configuration Tool.
 2. If prompted, select your country from the list. You can type the
 first letter of your country as a short cut.
 
-3. Select **2 Network Options**.
+3. Select **1 System Options**.
 
-4. Select **N2 Wireless LAN**.
+4. Select **S1 Wireless LAN**.
 
 5. Enter your WiFi network name.
 
