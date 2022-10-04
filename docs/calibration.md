@@ -27,7 +27,8 @@ The servo offset calibration is a bit more advanced and is only necessary to do 
 2. SSH into Moab (see instructions in previous section)
 
 3. Navigate to the moab/sw folder (`cd moab/sw`) and run the plate level  program (`p level_plate.py`). The three numbers in the program correspond to the three servo offsets. Use increase or decrease the offsets, the `u` and `j` keys for the first offset, the `i` and `k` keys for the second, and the `o` and `l` keys for the thrid. As you ajust the offsets you should see the plate move.
-![plate-level](images/plate-level.png)
+
+![plate-level](docs/plate-level.png)
 
 
 4. Update the servo offset values until the plate is level. You can verify the plate is level by placing the ball on the plate and ensuring it does not move. Save the offsets with the `s` key and then close the level plate program with the `q` key.
