@@ -150,8 +150,8 @@ def build_menu(env, log_on, logfile, kiosk_dump_location, kiosk_timeout):
             closure=kiosk_controller,
             kwargs={
                 "env": env,
-                "timeout": kiosk_timeout,  # in seconds
-                "dump_location_clock_hand": kiosk_dump_location,  # from 1-12
+                "timeout": 15,  # in seconds
+                "dump_location_clock_hand": 2,  # from 1-12
                 "controller": default_controller_fn,
                 "controller_kwargs": default_controller_fn_kwargs,
             },
