@@ -30,6 +30,7 @@ from controllers import (
     brain_controller,
     joystick_controller,
     dump_ball_controller,
+    kiosk_controller,
     BrainNotFound,
 )
 
@@ -75,7 +76,7 @@ def squash_small_angles(controller_fn, min_angle=1.0):
     return decorated_controller
 
 
-def build_menu(env, log_on, logfile):
+def build_menu(env, log_on, logfile, kiosk_dump_location, kiosk_timeout):
     log_csv = lambda fn: log_decorator(fn, logfile)
 
     # fmt: off
@@ -135,15 +136,37 @@ def build_menu(env, log_on, logfile):
         ),
     ]
 
-    return top_menu + middle_menu + bottom_menu
+    if len(middle_menu) > 0:
+        #  Get the first brain in the list to use in kiosk
+        default_controller_fn = middle_menu[0].closure
+        default_controller_fn_kwargs = middle_menu[0].kwargs
+    else:
+        # If there are no brains loaded just use the pid
+        default_controller_fn = pid_controller
+        default_controller_fn_kwargs = {}
+    kiosk_menu = [
+        MenuOption(
+            name="Kiosk",
+            closure=kiosk_controller,
+            kwargs={
+                "env": env,
+                "timeout": kiosk_timeout,  # in seconds
+                "dump_location_clock_hand": kiosk_dump_location,  # from 1-12
+                "controller": default_controller_fn,
+                "controller_kwargs": default_controller_fn_kwargs,
+            },
+            decorators=[log_csv] if log_on else None,
+        )
+    ]
+
+    return top_menu + kiosk_menu + middle_menu + bottom_menu
 
 
-def kiosk_mode(env, prev_state, dump_location_clock_hand):
+def kiosk_mode(env, dump_location_clock_hand):
     # Convert from hour hand location to degrees
     dump_angle = ((-dump_location_clock_hand + 3) * (360 / 12)) % 360
     dump_ball_fn = dump_ball_controller(angle=dump_angle, tilt_angle=5)
     zero_fn = zero_controller()
-    state, detected, buttons = prev_state
 
     # Dump the ball for 1 second
     for _ in range(env.frequency * 1):
@@ -257,7 +280,7 @@ def _handle_debug(ctx, param, debug):
 )
 @click.option(
     "--kiosk/--no-kiosk",
-    default=False,
+    default=True,
     help=(
         "Enables the kiosk mode. "
         "Exit controllers after a set time and dump the ball towards one side."
@@ -266,7 +289,7 @@ def _handle_debug(ctx, param, debug):
 @click.option(
     "--kiosk-timeout",
     type=int,
-    default=300,  # 5 minutes
+    default=900,  # 15 minutes
     help="Timeout before kiosk mode is enabled (in seconds)",
 )
 @click.option(
@@ -305,7 +328,7 @@ def main_menu(
         os.system("raspi-gpio set 6 dh && sleep 0.05 && raspi-gpio set 6 dl")
 
     with MoabEnv(hertz, debug=debug, verbose=verbose) as env:
-        menu_list = build_menu(env, log, file)
+        menu_list = build_menu(env, log, file, kiosk_dump_location, kiosk_timeout)
 
         if cont == -1:
             # normal startup state
