@@ -6,10 +6,11 @@ A sensor that uses OpenCV for capture
 """
 
 import cv2
+import time
 import threading
 import numpy as np
 
-from time import time
+from typing import Union, Tuple
 
 
 # Link to raspicam_cv implementation for mapping values
@@ -22,8 +23,6 @@ class OpenCVCameraSensor:
         brightness=60,
         contrast=100,
         frequency=30,
-        x_offset_pixels=0.0,
-        y_offset_pixels=0.0,
         auto_exposure=True,
         exposure=50,  # int for manual (each 1 is 100µs of exposure)
     ):
@@ -38,9 +37,6 @@ class OpenCVCameraSensor:
         self.exposure = exposure
         self.prev_time = 0.0
         self.source = None
-        self.last_frame = None
-        self.x_offset_pixels = x_offset_pixels
-        self.y_offset_pixels = y_offset_pixels
 
     def start(self):
         self.source = cv2.VideoCapture(self.device_id)
@@ -69,28 +65,12 @@ class OpenCVCameraSensor:
             raise Exception("Using camera before it has been started.")
 
         # Calculate the time elapsed since the last sensor snapshot
-        curr_time = time()
+        curr_time = time.time()
         elapsed_time = curr_time - self.prev_time
         self.prev_time = curr_time
 
         ret, frame = self.source.read()
         if ret:
-            w, h = 384, 288
-            d = 256  # Our final "destination" rectangle is 256x256
-
-            # Ensure the offset crops are possible
-            x_offset_pixels = min(self.x_offset_pixels, (w / 2 - d / 2))
-            x_offset_pixels = max(self.x_offset_pixels, -(w / 2 - d / 2))
-            y_offset_pixels = min(self.y_offset_pixels, (h / 2 - d / 2))
-            y_offset_pixels = max(self.y_offset_pixels, -(h / 2 - d / 2))
-
-            # Calculate the starting point in x & y
-            x = int((w / 2 - d / 2) + x_offset_pixels)
-            y = int((h / 2 - d / 2) + y_offset_pixels)
-
-            frame = frame[y : y + d, x : x + d]
-            # frame = frame[:-24, 40:-80]  # Crop so middle of plate is middle of image
-            # cv2.resize(frame, (256, 256))  # Crop off edges to make image (256, 256)
             return frame, elapsed_time
         else:
             raise ValueError("Could not get the next frame")

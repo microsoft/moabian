@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
-import sys, os, time, errno
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 import psutil
 import logging as log
+import sys, os, time, errno
+
 from psutil import Process, signal
 
 
