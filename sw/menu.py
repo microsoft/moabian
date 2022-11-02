@@ -30,7 +30,7 @@ from controllers import (
     brain_controller,
     joystick_controller,
     dump_ball_controller,
-    kiosk_controller,
+    kiosk_mode_decorator,
     BrainNotFound,
 )
 
@@ -76,7 +76,7 @@ def squash_small_angles(controller_fn, min_angle=1.0):
     return decorated_controller
 
 
-def build_menu(env, log_on, logfile, kiosk_dump_location, kiosk_timeout):
+def build_menu(env, log_on, logfile, servo_safety_dump_location, servo_safety_timeout):
     log_csv = lambda fn: log_decorator(fn, logfile)
 
     # fmt: off
@@ -147,11 +147,11 @@ def build_menu(env, log_on, logfile, kiosk_dump_location, kiosk_timeout):
     kiosk_menu = [
         MenuOption(
             name="Kiosk",
-            closure=kiosk_controller,
+            closure=kiosk_mode_decorator,
             kwargs={
                 "env": env,
-                "timeout": kiosk_timeout,  # in seconds
-                "dump_location_clock_hand": kiosk_dump_location,  # from 1-12
+                "timeout": 5,#kiosk_timeout,  # in seconds
+                "dump_location_clock_hand": 2,#kiosk_dump_location,  # from 1-12
                 "controller": default_controller_fn,
                 "controller_kwargs": default_controller_fn_kwargs,
             },
@@ -279,25 +279,25 @@ def _handle_debug(ctx, param, debug):
     help="verbose tx/rx (-v=OLED changes, -vv=servo commands, -vvv=NOOPs)",
 )
 @click.option(
-    "--kiosk/--no-kiosk",
+    "--servo-safety/--no-servo-safety",
     default=True,
     help=(
-        "Enables the kiosk mode. "
+        "Enables the servo-safety mode. "
         "Exit controllers after a set time and dump the ball towards one side."
     ),
 )
 @click.option(
-    "--kiosk-timeout",
+    "--servo-safety-timeout",
     type=int,
     default=900,  # 15 minutes
-    help="Timeout before kiosk mode is enabled (in seconds)",
+    help="Timeout before servo-safety mode is enabled (in seconds)",
 )
 @click.option(
-    "--kiosk-dump-location",
+    "--servo-safety-dump-location",
     type=click.IntRange(0, 12),
     default=2,
     help=(
-        "Where to dump the ball towards in kiosk mode. "
+        "Where to dump the ball towards in servo-safety mode. "
         "Location to dump matches the hour hand of a clock."
     ),
 )
@@ -318,9 +318,9 @@ def main_menu(
     log,
     reset,
     verbose,
-    kiosk,
-    kiosk_dump_location,
-    kiosk_timeout,
+    servo_safety,
+    servo_safety_dump_location,
+    servo_safety_timeout,
 ):
 
     if reset:
@@ -328,7 +328,9 @@ def main_menu(
         os.system("raspi-gpio set 6 dh && sleep 0.05 && raspi-gpio set 6 dl")
 
     with MoabEnv(hertz, debug=debug, verbose=verbose) as env:
-        menu_list = build_menu(env, log, file, kiosk_dump_location, kiosk_timeout)
+        menu_list = build_menu(
+            env, log, file, servo_safety_dump_location, servo_safety_timeout
+        )
 
         if cont == -1:
             # normal startup state
@@ -420,18 +422,21 @@ def main_menu(
                             state, detected, buttons = env.step(action)
 
                             # If the controller has been running for more than
-                            # kiosk_timeout seconds, exit, and dump the ball towards
+                            # servo_safety_timeout seconds, exit, and dump the ball towards
                             # one side and wait until the ball is detected again
-                            if kiosk:
-                                if time.time() - controller_start_time > kiosk_timeout:
+                            if servo_safety:
+                                if (
+                                    time.time() - controller_start_time
+                                    > servo_safety_timeout
+                                ):
                                     prev_state = (state, detected, buttons)
-                                    next_state, kiosk_exit = kiosk_mode(
-                                        env, prev_state, kiosk_dump_location
+                                    next_state, servo_safety_exit = servo_safety_mode(
+                                        env, prev_state, servo_safety_dump_location
                                     )
                                     state, detected, buttons = next_state
                                     controller_start_time = time.time()
-                                    # Whether the menu button was pressed in kiosk mode
-                                    if kiosk_exit:
+                                    # Whether the menu button was pressed in servo_safety mode
+                                    if servo_safety_exit:
                                         break
 
                     except BrainNotFound:

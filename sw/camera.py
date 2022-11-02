@@ -22,8 +22,8 @@ class OpenCVCameraSensor:
         brightness=60,
         contrast=100,
         frequency=30,
-        x_offset_pixels=0.0,
-        y_offset_pixels=0.0,
+        x_offset_pixels=0,
+        y_offset_pixels=0,
         auto_exposure=True,
         exposure=50,  # int for manual (each 1 is 100µs of exposure)
     ):
