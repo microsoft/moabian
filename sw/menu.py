@@ -24,7 +24,11 @@ from dataclasses import dataclass
 from calibrate import calibrate_controller
 from typing import Callable, Any, Union, Optional, List
 from procid import setup_signal_handlers, stop_doppelgänger
-from info_screen import info_screen_controller, info_config_controller
+from info_screen import (
+    info_screen_controller,
+    info_config_controller,
+    options_controller,
+)
 from controllers import (
     pid_controller,
     zero_controller,
@@ -150,6 +154,13 @@ def build_menu(env, log_on, logfile, kiosk, kiosk_timeout, kiosk_clock_position)
             is_controller=False,
             require_servos=False,
         ),
+        MenuOption(
+            name="Settings",
+            closure=options_controller,
+            kwargs={"env": env},
+            is_controller=False,
+            require_servos=False,
+        ),
     ]
 
     return top_menu + middle_menu + bottom_menu
@@ -271,18 +282,6 @@ def _handle_debug(ctx, param, debug):
     default=1,
     help="verbose tx/rx (-v=OLED changes, -vv=servo commands, -vvv=NOOPs)",
 )
-@click.option(
-    "-s",
-    "--settings-file",
-    default="bot.json",
-    help=("Location of the settings file."),
-    type=click.Path(
-        exists=False,
-        dir_okay=False,
-        writable=True,
-        resolve_path=True,
-    ),
-)
 @click.pass_context
 def main(ctx: click.core.Context, **kwargs: Any) -> None:
     if kwargs["verbose"] == 2:
@@ -300,14 +299,13 @@ def main_menu(
     log,
     reset,
     verbose,
-    settings_file,
 ):
 
     if reset:
         out("Resetting firmware")
         os.system("raspi-gpio set 6 dh && sleep 0.05 && raspi-gpio set 6 dl")
 
-    settings = get_settings(settings_file)
+    settings = get_settings()
     kiosk = settings["kiosk"]
     kiosk_timeout = settings["kiosk_timeout"]
     kiosk_clock_position = settings["kiosk_clock_position"]
@@ -366,7 +364,14 @@ def main_menu(
                     # "Pull to refresh"
                     # If you go above the top of the menu, refresh the menu list
                     if index == 0:
-                        menu_list = build_menu(env, log, file)
+                        menu_list = build_menu(
+                            env,
+                            log,
+                            file,
+                            kiosk,
+                            kiosk_timeout,
+                            kiosk_clock_position,
+                        )
                         env.hardware.display("Refreshing", icon.BLANK)
                         time.sleep(0.5)
                         env.hardware.display(menu_list[index].name, icon)

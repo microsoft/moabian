@@ -37,3 +37,11 @@ def set_settings(settings_dict, settings_file="bot.json"):
     # Write the default calibration file if it didn't exist before
     with open(settings_file, "w") as f:
         json.dump(settings_dict, f, indent=4)
+
+
+def update_setting(setting_name, setting_value, settings_file="bot.json"):
+    settings_dict = get_settings(settings_file)
+    settings_dict[setting_name] = setting_value
+
+    with open(settings_file, "w") as f:
+        json.dump(settings_dict, f, indent=4)
