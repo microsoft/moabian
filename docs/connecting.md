@@ -86,6 +86,12 @@ menu as shown in the following screenshot:
     Use the user and host/IP `pi@moab.local` when prompted:
 
     >pi@moab.local
+    
+   Note: If you can't connect with `pi@moab.local`, try `pi@moab`. If that doesn't work, then try the following:
+   
+   * On your Moab device, use the thumbstick to scroll down to `BOT INFO`.
+   * Click the thumbstick to select the menu option. The Moab device IP ADDRESS will be displayed.
+   * Try `pi@<IP ADDRESS FROM BOT INFO>` Replace `<IP ADDRESS FROM BOT INFO>` with the IP ADDRESS from the Moab device.   
 
     Use the password `raspberry` when prompted.
 
