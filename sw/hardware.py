@@ -6,6 +6,7 @@ import time
 import json
 import numpy as np
 
+from settings import get_settings
 from detector import hsv_detector
 from typing import Tuple, Optional
 from camera import OpenCVCameraSensor
@@ -80,35 +81,21 @@ class MoabHardware:
 
     def __str__(self):
         return (
-            f"serial number: {self.info['serial_number']}, "
-            f"hue: {self.info['ball_hue']}, "
-            f"color: {self.info['ball_color']}, "
-            f"plate offsets: {self.info['plate_offsets']}, "
-            f"servo: {self.info['servo_offsets']}, "
-            f"kiosk: {self.info['kiosk']}, "
-            f"kiosk_timeout: {self.info['kiosk_timeout']}, "
-            f"kiosk_clock_position: {self.info['kiosk_clock_position']}"
+            f"serial number: {self.serial_number}, "
+            f"hue: {self.ball_hue}, "
+            f"color: {self.ball_color}, "
+            f"plate offsets: {self.plate_offsets}, "
+            f"servo offsets: {self.servo_offsets}"
         )
 
     def reset_calibration(self, calibration_file=None):
         # Use default if not defined
         calibration_file = calibration_file or self.calibration_file
+        settings_dict = get_settings(calibration_file)
 
-        # Get calibration settings
-        if os.path.isfile(calibration_file):
-            with open(calibration_file, "r") as f:
-                self.info = json.load(f)
-        else:  # Use defaults
-            self.info = {
-                "serial_number": 0,
-                "ball_hue": 44,
-                "ball_color": "orange",
-                "plate_offsets": (0.0, 0.0),
-                "servo_offsets": (0.0, 0.0, 0.0),
-                "kiosk": False,
-                "kiosk_timeout": 15,
-                "kiosk_clock_position": 2,
-            }
+        self.servo_offsets = settings_dict["servo_offsets"]
+        self.plate_offsets = settings_dict["plate_offsets"]
+        self.hue = settings_dict["ball_hue"]
 
     def go_up(self):
         # Set the plate to its hover position, experimentally found to be 150
@@ -133,7 +120,7 @@ class MoabHardware:
 
     def set_servos(self, s1, s2, s3):
         # Note the indexing offset
-        o1, o2, o3 = self.info["servo_offsets"]
+        o1, o2, o3 = self.servo_offsets
         self.hat.set_servos((s1 + o1, s2 + o2, s3 + o3))
 
     def display(
@@ -162,6 +149,6 @@ class MoabHardware:
         frame, elapsed_time = self.camera()
         buttons = self.hat.get_buttons()
         ball_detected, (ball_center, ball_radius) = self.detector(
-            frame, hue=self.info["ball_hue"]
+            frame, hue=self.hue
         )
         return ball_center, ball_detected, buttons

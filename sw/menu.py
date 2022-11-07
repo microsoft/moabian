@@ -7,19 +7,20 @@ import os
 import sys
 import time
 import yaml
+import json
 import click
+import docker
 import procid
 import logging
 import subprocess
-import json
-import docker
 
 from hat import Icon
 from enum import Enum
 from env import MoabEnv
 from functools import partial
-from dataclasses import dataclass
 from log_csv import log_decorator
+from settings import get_settings
+from dataclasses import dataclass
 from calibrate import calibrate_controller
 from typing import Callable, Any, Union, Optional, List
 from procid import setup_signal_handlers, stop_doppelgänger
@@ -76,7 +77,7 @@ def squash_small_angles(controller_fn, min_angle=1.0):
     return decorated_controller
 
 
-def build_menu(env, log_on, logfile, servo_safety_dump_location, servo_safety_timeout):
+def build_menu(env, log_on, logfile, kiosk, kiosk_timeout, kiosk_clock_position):
     log_csv = lambda fn: log_decorator(fn, logfile)
 
     # fmt: off
@@ -109,14 +110,29 @@ def build_menu(env, log_on, logfile, servo_safety_dump_location, servo_safety_ti
     # Parse the docker-compose.yml file for a list of brains
     middle_menu = []
     # Parse brains from docker ps and add to middle_menu
-    # parse the list
     for brain_image in docker.ps():
-        m = MenuOption(
-            name=brain_image.short_name,
-            closure=brain_controller,
-            kwargs={"port": brain_image.port, "alert_fn": alert_callback},
-            decorators=[log_csv] if log_on else None,
-        )
+        if kiosk:  # Kiosk-ify brains if kiosk mode is enabled
+            m = MenuOption(
+                name=brain_image.short_name,
+                closure=kiosk_mode_decorator,
+                kwargs={
+                    "env": env,
+                    "timeout": kiosk_timeout,
+                    "dump_location_clock_hand": kiosk_clock_position,
+                    "controller": brain_controller,
+                    "controller_kwargs": {
+                        "port": brain_image.port, "alert_fn": alert_callback
+                    },
+                },
+                decorators=[log_csv] if log_on else None,
+            )
+        else:
+            m = MenuOption(
+                name=brain_image.short_name,
+                closure=brain_controller,
+                kwargs={"port": brain_image.port, "alert_fn": alert_callback},
+                decorators=[log_csv] if log_on else None,
+            )
         middle_menu.append(m)
 
     bottom_menu = [
@@ -136,30 +152,7 @@ def build_menu(env, log_on, logfile, servo_safety_dump_location, servo_safety_ti
         ),
     ]
 
-    if len(middle_menu) > 0:
-        #  Get the first brain in the list to use in kiosk
-        default_controller_fn = middle_menu[0].closure
-        default_controller_fn_kwargs = middle_menu[0].kwargs
-    else:
-        # If there are no brains loaded just use the pid
-        default_controller_fn = pid_controller
-        default_controller_fn_kwargs = {}
-    kiosk_menu = [
-        MenuOption(
-            name="Kiosk",
-            closure=kiosk_mode_decorator,
-            kwargs={
-                "env": env,
-                "timeout": 5,#kiosk_timeout,  # in seconds
-                "dump_location_clock_hand": 2,#kiosk_dump_location,  # from 1-12
-                "controller": default_controller_fn,
-                "controller_kwargs": default_controller_fn_kwargs,
-            },
-            decorators=[log_csv] if log_on else None,
-        )
-    ]
-
-    return top_menu + kiosk_menu + middle_menu + bottom_menu
+    return top_menu + middle_menu + bottom_menu
 
 
 def kiosk_mode(env, dump_location_clock_hand):
@@ -279,26 +272,15 @@ def _handle_debug(ctx, param, debug):
     help="verbose tx/rx (-v=OLED changes, -vv=servo commands, -vvv=NOOPs)",
 )
 @click.option(
-    "--servo-safety/--no-servo-safety",
-    default=True,
-    help=(
-        "Enables the servo-safety mode. "
-        "Exit controllers after a set time and dump the ball towards one side."
-    ),
-)
-@click.option(
-    "--servo-safety-timeout",
-    type=int,
-    default=900,  # 15 minutes
-    help="Timeout before servo-safety mode is enabled (in seconds)",
-)
-@click.option(
-    "--servo-safety-dump-location",
-    type=click.IntRange(0, 12),
-    default=2,
-    help=(
-        "Where to dump the ball towards in servo-safety mode. "
-        "Location to dump matches the hour hand of a clock."
+    "-s",
+    "--settings-file",
+    default="bot.json",
+    help=("Location of the settings file."),
+    type=click.Path(
+        exists=False,
+        dir_okay=False,
+        writable=True,
+        resolve_path=True,
     ),
 )
 @click.pass_context
@@ -318,19 +300,25 @@ def main_menu(
     log,
     reset,
     verbose,
-    servo_safety,
-    servo_safety_dump_location,
-    servo_safety_timeout,
+    settings_file,
 ):
 
     if reset:
         out("Resetting firmware")
         os.system("raspi-gpio set 6 dh && sleep 0.05 && raspi-gpio set 6 dl")
 
+    settings = get_settings(settings_file)
+    kiosk = settings["kiosk"]
+    kiosk_timeout = settings["kiosk_timeout"]
+    kiosk_clock_position = settings["kiosk_clock_position"]
+
+    servo_safety = settings["servo_safety"]
+    servo_safety_timeout = settings["servo_safety_timeout"]
+    servo_safety_clock_position = settings["servo_safety_clock_position"]
+
+
     with MoabEnv(hertz, debug=debug, verbose=verbose) as env:
-        menu_list = build_menu(
-            env, log, file, servo_safety_dump_location, servo_safety_timeout
-        )
+        menu_list = build_menu(env, log, file, kiosk, kiosk_timeout, kiosk_clock_position)
 
         if cont == -1:
             # normal startup state
@@ -431,7 +419,7 @@ def main_menu(
                                 ):
                                     prev_state = (state, detected, buttons)
                                     next_state, servo_safety_exit = servo_safety_mode(
-                                        env, prev_state, servo_safety_dump_location
+                                        env, prev_state, servo_safety_clock_position
                                     )
                                     state, detected, buttons = next_state
                                     controller_start_time = time.time()
