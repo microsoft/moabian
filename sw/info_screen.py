@@ -100,12 +100,12 @@ def options_controller(env, **kwargs):
             "Ball Color",
             "ball_hue",
             [
+                Option(f"custom: {settings['ball_hue']}", settings["ball_hue"]),
                 Option("orange: 44", 44),
                 Option("yellow: 65", 65),
                 Option("green: 125", 125),
                 Option("blue: 200", 200),
                 Option("pink: 325", 325),
-                Option(f"custom: {settings['ball_hue']}", settings["ball_hue"]),
             ],
         ),
         SettingsMenuItem(
