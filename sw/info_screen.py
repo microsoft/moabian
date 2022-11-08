@@ -96,30 +96,45 @@ def options_controller(env, **kwargs):
     settings = get_settings()
 
     inner_menu = [
-        SettingsMenuItem("Ball Color", "ball_hue", [
-            Option(f"custom: {settings['ball_hue']}", settings["ball_hue"]),
-            Option("orange: 44", 44),
-            Option("yellow: 65", 65),
-            Option("green: 125", 125),
-            Option("blue: 200", 200),
-            Option("pink: 325", 325),
-        ]),
-        SettingsMenuItem("Kiosk", "kiosk", [
-            Option("ON", True), Option("OFF", False),
-        ]),
-        SettingsMenuItem("Kiosk Timeout", "kiosk_timeout", [
-            Option("5", 5),
-            Option("10", 10),
-            Option("15", 15),
-            Option("20", 20),
-            Option("30", 30),
-            Option("45", 45),
-            Option("60", 60),
-            Option("90", 90),
-        ]),
-        SettingsMenuItem("Kiosk Clock Pos", "kiosk_clock_position", [
-            Option(str(i), i) for i in range(1, 13)
-        ]),
+        SettingsMenuItem(
+            "Ball Color",
+            "ball_hue",
+            [
+                Option("orange: 44", 44),
+                Option("yellow: 65", 65),
+                Option("green: 125", 125),
+                Option("blue: 200", 200),
+                Option("pink: 325", 325),
+                Option(f"custom: {settings['ball_hue']}", settings["ball_hue"]),
+            ],
+        ),
+        SettingsMenuItem(
+            "Kiosk",
+            "kiosk",
+            [
+                Option("ON", True),
+                Option("OFF", False),
+            ],
+        ),
+        SettingsMenuItem(
+            "Kiosk Timeout",
+            "kiosk_timeout",
+            [
+                Option("5", 5),
+                Option("10", 10),
+                Option("15", 15),
+                Option("20", 20),
+                Option("30", 30),
+                Option("45", 45),
+                Option("60", 60),
+                Option("90", 90),
+            ],
+        ),
+        SettingsMenuItem(
+            "Kiosk Clock Pos",
+            "kiosk_clock_position",
+            [Option(str(i), i) for i in range(1, 13)],
+        ),
     ]
 
     index_x = 0
@@ -129,7 +144,7 @@ def options_controller(env, **kwargs):
     # Get the current value and index of the menu item
     index_y = matching_menu_option_idx(
         current_value=settings[inner_menu[index_x].json_str],
-        options=inner_menu[index_x].options
+        options=inner_menu[index_x].options,
     )
 
     def wait_for_menu():
@@ -157,14 +172,14 @@ def options_controller(env, **kwargs):
                 index_x = max(0, index_x - 1)
                 index_y = matching_menu_option_idx(
                     current_value=settings[inner_menu[index_x].json_str],
-                    options=inner_menu[index_x].options
+                    options=inner_menu[index_x].options,
                 )
             elif joy_x > 0.9:  # Flick joystick right
                 prev_index_x = index_x
                 index_x = min(index_x + 1, len(inner_menu) - 1)
                 index_y = matching_menu_option_idx(
                     current_value=settings[inner_menu[index_x].json_str],
-                    options=inner_menu[index_x].options
+                    options=inner_menu[index_x].options,
                 )
             elif joy_y < -0.8:  # Flick joystick down
                 prev_index_y = index_y
@@ -183,6 +198,7 @@ def options_controller(env, **kwargs):
                 settings[menu_opt_json_str] = opt_selection_value
 
         set_settings(settings)
+
     return wait_for_menu
 
 
