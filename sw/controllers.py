@@ -200,7 +200,13 @@ def brain_controller(
         raise ValueError("Brain version `{self.version}` is not supported.")
 
 
-def kiosk_controller(env, timeout, dump_location_clock_hand, controller, controller_kwargs):
+def kiosk_mode_decorator(
+    controller,
+    controller_kwargs,
+    env,
+    timeout=15,
+    dump_location_clock_hand=2,
+):
     # Define state machine states
     class KioskMode(IntEnum):
         CONTROLLER = 0
@@ -210,7 +216,7 @@ def kiosk_controller(env, timeout, dump_location_clock_hand, controller, control
     # Convert from hour hand location to degrees
     dump_angle = ((-dump_location_clock_hand + 3) * (360 / 12)) % 360
     dump_time = 1  # Take 1 second to dump the ball
-    
+
     controller_fn = controller(**controller_kwargs)
     dump_ball_fn = dump_ball_controller(angle=dump_angle, tilt_angle=5)
     zero_fn = zero_controller()
@@ -222,23 +228,23 @@ def kiosk_controller(env, timeout, dump_location_clock_hand, controller, control
     def next_action(state):
         nonlocal mode, mode_start_time, ball_continuously_detected_count
         _, ball_detected, _ = state
-                
+
         if mode == KioskMode.CONTROLLER:
             if time.time() > mode_start_time + timeout:
                 mode = KioskMode.DUMPING
                 mode_start_time = time.time()
             return controller_fn(state)
-        
+
         elif mode == KioskMode.DUMPING:
             if time.time() > mode_start_time + dump_time:
                 mode = KioskMode.IDLE
                 mode_start_time = time.time()
 
                 # Level the plate then disable servos
-                env.step([0,0])
+                env.step([0, 0])
                 env.hardware.disable_servos()
                 time.sleep(1 / env.frequency)
-            
+
             if ball_detected:
                 return dump_ball_fn(state)
             else:
@@ -256,6 +262,6 @@ def kiosk_controller(env, timeout, dump_location_clock_hand, controller, control
             return zero_fn(state)
 
         else:
-            raise ValueError("Mode is invalid")
+            raise ValueError(f"Mode: `{mode}` is invalid")
 
     return next_action

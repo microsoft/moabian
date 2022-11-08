@@ -47,7 +47,7 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
         # Deconstruct action
         pitch, roll = action
         # combine all to a list for the log
-        distance = math.sqrt(x**2 + y**2)
+        distance = math.sqrt(x ** 2 + y ** 2)
         l = [tick, dt] + [x, y, vel_x, vel_y, distance] + [pitch, roll] + [status, resp]
 
         # combine all to a list for the log
