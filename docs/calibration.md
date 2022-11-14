@@ -1,4 +1,4 @@
-# Moab Calibraiton
+# Moab Calibration
 
 Moab calibration consists of 3 components:
 
