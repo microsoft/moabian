@@ -198,6 +198,7 @@ def options_controller(env, **kwargs):
                 settings[menu_opt_json_str] = opt_selection_value
 
         set_settings(settings)
+        env.hardware.reset_calibration()
 
     return wait_for_menu
 
