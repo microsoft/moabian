@@ -1,3 +1,4 @@
 binaries
 tags
 build
+*.bin

@@ -197,7 +197,8 @@ install_moby () {
 
 install_docker_compose () {
     if ! command -v docker-compose &> /dev/null; then
-        pip3 install docker-compose
+        curl -SL https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-linux-armv7 -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
     fi
 }
 
@@ -216,6 +217,7 @@ function layer-docker
     uninstall_docker_ce || true
     add_moby_keys
     install_moby
+    install_docker_compose
     systemctl start docker
     load_brains || true
     download_default_brain
@@ -317,25 +319,34 @@ function layer-baremetal
 	EOF
 }
 
-function layer-flash
-{
-    $_P/bin/flash $_P/fw/v3.1.bin
-}
-
 function layer-mcumgr
 {
     # Install Go language (you have your orders now, go bin go)
     local go_url="https://golang.org/dl/go1.15.1.linux-armv6l.tar.gz"
     if ! [ -e /usr/local/go/bin/go ]; then
+        info "installing go"
         wget --no-verbose $go_url -O /tmp/golang.tar.gz
         tar -C /usr/local -xzf /tmp/golang.tar.gz
     fi
 
     # Install firmware installer program "mcumgr" from Apache
     if ! [ -e /usr/local/bin/mcumgr ]; then
-        local mcu_url="github.com/apache/mynewt-mcumgr-cli/mcumgr"
-        /usr/local/go/bin/go get -v $mcu_url
-        cp $HOME/go/bin/mcumgr /usr/local/bin
+       info "installing mcumgr"
+       sudo -u pi -s <<-'EOF'
+			export GOPATH=$HOME/.go
+			mcu_url="github.com/apache/mynewt-mcumgr-cli/mcumgr"
+			/usr/local/go/bin/go get $mcu_url
+			cd $HOME/.go/src/$mcu_url
+			/usr/local/go/bin/go install mcumgr.go
+		EOF
+        cp /home/pi/.go/bin/mcumgr /usr/local/bin
+    fi
+}
+
+function layer-flash-firmware
+{
+    if ! $_P/bin/flash; then
+        warn "Unable to flash firmware. Reboot, then run: sudo moab/bin/flash "
     fi
 }
 
@@ -361,17 +372,18 @@ function info {
 
 function main
 {
-    info "01/10: updating system packages" && layer-run-first
-    info "02/10: setting up boot files" && touch-files
-    info "03/10: moabian package install" && layer-classic-moabian
-    info "04.0/10: installing python" && layer-pip
-    info "04.5/10: installing docker (moby)" && layer-docker
-    info "05/10: firmware tooling" && layer-mcumgr
-    info "06/10: python packages for moab" && layer-baremetal
-    info "07/10: autorun services setup" && layer-moab-services
-    info "08/10: flashing Moab HAT to v3 firmware" && layer-flash
-    info "09/10: cleaning up" && sudo apt-get autoremove --yes
-    info "10/10: renaming bot to moab" && layer-rename
+    info "01: Updating system packages" && layer-run-first
+    info "02: Setting up boot files" && touch-files
+    info "03: Moabian package install" && layer-classic-moabian
+    info "04: Installing python" && layer-pip
+    info "05: Installing docker (moby)" && layer-docker
+    info "06: Installing go and firmware tooling" && layer-mcumgr
+    info "07: Installing python packages for moab" && layer-baremetal
+    info "08: Installing autorun services" && layer-moab-services
+    info "09: Flashing firmware" && layer-flash-firmware
+    info "10: renaming bot to moab" && layer-rename
+    info "FINISHED. Now reboot by typing:"
+    warn "sudo reboot now"
 }
 
 main

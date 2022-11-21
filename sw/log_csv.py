@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 import time
+import math
 import logging as log
 
 from common import Vector2
@@ -11,6 +12,7 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
     # Add the header line
     cols = ["tick", "dt"]  # Timing
     cols += ["x", "y", "vel_x", "vel_y"]  # State
+    cols += ["distance"]
     cols += ["pitch", "roll"]  # Action
     cols += ["status", "error_response"]  # Error status
 
@@ -45,7 +47,8 @@ def log_decorator(fn, logfile="/tmp/log.csv"):
         # Deconstruct action
         pitch, roll = action
         # combine all to a list for the log
-        l = [tick, dt] + [x, y, vel_x, vel_y] + [pitch, roll] + [status, resp]
+        distance = math.sqrt(x ** 2 + y ** 2)
+        l = [tick, dt] + [x, y, vel_x, vel_y, distance] + [pitch, roll] + [status, resp]
 
         # combine all to a list for the log
         # l = [tick, dt] + state + action + [status + resp]

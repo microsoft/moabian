@@ -27,5 +27,6 @@ cropped = hsv[y : y + d, x : x + d]
 cv2.imwrite("/tmp/cropped.jpg", cropped, [cv2.IMWRITE_JPEG_QUALITY, 90])
 cv2.imwrite("/tmp/img.jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 90])
 cv2.imwrite("/tmp/hsv.jpg", hsv, [cv2.IMWRITE_JPEG_QUALITY, 90])
+print("Saved /tmp/{cropped,img,hsv}.jpg")
 
 # m = np.array(cropped)

@@ -7,23 +7,28 @@ import os
 import sys
 import time
 import yaml
+import json
 import click
+import docker
 import procid
 import logging
 import subprocess
-import json
-import docker
 
 from hat import Icon
 from enum import Enum
 from env import MoabEnv
 from functools import partial
-from dataclasses import dataclass
 from log_csv import log_decorator
+from settings import get_settings
+from dataclasses import dataclass
 from calibrate import calibrate_controller
 from typing import Callable, Any, Union, Optional, List
 from procid import setup_signal_handlers, stop_doppelgänger
-from info_screen import info_screen_controller, info_config_controller
+from info_screen import (
+    info_screen_controller,
+    info_config_controller,
+    options_controller,
+)
 from controllers import (
     pid_controller,
     nn_controller,
@@ -31,6 +36,7 @@ from controllers import (
     brain_controller,
     joystick_controller,
     dump_ball_controller,
+    kiosk_mode_decorator,
     BrainNotFound,
 )
 
@@ -76,9 +82,10 @@ def squash_small_angles(controller_fn, min_angle=1.0):
     return decorated_controller
 
 
-def build_menu(env, log_on, logfile):
+def build_menu(env, log_on, logfile, kiosk, kiosk_timeout, kiosk_clock_position):
     log_csv = lambda fn: log_decorator(fn, logfile)
 
+    # fmt: off
     top_menu = [
         MenuOption(
             name="Calibrate",
@@ -94,7 +101,7 @@ def build_menu(env, log_on, logfile):
             name="Joystick",
             closure=joystick_controller,
             kwargs={},
-            decorators=[squash_small_angles],
+            decorators=[squash_small_angles, log_csv] if log_on else [squash_small_angles],
         ),
         MenuOption(
             name="PID",
@@ -109,18 +116,34 @@ def build_menu(env, log_on, logfile):
             decorators=[log_csv] if log_on else None,
         ),
     ]
+    # fmt: on
 
     # Parse the docker-compose.yml file for a list of brains
     middle_menu = []
     # Parse brains from docker ps and add to middle_menu
-    # parse the list
     for brain_image in docker.ps():
-        m = MenuOption(
-            name=brain_image.short_name,
-            closure=brain_controller,
-            kwargs={"port": brain_image.port, "alert_fn": alert_callback},
-            decorators=[log_csv] if log_on else none,
-        )
+        if kiosk:  # Kiosk-ify brains if kiosk mode is enabled
+            m = MenuOption(
+                name=brain_image.short_name,
+                closure=kiosk_mode_decorator,
+                kwargs={
+                    "env": env,
+                    "timeout": kiosk_timeout,
+                    "dump_location_clock_hand": kiosk_clock_position,
+                    "controller": brain_controller,
+                    "controller_kwargs": {
+                        "port": brain_image.port, "alert_fn": alert_callback
+                    },
+                },
+                decorators=[log_csv] if log_on else None,
+            )
+        else:
+            m = MenuOption(
+                name=brain_image.short_name,
+                closure=brain_controller,
+                kwargs={"port": brain_image.port, "alert_fn": alert_callback},
+                decorators=[log_csv] if log_on else None,
+            )
         middle_menu.append(m)
 
     bottom_menu = [
@@ -138,17 +161,23 @@ def build_menu(env, log_on, logfile):
             is_controller=False,
             require_servos=False,
         ),
+        MenuOption(
+            name="Settings",
+            closure=options_controller,
+            kwargs={"env": env},
+            is_controller=False,
+            require_servos=False,
+        ),
     ]
 
     return top_menu + middle_menu + bottom_menu
 
 
-def kiosk_mode(env, prev_state, dump_location_clock_hand):
+def kiosk_mode(env, dump_location_clock_hand):
     # Convert from hour hand location to degrees
     dump_angle = ((-dump_location_clock_hand + 3) * (360 / 12)) % 360
     dump_ball_fn = dump_ball_controller(angle=dump_angle, tilt_angle=5)
     zero_fn = zero_controller()
-    state, detected, buttons = prev_state
 
     # Dump the ball for 1 second
     for _ in range(env.frequency * 1):
@@ -211,7 +240,7 @@ def _handle_debug(ctx, param, debug):
 
 
 @click.command()
-@click.version_option(version="3.2.0")
+@click.version_option(version="3.3.0")
 @click.option(
     "-c",
     "--cont",
@@ -260,29 +289,6 @@ def _handle_debug(ctx, param, debug):
     default=1,
     help="verbose tx/rx (-v=OLED changes, -vv=servo commands, -vvv=NOOPs)",
 )
-@click.option(
-    "--kiosk/--no-kiosk",
-    default=False,
-    help=(
-        "Enables the kiosk mode. "
-        "Exit controllers after a set time and dump the ball towards one side."
-    ),
-)
-@click.option(
-    "--kiosk-timeout",
-    type=int,
-    default=300,  # 5 minutes
-    help="Timeout before kiosk mode is enabled (in seconds)",
-)
-@click.option(
-    "--kiosk-dump-location",
-    type=click.IntRange(0, 12),
-    default=2,
-    help=(
-        "Where to dump the ball towards in kiosk mode. "
-        "Location to dump matches the hour hand of a clock."
-    ),
-)
 @click.pass_context
 def main(ctx: click.core.Context, **kwargs: Any) -> None:
     if kwargs["verbose"] == 2:
@@ -300,17 +306,24 @@ def main_menu(
     log,
     reset,
     verbose,
-    kiosk,
-    kiosk_dump_location,
-    kiosk_timeout,
 ):
 
     if reset:
         out("Resetting firmware")
         os.system("raspi-gpio set 6 dh && sleep 0.05 && raspi-gpio set 6 dl")
 
+    settings = get_settings()
+    kiosk = settings["kiosk"]
+    kiosk_timeout = settings["kiosk_timeout"]
+    kiosk_clock_position = settings["kiosk_clock_position"]
+
+    servo_safety = settings["servo_safety"]
+    servo_safety_timeout = settings["servo_safety_timeout"]
+    servo_safety_clock_position = settings["servo_safety_clock_position"]
+
+
     with MoabEnv(hertz, debug=debug, verbose=verbose) as env:
-        menu_list = build_menu(env, log, file)
+        menu_list = build_menu(env, log, file, kiosk, kiosk_timeout, kiosk_clock_position)
 
         if cont == -1:
             # normal startup state
@@ -358,7 +371,14 @@ def main_menu(
                     # "Pull to refresh"
                     # If you go above the top of the menu, refresh the menu list
                     if index == 0:
-                        menu_list = build_menu(env, log, file)
+                        menu_list = build_menu(
+                            env,
+                            log,
+                            file,
+                            kiosk,
+                            kiosk_timeout,
+                            kiosk_clock_position,
+                        )
                         env.hardware.display("Refreshing", icon.BLANK)
                         time.sleep(0.5)
                         env.hardware.display(menu_list[index].name, icon)
@@ -402,18 +422,21 @@ def main_menu(
                             state, detected, buttons = env.step(action)
 
                             # If the controller has been running for more than
-                            # kiosk_timeout seconds, exit, and dump the ball towards
+                            # servo_safety_timeout seconds, exit, and dump the ball towards
                             # one side and wait until the ball is detected again
-                            if kiosk:
-                                if time.time() - controller_start_time > kiosk_timeout:
+                            if servo_safety:
+                                if (
+                                    time.time() - controller_start_time
+                                    > servo_safety_timeout
+                                ):
                                     prev_state = (state, detected, buttons)
-                                    next_state, kiosk_exit = kiosk_mode(
-                                        env, prev_state, kiosk_dump_location
+                                    next_state, servo_safety_exit = servo_safety_mode(
+                                        env, prev_state, servo_safety_clock_position
                                     )
                                     state, detected, buttons = next_state
                                     controller_start_time = time.time()
-                                    # Whether the menu button was pressed in kiosk mode
-                                    if kiosk_exit:
+                                    # Whether the menu button was pressed in servo_safety mode
+                                    if servo_safety_exit:
                                         break
 
                     except BrainNotFound:

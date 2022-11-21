@@ -6,6 +6,7 @@ import time
 import json
 import numpy as np
 
+from settings import get_settings
 from detector import hsv_detector
 from typing import Tuple, Optional
 from camera import OpenCVCameraSensor
@@ -79,26 +80,22 @@ class MoabHardware:
         return self.__str__()
 
     def __str__(self):
-        return f"hue: {self.hue}, servo offsets: {self.servo_offsets}, plate offsets: {self.plate_offsets}"
+        return (
+            f"serial number: {self.serial_number}, "
+            f"hue: {self.ball_hue}, "
+            f"color: {self.ball_color}, "
+            f"plate offsets: {self.plate_offsets}, "
+            f"servo offsets: {self.servo_offsets}"
+        )
 
     def reset_calibration(self, calibration_file=None):
         # Use default if not defined
         calibration_file = calibration_file or self.calibration_file
+        settings_dict = get_settings(calibration_file)
 
-        # Get calibration settings
-        if os.path.isfile(calibration_file):
-            with open(calibration_file, "r") as f:
-                calib = json.load(f)
-        else:  # Use defaults
-            calib = {
-                "ball_hue": 44,
-                "plate_offsets": (0.0, 0.0),
-                "servo_offsets": (0.0, 0.0, 0.0),
-            }
-
-        self.plate_offsets = calib["plate_offsets"]
-        self.servo_offsets = calib["servo_offsets"]
-        self.hue = calib["ball_hue"]
+        self.servo_offsets = settings_dict["servo_offsets"]
+        self.plate_offsets = settings_dict["plate_offsets"]
+        self.hue = settings_dict["ball_hue"]
 
     def go_up(self):
         # Set the plate to its hover position, experimentally found to be 150
@@ -123,10 +120,8 @@ class MoabHardware:
 
     def set_servos(self, s1, s2, s3):
         # Note the indexing offset
-        s1 += self.servo_offsets[0]
-        s2 += self.servo_offsets[1]
-        s3 += self.servo_offsets[2]
-        self.hat.set_servos((s1, s2, s3))
+        o1, o2, o3 = self.servo_offsets
+        self.hat.set_servos((s1 + o1, s2 + o2, s3 + o3))
 
     def display(
         self,
@@ -153,5 +148,7 @@ class MoabHardware:
         self.set_angles(pitch, roll)
         frame, elapsed_time = self.camera()
         buttons = self.hat.get_buttons()
-        ball_detected, (ball_center, ball_radius) = self.detector(frame, hue=self.hue)
+        ball_detected, (ball_center, ball_radius) = self.detector(
+            frame, hue=self.hue
+        )
         return ball_center, ball_detected, buttons

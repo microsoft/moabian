@@ -1,7 +1,6 @@
 import sys
 
-sys.path.append("/home/pi/moab/sw")
-
+import parent
 import docker
 
 # To run on moab:
