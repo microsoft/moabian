@@ -125,7 +125,8 @@ def build_menu(env, log_on, logfile, kiosk, kiosk_timeout, kiosk_clock_position)
                     "dump_location_clock_hand": kiosk_clock_position,
                     "controller": brain_controller,
                     "controller_kwargs": {
-                        "port": brain_image.port, "alert_fn": alert_callback
+                        "port": brain_image.port,
+                        "alert_fn": alert_callback,
                     },
                 },
                 decorators=[log_csv] if log_on else None,
@@ -166,7 +167,8 @@ def build_menu(env, log_on, logfile, kiosk, kiosk_timeout, kiosk_clock_position)
     return top_menu + middle_menu + bottom_menu
 
 
-def kiosk_mode(env, dump_location_clock_hand):
+def servo_safety_mode(env, prev_state, dump_location_clock_hand):
+    (state, detected, buttons) = prev_state
     # Convert from hour hand location to degrees
     dump_angle = ((-dump_location_clock_hand + 3) * (360 / 12)) % 360
     dump_ball_fn = dump_ball_controller(angle=dump_angle, tilt_angle=5)
@@ -232,6 +234,176 @@ def _handle_debug(ctx, param, debug):
     return debug
 
 
+def update_menu(env, log, file):
+    settings = get_settings()
+    menu_list = build_menu(
+        env,
+        log,
+        file,
+        settings["kiosk"],
+        settings["kiosk_timeout"],
+        settings["kiosk_clock_position"],
+    )
+    return menu_list, settings
+
+
+def main_menu(
+    cont,
+    debug,
+    file,
+    hertz,
+    log,
+    reset,
+    verbose,
+):
+
+    if reset:
+        out("Resetting firmware")
+        os.system("raspi-gpio set 6 dh && sleep 0.05 && raspi-gpio set 6 dl")
+
+    with MoabEnv(hertz, debug=debug, verbose=verbose) as env:
+
+        settings = get_settings()
+        kiosk = settings["kiosk"]
+        kiosk_timeout = settings["kiosk_timeout"]
+        kiosk_clock_position = settings["kiosk_clock_position"]
+        servo_safety = settings["servo_safety"]
+        servo_safety_timeout = settings["servo_safety_timeout"]
+        servo_safety_clock_position = settings["servo_safety_clock_position"]
+
+        menu_list, settings = update_menu(env, log, file)
+
+        if cont == -1:
+            # normal startup state
+            current = MenuState.first_level
+            index = 0
+            last_index = -1
+        else:
+            # CLI argument to start in one of the controllers
+            current = MenuState.second_level
+            index = cont
+            last_index = -1
+
+        # Default menu raises the plate to alert the user the system is ready
+        if cont == -1:
+            env.hardware.enable_servos()
+            env.hardware.go_up()
+            buttons = env.hardware.get_buttons()
+            env.hardware.disable_servos()
+
+        while True:
+            time.sleep(1 / env.frequency)
+
+            # In the first level of the menu (select between menu options)
+            if current == MenuState.first_level:
+                # Depends on if it's the first/last icon
+                if index == 0:
+                    icon = Icon.DOWN
+                elif index == len(menu_list) - 1:
+                    icon = Icon.UP
+                else:
+                    icon = Icon.UP_DOWN
+
+                # Only update text and icon if it has changed
+                if last_index != index:
+                    env.hardware.display(menu_list[index].name, icon)
+                    last_index = index
+
+                buttons = env.hardware.get_buttons()
+                if buttons.joy_button:  # Enter the menu option
+                    current = MenuState.second_level
+                elif buttons.joy_y < -0.8:  # Flick joystick down
+                    index = min(index + 1, len(menu_list) - 1)
+                    time.sleep(0.1)
+                elif buttons.joy_y > 0.8:  # Flick joystick up
+                    # "Pull to refresh"
+                    # If you go above the top of the menu, refresh the menu list
+                    if index == 0:
+                        menu_list, settings = update_menu(env, log, file)
+                        env.hardware.display("Refreshing", icon.BLANK)
+                        time.sleep(0.5)
+                        env.hardware.display(menu_list[index].name, icon)
+
+                    index = max(index - 1, 0)
+                    time.sleep(0.1)
+
+            else:  # current == MenuState.second_level:
+                if menu_list[index].require_servos:
+                    env.hardware.enable_servos()
+
+                # Reset the controller
+                if menu_list[index].is_controller:
+                    state, detected, buttons = env.reset(
+                        menu_list[index].name, Icon.DOT
+                    )
+
+                # Initialize the controller
+                controller_closure = menu_list[index].closure
+                kwargs = menu_list[index].kwargs
+                controller = controller_closure(**kwargs)
+
+                # Wrap a decorator if it has one
+                if menu_list[index].decorators:
+                    for decorator in menu_list[index].decorators:
+                        controller = decorator(controller)
+
+                # Ensure there's enough time to process the display command on
+                # the hat side (if a control command happens too soon after a
+                # display command the hat may not have enough time to read the
+                # next command, which will mess with SPI)
+                time.sleep(1 / env.frequency)
+
+                if menu_list[index].is_controller:
+                    controller_start_time = time.time()
+
+                    # If it's a controller run the control loop
+                    try:
+                        while not buttons.menu_button:
+                            action, info = controller((state, detected, buttons))
+                            state, detected, buttons = env.step(action)
+
+                            # If the controller has been running for more than
+                            # servo_safety_timeout seconds, exit, and dump the ball towards
+                            # one side and wait until the ball is detected again
+                            if settings["servo_safety"]:
+                                timeout = settings["servo_safety_timeout"]
+                                if time.time() - controller_start_time > timeout:
+                                    prev_state = (state, detected, buttons)
+                                    next_state, servo_safety_exit = servo_safety_mode(
+                                        env,
+                                        prev_state,
+                                        settings["servo_safety_clock_position"],
+                                    )
+                                    state, detected, buttons = next_state
+                                    controller_start_time = time.time()
+                                    # Whether the menu button was pressed in servo_safety mode
+                                    if servo_safety_exit:
+                                        break
+
+                    except BrainNotFound:
+                        print(f"caught BrainNotFound in loop")
+
+                    env.hardware.go_up()
+                else:
+                    # If not a controller, let it do it's own thing. We assume
+                    # it's a blocking call that will return when menu is pressed
+                    controller()
+
+                    # Check if settings have changed, if so, update the menu loop
+                    updated_settings = get_settings()
+                    if updated_settings != settings:
+                        menu_list, settings = update_menu(env, log, file)
+                        env.hardware.display("Refreshing", icon.BLANK)
+                        time.sleep(0.5)
+
+                # Loop breaks after menu pressed and puts the plate back to go_up
+                current = MenuState.first_level
+                last_index = -1
+
+                if menu_list[index].require_servos:
+                    env.hardware.disable_servos()
+
+
 @click.command()
 @click.version_option(version="3.3.0")
 @click.option(
@@ -289,164 +461,6 @@ def main(ctx: click.core.Context, **kwargs: Any) -> None:
         out(f"Starting {kwargs}")
 
     main_menu(**kwargs)
-
-
-def main_menu(
-    cont,
-    debug,
-    file,
-    hertz,
-    log,
-    reset,
-    verbose,
-):
-
-    if reset:
-        out("Resetting firmware")
-        os.system("raspi-gpio set 6 dh && sleep 0.05 && raspi-gpio set 6 dl")
-
-    settings = get_settings()
-    kiosk = settings["kiosk"]
-    kiosk_timeout = settings["kiosk_timeout"]
-    kiosk_clock_position = settings["kiosk_clock_position"]
-
-    servo_safety = settings["servo_safety"]
-    servo_safety_timeout = settings["servo_safety_timeout"]
-    servo_safety_clock_position = settings["servo_safety_clock_position"]
-
-
-    with MoabEnv(hertz, debug=debug, verbose=verbose) as env:
-        menu_list = build_menu(env, log, file, kiosk, kiosk_timeout, kiosk_clock_position)
-
-        if cont == -1:
-            # normal startup state
-            current = MenuState.first_level
-            index = 0
-            last_index = -1
-        else:
-            # CLI argument to start in one of the controllers
-            current = MenuState.second_level
-            index = cont
-            last_index = -1
-
-        # Default menu raises the plate to alert the user the system is ready
-        if cont == -1:
-            env.hardware.enable_servos()
-            env.hardware.go_up()
-            buttons = env.hardware.get_buttons()
-            env.hardware.disable_servos()
-
-        while True:
-            time.sleep(1 / env.frequency)
-
-            # In the first level of the menu (select between menu options)
-            if current == MenuState.first_level:
-                # Depends on if it's the first/last icon
-                if index == 0:
-                    icon = Icon.DOWN
-                elif index == len(menu_list) - 1:
-                    icon = Icon.UP
-                else:
-                    icon = Icon.UP_DOWN
-
-                # Only update text and icon if it has changed
-                if last_index != index:
-                    env.hardware.display(menu_list[index].name, icon)
-                    last_index = index
-
-                buttons = env.hardware.get_buttons()
-                if buttons.joy_button:  # Enter the menu option
-                    current = MenuState.second_level
-                elif buttons.joy_y < -0.8:  # Flick joystick down
-                    index = min(index + 1, len(menu_list) - 1)
-                    time.sleep(0.1)
-                elif buttons.joy_y > 0.8:  # Flick joystick up
-                    # "Pull to refresh"
-                    # If you go above the top of the menu, refresh the menu list
-                    if index == 0:
-                        menu_list = build_menu(
-                            env,
-                            log,
-                            file,
-                            kiosk,
-                            kiosk_timeout,
-                            kiosk_clock_position,
-                        )
-                        env.hardware.display("Refreshing", icon.BLANK)
-                        time.sleep(0.5)
-                        env.hardware.display(menu_list[index].name, icon)
-
-                    index = max(index - 1, 0)
-                    time.sleep(0.1)
-
-            else:  # current == MenuState.second_level:
-                if menu_list[index].require_servos:
-                    env.hardware.enable_servos()
-
-                # Reset the controller
-                if menu_list[index].is_controller:
-                    state, detected, buttons = env.reset(
-                        menu_list[index].name, Icon.DOT
-                    )
-
-                # Initialize the controller
-                controller_closure = menu_list[index].closure
-                kwargs = menu_list[index].kwargs
-                controller = controller_closure(**kwargs)
-
-                # Wrap a decorator if it has one
-                if menu_list[index].decorators:
-                    for decorator in menu_list[index].decorators:
-                        controller = decorator(controller)
-
-                # Ensure there's enough time to process the display command on
-                # the hat side (if a control command happens too soon after a
-                # display command the hat may not have enough time to read the
-                # next command, which will mess with SPI)
-                time.sleep(1 / env.frequency)
-
-                if menu_list[index].is_controller:
-                    controller_start_time = time.time()
-
-                    # If it's a controller run the control loop
-                    try:
-                        while not buttons.menu_button:
-                            action, info = controller((state, detected, buttons))
-                            state, detected, buttons = env.step(action)
-
-                            # If the controller has been running for more than
-                            # servo_safety_timeout seconds, exit, and dump the ball towards
-                            # one side and wait until the ball is detected again
-                            if servo_safety:
-                                if (
-                                    time.time() - controller_start_time
-                                    > servo_safety_timeout
-                                ):
-                                    prev_state = (state, detected, buttons)
-                                    next_state, servo_safety_exit = servo_safety_mode(
-                                        env, prev_state, servo_safety_clock_position
-                                    )
-                                    state, detected, buttons = next_state
-                                    controller_start_time = time.time()
-                                    # Whether the menu button was pressed in servo_safety mode
-                                    if servo_safety_exit:
-                                        break
-
-                    except BrainNotFound:
-                        print(f"caught BrainNotFound in loop")
-
-                    env.hardware.go_up()
-                else:
-                    # If not a controller, let it do it's own thing. We assume
-                    # it's a blocking call that will return when menu is pressed
-                    controller()
-
-                # Loop breaks after menu pressed and puts the plate back to go_up
-                current = MenuState.first_level
-                last_index = -1
-
-                if menu_list[index].require_servos:
-                    env.hardware.disable_servos()
 
 
 if __name__ == "__main__":
