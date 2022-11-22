@@ -87,9 +87,14 @@ def nn_controller(filepath="train_moab_weights.npz", **kwargs):
         x, y, vel_x, vel_y, sum_x, sum_y = env_state
         state = np.array([x, y, vel_x, vel_y])
         pitch, roll = w_out @ np.tanh(w1 @ np.tanh(w0 @ state + b0) + b1)
-        return Vector2(-roll, pitch), {}
+
+        # The NN was trained with radians but the plate angles are set in
+        # degrees on moab
+        state = np.degrees([pitch, roll])
+        return Vector2(pitch, roll), {}
 
     return next_action
+
 
 def brain_controller(
     max_angle=22,
