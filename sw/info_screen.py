@@ -150,9 +150,8 @@ def options_controller(env, **kwargs):
     def wait_for_menu():
         nonlocal index_x, index_y, prev_index_x, prev_index_y, settings
 
-        menu_button = False
-        while not menu_button:
-
+        menu_button = joy_button = False
+        while not (menu_button or joy_button):
             # Only update screen when state changes
             if prev_index_x != index_x or prev_index_y != index_y:
                 s = inner_menu[index_x].name + "\n"
@@ -197,8 +196,14 @@ def options_controller(env, **kwargs):
                 opt_selection_value = inner_menu[index_x].options[index_y].value
                 settings[menu_opt_json_str] = opt_selection_value
 
-        set_settings(settings)
-        env.hardware.reset_calibration()
+        if joy_button:
+            set_settings(settings)
+            env.hardware.reset_calibration()
+            env.hardware.display("Saving\nChanges", scrolling=True)
+            time.sleep(0.5)
+        else:
+            env.hardware.display("Reverting\nChanges", scrolling=True)
+            time.sleep(0.5)
 
     return wait_for_menu
 

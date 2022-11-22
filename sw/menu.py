@@ -320,7 +320,7 @@ def main_menu(
                     # If you go above the top of the menu, refresh the menu list
                     if index == 0:
                         menu_list, settings = update_menu(env, log, file)
-                        env.hardware.display("Refreshing", icon.BLANK)
+                        env.hardware.display("Refreshing", Icon.BLANK)
                         time.sleep(0.5)
                         env.hardware.display(menu_list[index].name, icon)
 
@@ -393,8 +393,6 @@ def main_menu(
                     updated_settings = get_settings()
                     if updated_settings != settings:
                         menu_list, settings = update_menu(env, log, file)
-                        env.hardware.display("Refreshing", icon.BLANK)
-                        time.sleep(0.5)
 
                 # Loop breaks after menu pressed and puts the plate back to go_up
                 current = MenuState.first_level
