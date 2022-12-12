@@ -97,10 +97,10 @@ def options_controller(env, **kwargs):
 
     inner_menu = [
         SettingsMenuItem(
-            "Ball Color",
+            "ball color",
             "ball_hue",
             [
-                Option(f"custom: {settings['ball_hue']}", settings["ball_hue"]),
+                Option(f"custom calib: {settings['ball_hue']}", settings["ball_hue"]),
                 Option("orange: 44", 44),
                 Option("yellow: 65", 65),
                 Option("green: 125", 125),
@@ -109,15 +109,15 @@ def options_controller(env, **kwargs):
             ],
         ),
         SettingsMenuItem(
-            "Kiosk",
+            "kiosk",
             "kiosk",
             [
-                Option("ON", True),
-                Option("OFF", False),
+                Option("on", True),
+                Option("off", False),
             ],
         ),
         SettingsMenuItem(
-            "Kiosk Timeout",
+            "kiosk timeout",
             "kiosk_timeout",
             [
                 Option("5", 5),
@@ -131,7 +131,7 @@ def options_controller(env, **kwargs):
             ],
         ),
         SettingsMenuItem(
-            "Kiosk Clock Pos",
+            "kiosk clock pos",
             "kiosk_clock_position",
             [Option(str(i), i) for i in range(1, 13)],
         ),
@@ -150,9 +150,8 @@ def options_controller(env, **kwargs):
     def wait_for_menu():
         nonlocal index_x, index_y, prev_index_x, prev_index_y, settings
 
-        menu_button = False
-        while not menu_button:
-
+        menu_button = joy_button = False
+        while not (menu_button or joy_button):
             # Only update screen when state changes
             if prev_index_x != index_x or prev_index_y != index_y:
                 s = inner_menu[index_x].name + "\n"
@@ -197,7 +196,14 @@ def options_controller(env, **kwargs):
                 opt_selection_value = inner_menu[index_x].options[index_y].value
                 settings[menu_opt_json_str] = opt_selection_value
 
-        set_settings(settings)
+        if joy_button:
+            set_settings(settings)
+            env.hardware.reset_calibration()
+            env.hardware.display("Saving\nChanges", scrolling=True)
+            time.sleep(0.5)
+        else:
+            env.hardware.display("Reverting\nChanges", scrolling=True)
+            time.sleep(0.5)
 
     return wait_for_menu
 
