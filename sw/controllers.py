@@ -86,12 +86,16 @@ def nn_controller(filepath="train_moab_weights.npz", **kwargs):
         env_state, ball_detected, buttons = state
         x, y, vel_x, vel_y, sum_x, sum_y = env_state
         state = np.array([x, y, vel_x, vel_y])
-        pitch, roll = w_out @ np.tanh(w1 @ np.tanh(w0 @ state + b0) + b1)
+        action = w_out @ np.tanh(w1 @ np.tanh(w0 @ state + b0) + b1)
 
-        # The NN was trained with radians but the plate angles are set in
-        # degrees on moab
-        state = np.degrees([pitch, roll])
-        return Vector2(pitch, roll), {}
+        action = np.clip(action * 22, -22, 22)
+        pitch, roll = action
+
+        if ball_detected:
+            # New sims match the coordinates of old sim for compatibility
+            return Vector2(-roll, pitch), {}
+        else:
+            return Vector2(0, 0), {}
 
     return next_action
 

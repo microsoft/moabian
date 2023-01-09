@@ -17,8 +17,9 @@ DEFAULT_SETTINGS = {
     "kiosk_clock_position": 2,
     "servo_safety": False,
     "servo_safety_timeout": 900,
-    "servo_safety_clock_position": 2
+    "servo_safety_clock_position": 2,
 }
+
 
 def get_settings(settings_file="bot.json"):
     # Get calibration settings
