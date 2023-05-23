@@ -1,7 +1,7 @@
 numpy==1.20.1
 opencv-python-headless==4.5.3.56
 picamera==1.13
-requests==2.25.1
+requests==2.31.0
 dacite==1.6.0
 RPi.GPIO==0.7.0
 wheel==0.35.1
